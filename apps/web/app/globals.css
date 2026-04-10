@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface: 255 248 245;
+  --surface-strong: 255 255 255;
+  --border: 139 88 115;
+  --ink: 36 21 28;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  color: rgb(var(--ink));
+  background:
+    radial-gradient(circle at top, rgba(230, 170, 184, 0.28), transparent 32%),
+    radial-gradient(circle at 20% 80%, rgba(107, 57, 85, 0.14), transparent 28%),
+    linear-gradient(180deg, #fff8f5 0%, #f7eef1 100%);
+  font-family: var(--font-sans), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(139, 88, 115, 0.18);
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), serif;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer components {
+  .soft-panel {
+    @apply rounded-[2rem] border border-plum/15 bg-white/75 shadow-card backdrop-blur-xl;
+  }
+
+  .field-shell {
+    @apply rounded-2xl border border-plum/15 bg-cream/80 px-4 py-3 transition focus-within:border-plum/45 focus-within:bg-white;
+  }
+
+  .field-input {
+    @apply mt-1 w-full bg-transparent text-sm text-ink outline-none placeholder:text-plum/35;
+  }
+
+  .field-label {
+    @apply text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-plum/70;
+  }
+}
