@@ -2,7 +2,7 @@
 
 Branch: `feature-fe-auth-screens`
 Owner: `@otthomas`
-Status: in progress
+Status: runtime verified, pending contract alignment
 
 This checklist tracks the low-level completion state for the auth screen milestone.
 
@@ -39,7 +39,16 @@ This checklist tracks the low-level completion state for the auth screen milesto
 
 ## Remaining Before Merge
 
-- [ ] Install frontend dependencies
-- [ ] Run the web app locally and inspect the auth screens in browser
-- [ ] Capture screenshots or reviewer notes from live runtime verification
+- [x] Install frontend dependencies
+- [x] Run the web app locally and inspect the auth screens in browser
+- [x] Capture screenshots or reviewer notes from live runtime verification
 - [ ] Align mocked payload expectations with Reagan's auth API contract
+
+## Runtime Verification Notes
+
+- [x] `npm.cmd install` completed in `apps/web`
+- [x] `npm.cmd run dev` served the app locally
+- [x] `/`, `/login`, and `/signup` loaded successfully
+- [x] Mock sign-up flow succeeded with fake account info
+- [x] Mock login flow succeeded with fake account info
+- [x] Hydration warning disappeared in incognito, indicating a browser-extension issue rather than an app-render mismatch
