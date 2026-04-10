@@ -1,0 +1,7 @@
+# Docs
+
+This directory contains product, engineering, and planning documentation for OOTD.
+
+Current documents:
+
+- `github-ready-issue-list.md`
