@@ -20,92 +20,76 @@ Completed but still needs follow-up alignment:
 
 - Auth screens were runtime-tested successfully
 - Mock login and sign-up flows worked locally
-- Remaining auth-screen follow-up is contract alignment with Reagan's backend auth payloads
+- Remaining auth-screen follow-up is wiring to Reagan's real auth endpoints
+
+## Ownership Change
+
+**Issue 4 (Alembic baseline and initial migrations)** has been reassigned from `@otthomas` to `@reaganbourne`.
+
+Reagan now owns all database work: SQLAlchemy models, Alembic migrations, and seed data. `@otthomas` focuses exclusively on frontend.
+
+## Architecture Decisions Logged
+
+- **Compute**: Railway (FastAPI + managed Postgres)
+- **File storage**: AWS S3
+- **ORM**: SQLAlchemy 2.x + Alembic (lives in `services/api/`)
+- **Auth**: JWT access token (bearer) + httpOnly refresh cookie, tracked in `refresh_sessions`
 
 ## Move These To Done
 
 ### Issue 1. Set up monorepo structure
 - Owner: `@otthomas`
 - Status: `Done`
-- Reason:
-  - repo scaffold is merged
-  - root config files exist
-  - app, api, db, contracts, and docs folders exist
 
 ### Issue 3. Design v1 database schema
 - Owner: `@otthomas`
 - Status: `Done`
-- Reason:
-  - V1 schema draft is merged in `docs/db-v1-schema.md`
-  - MVP tables, indexes, and open decisions are documented
 
 ### Issue 7. Build login and signup screens
 - Owner: `@otthomas`
 - Status: `Done`
-- Reason:
-  - auth screens are merged
-  - mocked runtime flow was verified locally
-  - checklist exists in `docs/fe-auth-screens-checklist.md`
+
+## Move These To In Progress
+
+### Issue 5. Scaffold FastAPI service
+- Owner: `@reaganbourne`
+- Status: `In Progress`
+- Branch: `feature-be-fastapi-scaffold`
 
 ## Create Or Move These To Ready Next
-
-These are the best next issues to create or move into the `Ready` / `Todo` column.
 
 ### Issue 2. Create Docker Compose local stack
 - Owner: `@reaganbourne`
 - Status: `Ready Next`
-- Why now:
-  - needed for a shared backend + DB environment
-  - unblocks reliable local backend work
 
-### Issue 5. Scaffold FastAPI service
-- Owner: `@reaganbourne`
+### Issue 4. Add Alembic baseline and initial migrations
+- Owner: `@reaganbourne` (reassigned from `@otthomas`)
 - Status: `Ready Next`
-- Why now:
-  - backend implementation cannot move without the service structure
+- Why now: FastAPI scaffold sets the project structure; migrations can layer in immediately after
 
 ### Issue 6. Define auth API contract
 - Owner: `@reaganbourne`
 - Status: `Ready Next`
-- Why now:
-  - unlocks auth payload alignment with the merged frontend auth screens
+- Note: contract shape is already decided (see `docs/reagan-workboard.md`); this branch publishes it formally to `packages/contracts/`
 
-## Create Or Move These To Blocked / Waiting
-
-### Issue 4. Add Alembic baseline and initial migrations
-- Owner: `@otthomas`
-- Status: `Blocked`
-- Blocked by:
-  - backend service structure needs to exist so migration placement is not guessed
-- Notes:
-  - schema design is already done
-  - this should begin as soon as Reagan has created the FastAPI/Python project structure
-
-### Issue 9. Build typed API client for web
-- Owner: `@otthomas`
-- Status: `Blocked`
-- Blocked by:
-  - Issue 6 auth API contract
-- Notes:
-  - the auth UI is already in place
-  - this becomes the next frontend integration task once request and response shapes are frozen
+## Create Or Move These To Blocked
 
 ### Issue 8. Implement JWT auth flow
 - Owner: `@reaganbourne`
 - Status: `Blocked`
-- Blocked by:
-  - Issue 5 backend scaffold
-  - Issue 6 auth API contract
+- Blocked by: Issue 5 (scaffold) and Issue 6 (contract)
+
+### Issue 9. Build typed API client for web
+- Owner: `@otthomas`
+- Status: `Blocked`
+- Blocked by: Issue 6 (auth API contract must be frozen)
 
 ### Issue 10. Add auth smoke tests and CI hook
 - Owner: `@reaganbourne`
 - Status: `Blocked`
-- Blocked by:
-  - Issue 8 JWT auth flow
+- Blocked by: Issue 8 (JWT auth flow)
 
 ## Suggested Board Columns
-
-Recommended columns for the GitHub board right now:
 
 - `Backlog`
 - `Ready Next`
@@ -121,13 +105,15 @@ Recommended columns for the GitHub board right now:
 - Issue 3. Design v1 database schema
 - Issue 7. Build login and signup screens
 
+### In Progress
+- Issue 5. Scaffold FastAPI service (`@reaganbourne`)
+
 ### Ready Next
-- Issue 2. Create Docker Compose local stack
-- Issue 5. Scaffold FastAPI service
-- Issue 6. Define auth API contract
+- Issue 2. Create Docker Compose local stack (`@reaganbourne`)
+- Issue 4. Add Alembic baseline and initial migrations (`@reaganbourne`)
+- Issue 6. Define auth API contract (`@reaganbourne`)
 
 ### Blocked
-- Issue 4. Add Alembic baseline and initial migrations
 - Issue 8. Implement JWT auth flow
 - Issue 9. Build typed API client for web
 - Issue 10. Add auth smoke tests and CI hook
@@ -138,17 +124,12 @@ Recommended columns for the GitHub board right now:
 ## Recommended Next Assignment Split
 
 ### `@otthomas`
-- monitor Issue 6 auth API contract
-- prepare for Issue 4 Alembic baseline
-- prepare for Issue 9 API client once contract is approved
+- Monitor Issue 6 auth API contract for review
+- Prepare Issue 9 typed API client once contract is approved
+- No database work — fully handed off to Reagan
 
 ### `@reaganbourne`
-- start Issue 2 Docker Compose stack
-- start Issue 5 FastAPI scaffold
-- draft Issue 6 auth API contract
-
-## Manual Update Notes
-
-The GitHub connector in this session can read some repo state but cannot directly create or edit issues/projects here.
-
-Use this document as the manual update source for the board until issue/project write access is available.
+- Issue 5 FastAPI scaffold (in progress)
+- Issue 4 Alembic baseline (next)
+- Issue 2 Docker Compose stack (next)
+- Issue 6 auth API contract (parallel)
