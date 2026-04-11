@@ -1,154 +1,90 @@
 # reaganbourne Workboard
 
-This is the focused build plan for `@reaganbourne`, who owns backend and database work for OOTD.
+Owned areas: `services/api/` (FastAPI backend), all database work (SQLAlchemy models, Alembic migrations, seed data).
 
-## Ownership
+Last synced: 2026-04-11
 
-- `services/api/` — FastAPI backend service
-- `packages/db/` — SQLAlchemy models, Alembic migrations, seed data
+---
 
-## Current Status
+## Architecture decisions (locked)
 
-- `main` is current and already includes:
-  - Issue 1 `Set up monorepo structure`
-  - Issue 3 `Design v1 database schema`
-  - Issue 7 `Build login and signup screens`
-- Reagan's next active work starts from updated `main`.
-- The frontend auth screens are merged and runtime-tested. Remaining follow-up is wiring the real auth contract once Issue 6 is frozen.
+| Decision | Choice |
+|---|---|
+| Compute | Railway |
+| File storage | AWS S3 (local filesystem adapter for dev) |
+| ORM | SQLAlchemy 2.x |
+| Migrations | Alembic |
+| Auth | JWT access token (15 min, bearer) + httpOnly refresh cookie (7 days) |
+| Password hashing | bcrypt via passlib |
 
-## Architecture Decisions
+---
 
-### Deployment
-- **Compute**: Railway (FastAPI service + managed Postgres)
-- **File storage**: AWS S3 (outfit images)
-- Deploy to ECS once the MVP is stable; Railway gets us there without infra overhead.
+## Phase 1 — status
 
-### Database
-- SQLAlchemy 2.x ORM + Alembic migrations
-- Models and migrations live in `services/api/` (no separate Python package needed at this scale)
-- `packages/db/` is reserved for shared seed scripts and fixtures
+| GH # | Title | Branch | Status |
+|---|---|---|---|
+| #8 | Scaffold FastAPI service | `feature-be-fastapi-scaffold` | ✅ Merged |
+| #9 | Define auth API contract | `docs-auth-api-contract` | ✅ Merged |
+| #10 | Alembic baseline + initial migrations | `feature-be-alembic-baseline` | ✅ Merged |
+| #7 | Docker Compose local stack | `chore-docker-compose-stack` | 🔲 Not started |
+| #12 | Implement JWT auth flow | `feature-be-jwt-auth` | 🔲 Not started — **start here** |
+| #13 | Auth smoke tests and CI | `chore-be-auth-ci-tests` | 🔲 Blocked by #12 |
 
-### Auth strategy
-- Access token: short-lived JWT (15 min) returned in response body as `{ access_token, token_type: "bearer" }`
-- Refresh token: longer-lived (7 days), stored as httpOnly cookie, tracked in `refresh_sessions` table
-- Passwords: bcrypt via passlib
+---
 
-### Auth API contract (for Issue 6 and Issue 8)
+## What to build next
 
-**POST /auth/register**
-- Request: `{ username, email, password }`
-- Response: `{ access_token, token_type, user: { id, username, email } }`
+### GH #12 — JWT auth flow (`feature-be-jwt-auth`)
 
-**POST /auth/login**
-- Request: `{ email, password }`
-- Response: `{ access_token, token_type, user: { id, username, email } }`
+The big one. Implements all auth endpoints against the contract in `packages/contracts/auth-contract.md`.
 
-**POST /auth/refresh**
-- Request: httpOnly cookie with refresh token
-- Response: `{ access_token, token_type }`
+**New dependencies to add to `requirements.txt`:**
+- `python-jose[cryptography]` — JWT signing/verification
+- `passlib[bcrypt]` — password hashing
+- `python-multipart` — required by FastAPI for form data
 
-**POST /auth/logout**
-- Request: httpOnly cookie with refresh token
-- Response: `{ message: "logged out" }` + clears cookie + revokes session
-
-**GET /auth/me**
-- Request: `Authorization: Bearer <access_token>`
-- Response: `{ id, username, email, display_name, bio, profile_image_url }`
-
-Error shape across all auth endpoints:
-```json
-{ "detail": "human-readable message" }
+**New files to create:**
+```
+services/api/app/
+  schemas/
+    auth.py        # Pydantic request/response models (UserCreate, TokenResponse, etc.)
+  services/
+    auth.py        # business logic: register(), login(), create_tokens(), verify_token()
+  crud/
+    user.py        # get_by_email(), create_user()
+    session.py     # create_session(), get_session_by_hash(), revoke_session()
 ```
 
-## Your Phase 1 Issues
+**Endpoints to implement in `app/routers/auth.py`:**
+- `POST /auth/register` → 201 + access token + sets refresh cookie
+- `POST /auth/login` → 200 + access token + sets refresh cookie
+- `POST /auth/refresh` → 200 + new access token + rotates refresh cookie
+- `POST /auth/logout` → 200 + clears cookie + revokes session
+- `GET /auth/me` → 200 + current user object
 
-### Issue 2. Create Docker Compose local stack
-- Status: start now
-- Recommended branch: `chore-docker-compose-stack`
-- Goal: create a shared local environment for web, api, db, and optional worker services
+**`get_current_user` dependency** goes in `app/dependencies.py` — reads and validates the JWT from the `Authorization: Bearer` header. Every future protected route uses this.
 
-### Issue 4. Add Alembic baseline and initial migrations
-- Status: start now (Reagan owns this, previously listed under otthomas)
-- Recommended branch: `feature-be-alembic-baseline`
-- Goal: configure Alembic, add initial migration for all v1 tables
+### GH #7 — Docker Compose (`chore-docker-compose-stack`)
 
-### Issue 5. Scaffold FastAPI service
-- Status: in progress
-- Branch: `feature-be-fastapi-scaffold`
-- Goal: FastAPI app structure, config loading, router layout, `/health` endpoint, SQLAlchemy session wiring
+Can be done in parallel with #12. Simple — `docker-compose.yml` at repo root with:
+- `db` service: Postgres 16, health check, named volume
+- `api` service: builds from `services/api/`, mounts code as volume for hot reload, depends on `db`
 
-### Issue 6. Define auth API contract
-- Status: start now in parallel with Issue 5
-- Recommended branch: `docs-auth-api-contract`
-- Goal: document request/response shapes (contract defined above, this branch formalizes it in `packages/contracts`)
+---
 
-### Issue 8. Implement JWT auth flow
-- Status: next after Issues 5 and 6
-- Recommended branch: `feature-be-jwt-auth`
-- Goal: implement auth endpoints, password hashing, refresh lifecycle, and protected route dependency
+## Phase 2 — queued (after auth is stable)
 
-### Issue 10. Add auth smoke tests and CI hook
-- Status: next after Issue 8
-- Recommended branch: `chore-be-auth-ci-tests`
-- Goal: integration tests for auth + CI checks on PRs
+| GH # | Title | Branch | Notes |
+|---|---|---|---|
+| #17 | Outfit + clothing item schema migration | `feature-be-outfit-schema` | Reassign from @otthomas |
+| #18 | Image storage adapter | `feature-be-image-storage-adapter` | Local + S3 |
+| #20 | Create-outfit endpoint | `feature-be-create-outfit-endpoint` | After #17 + #18 |
+| #22 | Feed endpoint + cursor pagination | `feature-be-feed-endpoint` | After #20 |
+| #23 | Follow/unfollow endpoints | `feature-be-follow-endpoints` | After #12 |
 
-## Recommended Order
+---
 
-1. Issue 5 on `feature-be-fastapi-scaffold` (in progress)
-2. Issue 4 on `feature-be-alembic-baseline`
-3. Issue 2 on `chore-docker-compose-stack`
-4. Issue 6 on `docs-auth-api-contract`
-5. Issue 8 on `feature-be-jwt-auth`
-6. Issue 10 on `chore-be-auth-ci-tests`
-
-## Deliverables By Branch
-
-### `feature-be-fastapi-scaffold`
-- FastAPI app entrypoint and lifespan
-- Pydantic settings config loading
-- Router organization (health, auth stub, outfits stub)
-- `/health` endpoint
-- SQLAlchemy engine + session dependency
-- Alembic config and env.py wired to models
-- `.env.example`
-
-### `feature-be-alembic-baseline`
-- SQLAlchemy models for all v1 tables (users, refresh_sessions, outfits, clothing_items, follows, likes, comments)
-- Alembic initial migration
-- Verified: fresh DB bootstraps from `alembic upgrade head`
-- Verified: `alembic downgrade base` works
-
-### `chore-docker-compose-stack`
-- `docker-compose.yml` for web, api, db services
-- Env wiring from `.env`
-- Health checks for api and db
-
-### `docs-auth-api-contract`
-- Auth contract doc added to `packages/contracts/`
-- Example request/response payloads
-- Error shape documented
-
-### `feature-be-jwt-auth`
-- POST /auth/register, /auth/login, /auth/refresh, /auth/logout, GET /auth/me
-- bcrypt password hashing
-- JWT access token (15 min)
-- httpOnly refresh cookie (7 days) + refresh_sessions persistence
-- `get_current_user` dependency for protected routes
-
-### `chore-be-auth-ci-tests`
-- pytest integration tests for all auth endpoints
-- CI job runs on PRs
-- Test failures block merge to `main`
-
-## Full Roadmap Branch Queue
-
-### Phase 2
-- `feature-be-image-storage-adapter` (S3 + local dev fallback)
-- `feature-be-create-outfit-endpoint`
-- `feature-be-clothing-item-tagging`
-- `feature-be-follow-endpoints`
-- `feature-be-feed-endpoint`
-- `chore-be-phase2-integration-tests`
+## Full branch queue
 
 ### Phase 3
 - `feature-be-board-crud`
@@ -170,14 +106,14 @@ Error shape across all auth endpoints:
 - `docs-be-setup-architecture`
 - `chore-be-ci-cd-pipeline`
 
-## Dependencies and Blockers
+---
 
-### Start immediately
-- Issue 5 FastAPI scaffold (in progress)
-- Issue 4 Alembic baseline (Reagan owns this now)
-- Issue 2 Docker stack
+## Definition of done — Phase 1
 
-### Depend on earlier work
-- Issue 6 auth contract: best documented after Issue 5 exists
-- Issue 8 JWT auth: requires Issues 5 and 6
-- Issue 10 tests + CI: requires Issue 8
+- [x] FastAPI scaffold with `/health`, config, SQLAlchemy session
+- [x] Auth API contract documented in `packages/contracts/`
+- [x] SQLAlchemy models for all 7 v1 tables
+- [x] Alembic initial migration — `alembic upgrade head` creates full schema
+- [ ] Docker Compose — `docker compose up` starts API + Postgres
+- [ ] JWT auth — register, login, refresh, logout, me all working
+- [ ] Auth tests — pytest coverage + GitHub Actions CI
