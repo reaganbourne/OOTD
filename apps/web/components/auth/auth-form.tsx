@@ -5,8 +5,7 @@ import { useState } from "react";
 import type { AuthErrors, AuthMode, AuthValues } from "@/lib/auth";
 import {
   createInitialAuthValues,
-  getMockQaNotes,
-  mockSubmitAuth,
+  submitAuth,
   validateAuthForm
 } from "@/lib/auth";
 
@@ -23,12 +22,14 @@ type SubmitState =
 const copy = {
   login: {
     title: "Log in",
-    intro: "Use the mocked flow for now. Wiring to the real API comes next once the auth contract is frozen.",
+    intro:
+      "Sign in with the shared auth contract. If the backend is not running yet, the form will surface a connection error instead of the old mock flow.",
     submitLabel: "Enter the vault"
   },
   signup: {
     title: "Create account",
-    intro: "This captures the first-pass onboarding fields we expect the backend auth contract to support.",
+    intro:
+      "Create your account with the shared auth contract fields. Confirm password still stays frontend-only and is stripped before the API call.",
     submitLabel: "Create my account"
   }
 } as const;
@@ -39,7 +40,6 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
 
   const formCopy = copy[mode];
-  const qaNotes = getMockQaNotes(mode);
 
   function setValue(field: keyof AuthValues, value: string) {
     setValues((current) => ({
@@ -70,7 +70,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
 
     setSubmitState({ status: "submitting" });
-    const result = await mockSubmitAuth(mode, values);
+    const result = await submitAuth(mode, values);
 
     if (result.ok) {
       setErrors({});
@@ -91,7 +91,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <div className="soft-panel p-6 sm:p-8">
       <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/70">
-        Auth prototype
+        Live auth
       </p>
       <h2 className="mt-3 text-4xl text-ink">{formCopy.title}</h2>
       <p className="mt-3 text-sm leading-6 text-plum/80">{formCopy.intro}</p>
@@ -156,20 +156,6 @@ export function AuthForm({ mode }: AuthFormProps) {
           {submitState.status === "submitting" ? "Working..." : formCopy.submitLabel}
         </button>
       </form>
-
-      <div className="mt-6 rounded-[1.5rem] border border-plum/15 bg-mist/70 p-4">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-plum/70">
-          Mock QA shortcuts
-        </p>
-        <ul className="mt-3 grid gap-2 text-sm leading-6 text-plum/85">
-          {qaNotes.map((note) => (
-            <li key={note} className="flex items-start gap-3">
-              <span className="mt-2 inline-flex h-1.5 w-1.5 rounded-full bg-gold" />
-              <span>{note}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 }

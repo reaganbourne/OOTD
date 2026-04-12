@@ -1,3 +1,5 @@
+import { authApiClient } from "@/lib/api-client";
+
 export type AuthMode = "login" | "signup";
 
 export type AuthValues = {
@@ -9,7 +11,7 @@ export type AuthValues = {
 
 export type AuthErrors = Partial<Record<keyof AuthValues | "form", string>>;
 
-type MockSubmitResult =
+type SubmitAuthResult =
   | {
       ok: true;
       message: string;
@@ -59,55 +61,54 @@ export function validateAuthForm(mode: AuthMode, values: AuthValues): AuthErrors
   return errors;
 }
 
-export async function mockSubmitAuth(
-  mode: AuthMode,
-  values: AuthValues
-): Promise<MockSubmitResult> {
-  await new Promise((resolve) => setTimeout(resolve, 900));
-
-  const normalizedEmail = values.email.trim().toLowerCase();
-
-  if (mode === "signup" && normalizedEmail.includes("taken")) {
-    return {
-      ok: false,
-      message: "This mocked signup path is simulating an email conflict from the API.",
-      errors: {
-        email: "That email is already taken in the mocked response."
-      }
-    };
+function toAuthErrors(errors?: Record<string, string>): AuthErrors | undefined {
+  if (!errors) {
+    return undefined;
   }
 
-  if (mode === "login" && normalizedEmail.includes("locked")) {
+  const nextErrors: AuthErrors = {};
+
+  for (const [field, message] of Object.entries(errors)) {
+    if (
+      field === "form" ||
+      field === "username" ||
+      field === "email" ||
+      field === "password" ||
+      field === "confirmPassword"
+    ) {
+      nextErrors[field] = message;
+    }
+  }
+
+  return Object.keys(nextErrors).length > 0 ? nextErrors : undefined;
+}
+
+export async function submitAuth(
+  mode: AuthMode,
+  values: AuthValues
+): Promise<SubmitAuthResult> {
+  const result =
+    mode === "signup"
+      ? await authApiClient.register({
+          username: values.username.trim(),
+          email: values.email.trim().toLowerCase(),
+          password: values.password
+        })
+      : await authApiClient.login({
+          email: values.email.trim().toLowerCase(),
+          password: values.password
+        });
+
+  if (result.ok) {
     return {
-      ok: false,
-      message: "This mocked login path is simulating a locked or invalid account.",
-      errors: {
-        form: "Unable to sign in with those mocked credentials."
-      }
+      ok: true,
+      message: result.message
     };
   }
 
   return {
-    ok: true,
-    message:
-      mode === "login"
-        ? "Mock login succeeded. Next step is wiring this form to Reagan's auth endpoints."
-        : "Mock signup succeeded. Next step is connecting this to the shared auth API contract."
+    ok: false,
+    message: result.message,
+    errors: toAuthErrors(result.errors)
   };
-}
-
-export function getMockQaNotes(mode: AuthMode): string[] {
-  if (mode === "signup") {
-    return [
-      "Use any valid email for the mocked success path.",
-      "Use an email containing 'taken' to trigger the mocked conflict state.",
-      "Use mismatched passwords to verify field-level validation."
-    ];
-  }
-
-  return [
-    "Use any valid email and password for the mocked success path.",
-    "Use an email containing 'locked' to trigger the mocked failure state.",
-    "Use a password shorter than 8 characters to verify validation."
-  ];
 }
