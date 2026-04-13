@@ -5,10 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.config import settings
 from app.models.base import Base
-
-# Import all models here so Alembic can detect schema changes.
-# Uncomment each as models are added in feature-be-alembic-baseline (Issue 4):
-# from app.models import user, refresh_session, outfit, clothing_item, follow, like, comment
+import app.models  # noqa: F401 — registers all models with Base.metadata
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)

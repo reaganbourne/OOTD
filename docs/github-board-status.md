@@ -1,16 +1,22 @@
 # GitHub Board Status
 
-This document reflects the current implementation state of the OOTD repo and the next issue actions to take on the GitHub board.
+This document reflects the current implementation state of the OOTD repo.
+Use it to mark completed work, move issues, and avoid starting blocked work early.
 
-Use it to:
+Last synced: 2026-04-11
 
-- mark completed work as done
-- create the next issues in the right order
-- avoid starting dependent work too early
+---
 
-## Current Snapshot
+## What's merged to main
 
-Merged into `main`:
+| GH # | Title | Owner |
+|---|---|---|
+| — | Monorepo scaffold | @otthomas |
+| — | Draft v1 database schema | @otthomas |
+| — | Scaffold auth screens | @otthomas |
+| #8 | Scaffold FastAPI service | @reaganbourne |
+| #9 | Define auth API contract | @reaganbourne |
+| #10 | Add Alembic baseline and initial migrations | @reaganbourne |
 
 - Issue 1. Set up monorepo structure
 - Issue 3. Design v1 database schema
@@ -32,12 +38,18 @@ Issue 11 verification now includes:
 - 422 validation normalization verified against the real client module
 - 401 refresh-and-retry behavior verified against the real client module
 - refresh-failure redirect-to-login behavior verified against the real client module
+---
 
-## Ownership Change
+## Manual GitHub actions needed
 
-**Issue 4 (Alembic baseline and initial migrations)** has been reassigned from `@otthomas` to `@reaganbourne`.
+These can't be done from docs — requires clicking on GitHub:
 
-Reagan now owns all database work: SQLAlchemy models, Alembic migrations, and seed data. `@otthomas` focuses exclusively on frontend.
+- **Close issue #10** — Alembic baseline is merged (PR #26). Issue is still showing open.
+- **Reassign issue #17** from `@otthomas` → `@reaganbourne` — outfit/clothing schema migration is database work, Reagan owns all DB.
+
+---
+
+## Board columns — current state
 
 ## Architecture Decisions Logged
 
@@ -102,17 +114,30 @@ Reagan now owns all database work: SQLAlchemy models, Alembic migrations, and se
 - Owner: `@otthomas`
 - Status: `Blocked`
 - Blocked by: Issue 14 (frontend auth state management)
+### Done
+- Monorepo structure
+- v1 database schema (docs)
+- Login and signup screens (GH #6)
+- Scaffold FastAPI service (GH #8)
+- Define auth API contract (GH #9)
+- Add Alembic baseline and initial migrations (GH #10)
 
-## Suggested Board Columns
+### In Progress
+_(nothing currently in progress — pick up GH #12)_
 
-- `Backlog`
-- `Ready Next`
-- `In Progress`
-- `Blocked`
-- `In Review`
-- `Done`
+### Ready Next
 
-## Suggested Immediate Board State
+**@reaganbourne**
+- GH #12: Implement JWT auth flow ← **start here**
+- GH #7: Create Docker Compose local stack (can run alongside #12)
+
+**@otthomas**
+- GH #11: Build typed API client ← **unblocked** (auth contract #9 is merged)
+- GH #14: Add auth state management to web app (after #11)
+- GH #15: Add Next.js route protection middleware (after #14)
+- GH #16: Update home page from scaffold placeholder
+
+### Blocked
 
 ### Done
 - Issue 1. Set up monorepo structure
@@ -132,11 +157,33 @@ Reagan now owns all database work: SQLAlchemy models, Alembic migrations, and se
 
 ### Blocked
 - Issue 15. Add Next.js route protection middleware
+| GH # | Title | Owner | Blocked by |
+|---|---|---|---|
+| #13 | Auth smoke tests and CI | @reaganbourne | GH #12 |
+| #17 | Outfit/clothing schema migration | @reaganbourne (reassign) | GH #12 merged (Phase 2 start) |
+| #18 | Image storage adapter | @reaganbourne | GH #12 |
+| #19 | Build outfit upload flow UI | @otthomas | GH #18 |
+| #20 | Implement create-outfit endpoint | @reaganbourne | GH #17, #18 |
+| #21 | Build home feed grid | @otthomas | GH #20 |
+| #22 | Feed endpoint with cursor pagination | @reaganbourne | GH #20 |
+| #23 | Follow and unfollow endpoints | @reaganbourne | GH #12 |
 
 ### Backlog
-- Phase 2 and later issues from `docs/github-ready-issue-list.md`
+- Phase 3 (event boards), Phase 4 (AI), Phase 5 (polish/launch)
 
-## Recommended Next Assignment Split
+---
+
+## Dependency map — auth critical path
+
+```
+GH #12 JWT auth flow
+  ├── GH #13 auth tests + CI
+  ├── GH #23 follow/unfollow endpoints
+  └── unblocks Tomi: GH #15 route protection, GH #16 home page redirect
+
+GH #11 typed API client (Tomi, unblocked now)
+  └── GH #14 auth state management
+```
 
 ### `@otthomas`
 - Open PR for Issue 11 from `feature-fe-api-client`
@@ -146,3 +193,13 @@ Reagan now owns all database work: SQLAlchemy models, Alembic migrations, and se
 ### `@reaganbourne`
 - Issue 12 JWT auth flow (in progress)
 - Issue 13 auth smoke tests and CI hook (next)
+## Dependency map — Phase 2 critical path
+
+```
+GH #17 outfit schema migration (Reagan)
+GH #18 image storage adapter (Reagan)
+  └── GH #20 create-outfit endpoint
+        ├── GH #21 home feed grid (Tomi)
+        └── GH #22 feed endpoint
+              └── GH #23 follow/unfollow
+```
