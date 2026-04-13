@@ -3,9 +3,9 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import type { AuthErrors, AuthMode, AuthValues } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
 import {
   createInitialAuthValues,
-  submitAuth,
   validateAuthForm
 } from "@/lib/auth";
 
@@ -35,6 +35,7 @@ const copy = {
 } as const;
 
 export function AuthForm({ mode }: AuthFormProps) {
+  const { isLoading, login, signup } = useAuth();
   const [values, setValues] = useState<AuthValues>(() => createInitialAuthValues());
   const [errors, setErrors] = useState<AuthErrors>({});
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
@@ -70,7 +71,17 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
 
     setSubmitState({ status: "submitting" });
-    const result = await submitAuth(mode, values);
+    const result =
+      mode === "signup"
+        ? await signup({
+            username: values.username.trim(),
+            email: values.email.trim().toLowerCase(),
+            password: values.password
+          })
+        : await login({
+            email: values.email.trim().toLowerCase(),
+            password: values.password
+          });
 
     if (result.ok) {
       setErrors({});
@@ -150,10 +161,12 @@ export function AuthForm({ mode }: AuthFormProps) {
 
         <button
           type="submit"
-          disabled={submitState.status === "submitting"}
+          disabled={submitState.status === "submitting" || isLoading}
           className="mt-2 rounded-[1.5rem] bg-plum px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#5c3049] disabled:cursor-not-allowed disabled:bg-plum/55"
         >
-          {submitState.status === "submitting" ? "Working..." : formCopy.submitLabel}
+          {submitState.status === "submitting" || isLoading
+            ? "Working..."
+            : formCopy.submitLabel}
         </button>
       </form>
     </div>

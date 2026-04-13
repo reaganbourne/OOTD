@@ -1,4 +1,4 @@
-import { authApiClient } from "@/lib/api-client";
+import type { ApiFieldErrors } from "@/lib/api-client";
 
 export type AuthMode = "login" | "signup";
 
@@ -10,17 +10,6 @@ export type AuthValues = {
 };
 
 export type AuthErrors = Partial<Record<keyof AuthValues | "form", string>>;
-
-type SubmitAuthResult =
-  | {
-      ok: true;
-      message: string;
-    }
-  | {
-      ok: false;
-      message: string;
-      errors?: AuthErrors;
-    };
 
 export function createInitialAuthValues(): AuthValues {
   return {
@@ -61,7 +50,7 @@ export function validateAuthForm(mode: AuthMode, values: AuthValues): AuthErrors
   return errors;
 }
 
-function toAuthErrors(errors?: Record<string, string>): AuthErrors | undefined {
+export function toAuthErrors(errors?: ApiFieldErrors): AuthErrors | undefined {
   if (!errors) {
     return undefined;
   }
@@ -81,34 +70,4 @@ function toAuthErrors(errors?: Record<string, string>): AuthErrors | undefined {
   }
 
   return Object.keys(nextErrors).length > 0 ? nextErrors : undefined;
-}
-
-export async function submitAuth(
-  mode: AuthMode,
-  values: AuthValues
-): Promise<SubmitAuthResult> {
-  const result =
-    mode === "signup"
-      ? await authApiClient.register({
-          username: values.username.trim(),
-          email: values.email.trim().toLowerCase(),
-          password: values.password
-        })
-      : await authApiClient.login({
-          email: values.email.trim().toLowerCase(),
-          password: values.password
-        });
-
-  if (result.ok) {
-    return {
-      ok: true,
-      message: result.message
-    };
-  }
-
-  return {
-    ok: false,
-    message: result.message,
-    errors: toAuthErrors(result.errors)
-  };
 }
