@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
@@ -73,7 +73,7 @@ def refresh(
     if (
         not session
         or session.revoked_at is not None
-        or session.expires_at < datetime.utcnow()
+        or session.expires_at < datetime.now(timezone.utc)
     ):
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED, detail="Refresh token expired or revoked."
