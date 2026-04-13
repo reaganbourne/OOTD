@@ -2,6 +2,11 @@
 
 This document turns the founder roadmap into a practical GitHub backlog for the `reaganbourne/OOTD` repository.
 
+Status note:
+- Use `docs/github-board-status.md` for the live done / blocked / ready-next snapshot
+- Use `docs/otthomas-workboard.md` and `docs/reagan-workboard.md` for owner-specific queues
+- Keep this file as the long-range backlog and acceptance-criteria reference
+
 ## Assignee Conventions
 
 - `@otthomas`: frontend ownership (`apps/web/`)
