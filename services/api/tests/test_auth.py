@@ -156,8 +156,12 @@ class TestRefresh:
         assert "missing" in res.json()["detail"].lower()
 
     def test_revoked_token_returns_401(self, client):
+        # After rotation the old token is revoked in the DB.
+        # Grab it before it's overwritten, then replay it.
         _register(client)
-        client.post(LOGOUT_URL)
+        old_token = client.cookies.get("refresh_token")
+        client.post(REFRESH_URL)  # rotates — old_token is now revoked
+        client.cookies.set("refresh_token", old_token, path="/auth")
         res = client.post(REFRESH_URL)
         assert res.status_code == 401
         assert "revoked" in res.json()["detail"].lower()
