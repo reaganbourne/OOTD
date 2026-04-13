@@ -72,6 +72,24 @@ npm run dev
 
 Frontend: `http://localhost:3000`
 
+### Running tests
+
+Tests run against a real Postgres database (`ootd_test`). Create it once:
+
+```bash
+docker compose exec db createdb -U ootd ootd_test
+```
+
+Then run the suite from `services/api/`:
+
+```bash
+cd services/api
+pip install -r requirements.txt -r requirements-dev.txt
+pytest -v
+```
+
+The test client overrides the database dependency to use `ootd_test` and wipes all rows between every test so tests are fully isolated. CI runs the same suite automatically on every push and pull request that touches `services/api/`.
+
 ### Useful commands
 
 ```bash
