@@ -1,119 +1,113 @@
 # reaganbourne Workboard
 
-Owned areas: `services/api/` (FastAPI backend), all database work (SQLAlchemy models, Alembic migrations, seed data).
+Owned areas: `services/api/`, backend APIs, database work, SQLAlchemy models, Alembic migrations, seeds, and infra wiring
 
-Last synced: 2026-04-11
+Last synced: 2026-04-12
 
----
+## Done On Main
 
-## Architecture decisions (locked)
+- GH #8 `Scaffold FastAPI service`
+- GH #9 `Define auth API contract`
+- GH #10 `Add Alembic baseline and initial migrations`
+- Docker Compose local stack code is merged
+- GH #12 `Implement JWT auth flow` is merged at the code level
 
-| Decision | Choice |
-|---|---|
-| Compute | Railway |
-| File storage | AWS S3 (local filesystem adapter for dev) |
-| ORM | SQLAlchemy 2.x |
-| Migrations | Alembic |
-| Auth | JWT access token (15 min, bearer) + httpOnly refresh cookie (7 days) |
-| Password hashing | bcrypt via passlib |
+## Still Needs Verification
 
----
+### Docker Compose local stack
+- runtime verification is still pending on a machine with Docker installed
 
-## Phase 1 — status
+### GH #12 `Implement JWT auth flow`
+- code is merged, but live verification against a real Postgres-backed environment is still pending
 
-| GH # | Title | Branch | Status |
-|---|---|---|---|
-| #8 | Scaffold FastAPI service | `feature-be-fastapi-scaffold` | ✅ Merged |
-| #9 | Define auth API contract | `docs-auth-api-contract` | ✅ Merged |
-| #10 | Alembic baseline + initial migrations | `feature-be-alembic-baseline` | ✅ Merged |
-| #7 | Docker Compose local stack | `chore-docker-compose-stack` | 🔲 Not started |
-| #12 | Implement JWT auth flow | `feature-be-jwt-auth` | 🔲 Not started — **start here** |
-| #13 | Auth smoke tests and CI | `chore-be-auth-ci-tests` | 🔲 Blocked by #12 |
+## Ready Next
 
----
+### GH #13 `Add auth smoke tests and CI hook`
+- Status: ready now
+- Recommended branch: `chore-be-auth-ci-tests`
+- Acceptance criteria:
+  - auth tests cover register, login, refresh, logout, and a protected route
+  - duplicate email registration returns the correct error
+  - invalid credentials return the correct error
+  - revoked or expired refresh tokens are rejected
+  - `.github/workflows/api-ci.yml` runs `pytest` on push and PRs to `main`
+  - workflow installs dependencies and required env vars
+  - `services/api/README.md` documents test execution
 
-## What to build next
+### GH #17 `Add outfit and clothing item schema migration`
+- Status: ready now
+- Recommended branch: `feature-be-outfit-schema`
+- Acceptance criteria:
+  - Alembic migration creates `outfits` and `clothing_items`
+  - indexes match `docs/db-v1-schema.md`
+  - SQLAlchemy models exist for both tables
+  - `alembic upgrade head` works on top of the auth baseline
+  - `alembic downgrade -1` works cleanly
 
-### GH #12 — JWT auth flow (`feature-be-jwt-auth`)
+### GH #18 `Implement image storage adapter`
+- Status: ready now
+- Recommended branch: `feature-be-image-storage-adapter`
+- Acceptance criteria:
+  - storage adapter interface defines `upload()` and `delete()`
+  - local adapter writes to a configurable directory
+  - backend selection is driven by env config
+  - multipart upload helper or dependency exists
+  - non-image MIME types are rejected with a clear error
+  - file size is bounded by config
 
-The big one. Implements all auth endpoints against the contract in `packages/contracts/auth-contract.md`.
+### GH #23 `Implement follow and unfollow endpoints`
+- Status: ready now
+- Recommended branch: `feature-be-follow-endpoints`
+- Acceptance criteria:
+  - follow endpoint is idempotent
+  - unfollow endpoint is idempotent
+  - both endpoints require auth
+  - self-follow returns `400`
+  - non-existent target user returns `404`
 
-**New dependencies to add to `requirements.txt`:**
-- `python-jose[cryptography]` — JWT signing/verification
-- `passlib[bcrypt]` — password hashing
-- `python-multipart` — required by FastAPI for form data
+## Blocked
 
-**New files to create:**
-```
-services/api/app/
-  schemas/
-    auth.py        # Pydantic request/response models (UserCreate, TokenResponse, etc.)
-  services/
-    auth.py        # business logic: register(), login(), create_tokens(), verify_token()
-  crud/
-    user.py        # get_by_email(), create_user()
-    session.py     # create_session(), get_session_by_hash(), revoke_session()
-```
+### GH #20 `Implement create-outfit endpoint`
+- Blocked by: GH #17 and GH #18
+- Recommended branch: `feature-be-create-outfit-endpoint`
+- Acceptance criteria:
+  - `POST /outfits` accepts multipart data
+  - image upload flows through the storage adapter
+  - one `clothing_items` row is inserted per submitted item
+  - endpoint requires auth
+  - non-image files return `422`
+  - response payload matches frontend upload expectations
 
-**Endpoints to implement in `app/routers/auth.py`:**
-- `POST /auth/register` → 201 + access token + sets refresh cookie
-- `POST /auth/login` → 200 + access token + sets refresh cookie
-- `POST /auth/refresh` → 200 + new access token + rotates refresh cookie
-- `POST /auth/logout` → 200 + clears cookie + revokes session
-- `GET /auth/me` → 200 + current user object
+### GH #22 `Implement feed endpoint with cursor pagination`
+- Blocked by: GH #20
+- Recommended branch: `feature-be-feed-endpoint`
+- Acceptance criteria:
+  - `GET /feed` requires auth
+  - cursor pagination is stable and not offset-based
+  - default page size is 20 with max 50
+  - each item includes all fields needed by the feed UI
+  - `next_cursor` is returned
+  - empty follow list returns an empty result instead of an error
 
-**`get_current_user` dependency** goes in `app/dependencies.py` — reads and validates the JWT from the `Authorization: Bearer` header. Every future protected route uses this.
+## Recommended Order
 
-### GH #7 — Docker Compose (`chore-docker-compose-stack`)
+1. GH #13 auth smoke tests and CI
+2. GH #17 outfit and clothing item schema migration
+3. GH #18 image storage adapter
+4. GH #20 create-outfit endpoint
+5. GH #22 feed endpoint with cursor pagination
+6. GH #23 follow and unfollow endpoints
 
-Can be done in parallel with #12. Simple — `docker-compose.yml` at repo root with:
-- `db` service: Postgres 16, health check, named volume
-- `api` service: builds from `services/api/`, mounts code as volume for hot reload, depends on `db`
+## Definition Of Done For The Current Slice
 
----
+- auth is covered by repeatable tests and CI
+- local Docker stack is verified on a real machine
+- outfit schema migration is landed
+- storage adapter is landed
+- create-outfit endpoint is ready for frontend upload integration
+- feed endpoint contract is stable enough for frontend feed work
 
-## Phase 2 — queued (after auth is stable)
+## Source Of Truth
 
-| GH # | Title | Branch | Notes |
-|---|---|---|---|
-| #17 | Outfit + clothing item schema migration | `feature-be-outfit-schema` | Reassign from @otthomas |
-| #18 | Image storage adapter | `feature-be-image-storage-adapter` | Local + S3 |
-| #20 | Create-outfit endpoint | `feature-be-create-outfit-endpoint` | After #17 + #18 |
-| #22 | Feed endpoint + cursor pagination | `feature-be-feed-endpoint` | After #20 |
-| #23 | Follow/unfollow endpoints | `feature-be-follow-endpoints` | After #12 |
-
----
-
-## Full branch queue
-
-### Phase 3
-- `feature-be-board-crud`
-- `feature-be-invite-token-join`
-- `feature-be-outfit-board-submission`
-- `chore-be-board-integration-tests`
-
-### Phase 4
-- `feature-be-llm-provider-adapter`
-- `feature-be-vibe-check-endpoint`
-- `feature-be-caption-endpoint`
-- `feature-be-tag-suggestion-endpoint`
-- `feature-be-ai-rate-limits`
-
-### Phase 5
-- `feature-be-search-discover-endpoints`
-- `feature-be-api-error-standardization`
-- `chore-be-coverage-expansion`
-- `docs-be-setup-architecture`
-- `chore-be-ci-cd-pipeline`
-
----
-
-## Definition of done — Phase 1
-
-- [x] FastAPI scaffold with `/health`, config, SQLAlchemy session
-- [x] Auth API contract documented in `packages/contracts/`
-- [x] SQLAlchemy models for all 7 v1 tables
-- [x] Alembic initial migration — `alembic upgrade head` creates full schema
-- [ ] Docker Compose — `docker compose up` starts API + Postgres
-- [ ] JWT auth — register, login, refresh, logout, me all working
-- [ ] Auth tests — pytest coverage + GitHub Actions CI
+- Shared status: `docs/github-board-status.md`
+- Full long-range backlog: `docs/github-ready-issue-list.md`
