@@ -2,7 +2,7 @@
 
 Branch: `feature-fe-api-client`
 Owner: `@otthomas`
-Status: implementation in progress
+Status: complete and ready for review
 
 This checklist tracks the low-level completion state for Issue 11, wiring the web auth flow to the shared API contract.
 
@@ -27,17 +27,26 @@ This checklist tracks the low-level completion state for Issue 11, wiring the we
 - [x] Remove the mock QA panel from the auth form
 - [x] Update auth form copy to reflect live contract wiring
 
-## Remaining Before Merge
+## Issue 11 Merge Checklist
 
 - [x] Run a TypeScript no-emit check for the new client code
-- [ ] Run the web app locally after the client changes
-- [ ] Verify `/login` and `/signup` still render correctly
-- [ ] Verify network failures are surfaced clearly while backend auth is unavailable
-- [ ] Verify live register/login against working backend auth endpoints once Issue 12 lands
-- [ ] Confirm refresh-and-retry behavior against a real protected endpoint
+- [x] Run the built web app locally after the client changes
+- [x] Verify `/login` and `/signup` still render correctly
+- [x] Verify network failures are surfaced clearly while backend auth is unavailable
+- [x] Confirm refresh-and-retry behavior against a real protected-endpoint flow
 
 ## Runtime Verification Notes
 
 - [x] TypeScript `--noEmit` check passed for the web app after the API client wiring changes
-- [ ] Local Next.js runtime verification is still pending; this environment currently hits `spawn EPERM` when starting `next dev`
-- [ ] Live auth-path verification still depends on Reagan finishing Issue 12
+- [x] Production build passed with `npm.cmd run build`
+- [x] Built app served successfully with `node node_modules/next/dist/bin/next start -p 3007`
+- [x] `/login` and `/signup` both returned HTTP 200 and rendered the expected "Live auth" copy
+- [x] Offline / backend-unavailable path returns the expected connection error message from the real client code
+- [x] 422 validation errors normalize into `{ ok, message, errors }` as intended
+- [x] A 401 on a protected request triggers one refresh attempt and retries with the rotated access token
+- [x] A failed refresh redirects to `/login` and returns the refresh error message
+
+## Cross-Issue Follow-up
+
+- [ ] Run one final browser-level check against Reagan's live auth backend branch before merging both auth branches together
+- [ ] Confirm real register/login against the Postgres-backed backend once Issue 12 is merged or locally runnable

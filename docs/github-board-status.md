@@ -15,12 +15,23 @@ Merged into `main`:
 - Issue 1. Set up monorepo structure
 - Issue 3. Design v1 database schema
 - Issue 7. Build login and signup screens
+- Issue 8. Scaffold FastAPI service
+- Issue 9. Define auth API contract
+- Issue 10. Add Alembic baseline and initial migrations
 
-Completed but still needs follow-up alignment:
+Completed on feature branches and ready for review or integration:
 
-- Auth screens were runtime-tested successfully
-- Mock login and sign-up flows worked locally
-- Remaining auth-screen follow-up is wiring to Reagan's real auth endpoints
+- Issue 11. Build typed API client for web (`feature-fe-api-client`)
+- Issue 12. Implement JWT auth flow (`origin/feature-be-jwt-auth`)
+
+Issue 11 verification now includes:
+
+- production build passing for `apps/web`
+- `/login` and `/signup` serving successfully from a local Next start process
+- offline/network failure messaging verified against the real client module
+- 422 validation normalization verified against the real client module
+- 401 refresh-and-retry behavior verified against the real client module
+- refresh-failure redirect-to-login behavior verified against the real client module
 
 ## Ownership Change
 
@@ -49,45 +60,48 @@ Reagan now owns all database work: SQLAlchemy models, Alembic migrations, and se
 - Owner: `@otthomas`
 - Status: `Done`
 
+### Issue 8. Scaffold FastAPI service
+- Owner: `@reaganbourne`
+- Status: `Done`
+
+### Issue 9. Define auth API contract
+- Owner: `@reaganbourne`
+- Status: `Done`
+
+### Issue 10. Add Alembic baseline and initial migrations
+- Owner: `@reaganbourne`
+- Status: `Done`
+
+### Issue 11. Build typed API client for web
+- Owner: `@otthomas`
+- Status: `Done on branch`, ready for PR / review
+- Branch: `feature-fe-api-client`
+
 ## Move These To In Progress
 
-### Issue 5. Scaffold FastAPI service
+### Issue 12. Implement JWT auth flow
 - Owner: `@reaganbourne`
 - Status: `In Progress`
-- Branch: `feature-be-fastapi-scaffold`
+- Branch: `feature-be-jwt-auth`
 
 ## Create Or Move These To Ready Next
 
-### Issue 2. Create Docker Compose local stack
+### Issue 13. Add auth smoke tests and CI hook
 - Owner: `@reaganbourne`
 - Status: `Ready Next`
+- Why now: backend auth implementation exists on branch and is the next stabilization step
 
-### Issue 4. Add Alembic baseline and initial migrations
-- Owner: `@reaganbourne` (reassigned from `@otthomas`)
+### Issue 14. Add auth state management to web app
+- Owner: `@otthomas`
 - Status: `Ready Next`
-- Why now: FastAPI scaffold sets the project structure; migrations can layer in immediately after
-
-### Issue 6. Define auth API contract
-- Owner: `@reaganbourne`
-- Status: `Ready Next`
-- Note: contract shape is already decided (see `docs/reagan-workboard.md`); this branch publishes it formally to `packages/contracts/`
+- Why now: Issue 11 is complete enough to support a real auth context / session layer on the frontend
 
 ## Create Or Move These To Blocked
 
-### Issue 8. Implement JWT auth flow
-- Owner: `@reaganbourne`
-- Status: `Blocked`
-- Blocked by: Issue 5 (scaffold) and Issue 6 (contract)
-
-### Issue 9. Build typed API client for web
+### Issue 15. Add Next.js route protection middleware
 - Owner: `@otthomas`
 - Status: `Blocked`
-- Blocked by: Issue 6 (auth API contract must be frozen)
-
-### Issue 10. Add auth smoke tests and CI hook
-- Owner: `@reaganbourne`
-- Status: `Blocked`
-- Blocked by: Issue 8 (JWT auth flow)
+- Blocked by: Issue 14 (frontend auth state management)
 
 ## Suggested Board Columns
 
@@ -104,19 +118,20 @@ Reagan now owns all database work: SQLAlchemy models, Alembic migrations, and se
 - Issue 1. Set up monorepo structure
 - Issue 3. Design v1 database schema
 - Issue 7. Build login and signup screens
+- Issue 8. Scaffold FastAPI service
+- Issue 9. Define auth API contract
+- Issue 10. Add Alembic baseline and initial migrations
+- Issue 11. Build typed API client for web
 
 ### In Progress
-- Issue 5. Scaffold FastAPI service (`@reaganbourne`)
+- Issue 12. Implement JWT auth flow (`@reaganbourne`)
 
 ### Ready Next
-- Issue 2. Create Docker Compose local stack (`@reaganbourne`)
-- Issue 4. Add Alembic baseline and initial migrations (`@reaganbourne`)
-- Issue 6. Define auth API contract (`@reaganbourne`)
+- Issue 13. Add auth smoke tests and CI hook (`@reaganbourne`)
+- Issue 14. Add auth state management to web app (`@otthomas`)
 
 ### Blocked
-- Issue 8. Implement JWT auth flow
-- Issue 9. Build typed API client for web
-- Issue 10. Add auth smoke tests and CI hook
+- Issue 15. Add Next.js route protection middleware
 
 ### Backlog
 - Phase 2 and later issues from `docs/github-ready-issue-list.md`
@@ -124,12 +139,10 @@ Reagan now owns all database work: SQLAlchemy models, Alembic migrations, and se
 ## Recommended Next Assignment Split
 
 ### `@otthomas`
-- Monitor Issue 6 auth API contract for review
-- Prepare Issue 9 typed API client once contract is approved
-- No database work — fully handed off to Reagan
+- Open PR for Issue 11 from `feature-fe-api-client`
+- Start Issue 14 auth state management once the Issue 11 PR is up
+- No database work - fully handed off to Reagan
 
 ### `@reaganbourne`
-- Issue 5 FastAPI scaffold (in progress)
-- Issue 4 Alembic baseline (next)
-- Issue 2 Docker Compose stack (next)
-- Issue 6 auth API contract (parallel)
+- Issue 12 JWT auth flow (in progress)
+- Issue 13 auth smoke tests and CI hook (next)
