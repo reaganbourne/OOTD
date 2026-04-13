@@ -5,8 +5,9 @@ This directory will contain the Next.js frontend for OOTD.
 Current status:
 
 - Next-style app scaffold added for the auth-screen milestone
-- mocked login and sign-up screens exist under `app/login` and `app/signup`
-- runtime setup still depends on installing frontend dependencies
+- login and sign-up screens exist under `app/login` and `app/signup`
+- the shared auth client now reads the live contract from `packages/contracts/auth-contract.md`
+- end-to-end success still depends on the backend auth endpoints being available locally
 
 Planned responsibilities:
 
