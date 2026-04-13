@@ -9,6 +9,10 @@ import {
   type AuthUser
 } from "@/lib/api-client";
 import { toAuthErrors, type AuthErrors } from "@/lib/auth";
+import {
+  clearAuthSessionCookie,
+  setAuthSessionCookie
+} from "@/lib/auth-session";
 
 type LoginInput = {
   email: string;
@@ -62,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!refreshResult.ok) {
         clearAccessToken();
+        clearAuthSessionCookie();
         setUser(null);
         setIsLoading(false);
         return;
@@ -74,9 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (meResult.ok) {
+        setAuthSessionCookie();
         setUser(meResult.data);
       } else {
         clearAccessToken();
+        clearAuthSessionCookie();
         setUser(null);
       }
 
@@ -96,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await authApiClient.login(input);
 
     if (result.ok) {
+      setAuthSessionCookie();
       setUser(result.data.user);
       setIsLoading(false);
 
@@ -120,6 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await authApiClient.register(input);
 
     if (result.ok) {
+      setAuthSessionCookie();
       setUser(result.data.user);
       setIsLoading(false);
 
@@ -143,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     await authApiClient.logout();
     clearAccessToken();
+    clearAuthSessionCookie();
     setUser(null);
     setIsLoading(false);
     router.replace("/login");

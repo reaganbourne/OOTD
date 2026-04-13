@@ -2,6 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { AuthErrors, AuthMode, AuthValues } from "@/lib/auth";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -35,6 +36,7 @@ const copy = {
 } as const;
 
 export function AuthForm({ mode }: AuthFormProps) {
+  const router = useRouter();
   const { isLoading, login, signup } = useAuth();
   const [values, setValues] = useState<AuthValues>(() => createInitialAuthValues());
   const [errors, setErrors] = useState<AuthErrors>({});
@@ -85,10 +87,8 @@ export function AuthForm({ mode }: AuthFormProps) {
 
     if (result.ok) {
       setErrors({});
-      setSubmitState({
-        status: "success",
-        message: result.message
-      });
+      setSubmitState({ status: "idle" });
+      router.replace("/");
       return;
     }
 
