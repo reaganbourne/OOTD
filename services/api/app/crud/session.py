@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session as DbSession
 
@@ -36,5 +36,5 @@ def get_by_token_hash(db: DbSession, token_hash: str) -> RefreshSession | None:
 
 
 def revoke_session(db: DbSession, session: RefreshSession) -> None:
-    session.revoked_at = datetime.utcnow()
+    session.revoked_at = datetime.now(timezone.utc)
     db.commit()
