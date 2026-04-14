@@ -1,11 +1,15 @@
 import uuid
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, DateTime, ForeignKey, Index, String, text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+
+if TYPE_CHECKING:
+    from app.models.clothing_item import ClothingItem
 
 
 class Outfit(Base):
@@ -30,6 +34,10 @@ class Outfit(Base):
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("now()")
+    )
+
+    clothing_items: Mapped[list["ClothingItem"]] = relationship(
+        "ClothingItem", back_populates="outfit", order_by="ClothingItem.display_order"
     )
 
     __table_args__ = (
