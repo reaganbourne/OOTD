@@ -40,6 +40,45 @@ export type AuthLogoutResponse = {
   message: string;
 };
 
+export type OutfitClothingItem = {
+  id: string;
+  outfit_id: string;
+  brand?: string | null;
+  category: string;
+  color?: string | null;
+  display_order: number;
+  created_at: string;
+};
+
+export type OutfitResponse = {
+  id: string;
+  user_id: string;
+  image_url: string;
+  caption?: string | null;
+  event_name?: string | null;
+  worn_on?: string | null;
+  vibe_check_text?: string | null;
+  vibe_check_tone?: string | null;
+  created_at: string;
+  updated_at: string;
+  clothing_items: OutfitClothingItem[];
+};
+
+export type CreateOutfitInput = {
+  image: File;
+  metadata: {
+    caption?: string;
+    event_name?: string;
+    worn_on?: string;
+    clothing_items: Array<{
+      brand?: string;
+      category: string;
+      color?: string;
+      display_order: number;
+    }>;
+  };
+};
+
 type ApiFailureShape = {
   message: string;
   errors?: ApiFieldErrors;
@@ -312,8 +351,24 @@ export const authApiClient = {
   }
 };
 
+export const outfitApiClient = {
+  async create(input: CreateOutfitInput): Promise<ApiResult<OutfitResponse>> {
+    const formData = new FormData();
+    formData.append("image", input.image);
+    formData.append("metadata", JSON.stringify(input.metadata));
+
+    return sendRequest<OutfitResponse>("/outfits", {
+      method: "POST",
+      body: formData,
+      requiresAuth: true,
+      successMessage: "Outfit uploaded."
+    });
+  }
+};
+
 export const apiClient = {
   auth: authApiClient,
+  outfits: outfitApiClient,
   request: sendRequest,
   clearAccessToken,
   getAccessToken,
