@@ -1,6 +1,16 @@
 # OOTD
 
-OOTD is a startup MVP for a social outfit logging platform with a personal vault, social feed, event boards, AI vibe checks, and story-card export.
+OOTD is a social outfit logging app. Users build a personal vault of their daily looks, follow friends to see their fits in a feed, share outfits to Instagram Stories with an AI-generated vibe check, collaborate on event boards, and get a monthly Wrapped-style recap of their style.
+
+## Features
+
+- **Vault** — log your OOTD every day with a photo, caption, date worn, and tagged clothing items (brand, category, color, purchase link)
+- **Feed** — two tabs: outfit posts from people you follow, and activity from boards you've joined
+- **Boards** — create an event board (e.g. "Mia's Birthday Dinner"), share the invite link over text, anyone with the link can join and post their outfit; boards auto-expire 30 days after the event
+- **Vibe Check** — AI-generated blurb for your outfit ("it's giving summer I turned pretty x coastal grandmother"), powered by Claude
+- **Story Card** — server-side Instagram Story card generation (1080×1920 PNG) with your photo, vibe check text, and OOTD branding — download and post directly
+- **Monthly Fits Wrapped** — monthly recap of your style stats: top colors, brands, most active day, vibe of the month, longest streak
+- **Social** — follow/unfollow, likes, comments, search your vault
 
 ## Repo Structure
 
@@ -10,33 +20,24 @@ apps/
 services/
   api/            FastAPI backend
 packages/
-  db/             Database models, migrations, and query layer
-  contracts/      Shared request/response contracts and API examples
+  contracts/      Shared API contracts and request/response examples
 docs/             Product, planning, and engineering docs
 ```
 
-## Ownership Split
+## Ownership
 
-- `@otthomas`: frontend (`apps/web/`)
-- `@reaganbourne`: backend + database (`services/api/`, models, migrations)
+- `@otthomas` — frontend (`apps/web/`)
+- `@reaganbourne` — backend + database (`services/api/`, models, migrations)
 
 ## Working Model
 
 1. Open an issue first.
-2. Agree on schema and API shape before writing cross-layer features.
+2. Agree on API shape before writing cross-layer features — see `packages/contracts/`.
 3. Create a short-lived branch from `main`.
 4. Open a PR early.
 5. Merge back to `main` with squash merge after review.
 
-## Initial Focus
-
-- Scaffold repo structure
-- Define v1 schema
-- Scaffold FastAPI service
-- Lock auth API contract
-- Build auth screens
-
-## Local development
+## Local Development
 
 ### 1. Clone and set up env
 
@@ -46,7 +47,7 @@ cd OOTD
 cp .env.example .env
 ```
 
-Open `.env` and set a real value for `SECRET_KEY`. Everything else works as-is.
+Open `.env` and fill in the required values — at minimum `SECRET_KEY`. S3 and Twilio values can be left blank during local development (image uploads will fail without them).
 
 ### 2. Start the backend
 
@@ -57,9 +58,8 @@ docker compose up
 This starts Postgres and the FastAPI service. On first run it:
 - Pulls the Postgres image and builds the API container
 - Runs `alembic upgrade head` to create all tables
-- Starts the API with hot reload
+- Starts the API with hot reload at `http://localhost:8000`
 
-API: `http://localhost:8000`
 Interactive docs: `http://localhost:8000/docs`
 
 ### 3. Start the frontend
@@ -80,7 +80,7 @@ Tests run against a real Postgres database (`ootd_test`). Create it once:
 docker compose exec db createdb -U ootd ootd_test
 ```
 
-Then run the suite from `services/api/`:
+Then run the suite:
 
 ```bash
 cd services/api
@@ -88,7 +88,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest -v
 ```
 
-The test client overrides the database dependency to use `ootd_test` and wipes all rows between every test so tests are fully isolated. CI runs the same suite automatically on every push and pull request that touches `services/api/`.
+CI runs the same suite automatically on every push and pull request that touches `services/api/`.
 
 ### Useful commands
 
@@ -110,3 +110,25 @@ docker compose exec api alembic upgrade head
 # Open a Postgres shell
 docker compose exec db psql -U ootd -d ootd
 ```
+
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | ✅ | Postgres connection string |
+| `SECRET_KEY` | ✅ | JWT signing secret — generate with `openssl rand -hex 32` |
+| `ENVIRONMENT` | | `development` or `production` (default: `development`) |
+| `S3_BUCKET` | For uploads | AWS S3 bucket name |
+| `AWS_ACCESS_KEY_ID` | For uploads | AWS IAM access key |
+| `AWS_SECRET_ACCESS_KEY` | For uploads | AWS IAM secret key |
+| `AWS_REGION` | For uploads | AWS region (default: `us-east-1`) |
+| `ANTHROPIC_API_KEY` | For vibe check | Claude API key |
+| `TWILIO_ACCOUNT_SID` | For SMS | Twilio account SID |
+| `TWILIO_AUTH_TOKEN` | For SMS | Twilio auth token |
+| `TWILIO_PHONE_NUMBER` | For SMS | Twilio sending number |
+
+## API Contracts
+
+See `packages/contracts/` for request/response shapes agreed between frontend and backend:
+- `auth-contract.md` — register, login, refresh, logout, /me
+- `outfit-contract.md` — create outfit (multipart upload)

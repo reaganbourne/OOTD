@@ -1,113 +1,118 @@
 # reaganbourne Workboard
 
-Owned areas: `services/api/`, backend APIs, database work, SQLAlchemy models, Alembic migrations, seeds, and infra wiring
+Owned areas: `services/api/`, backend APIs, database (SQLAlchemy models, Alembic migrations), infra wiring
 
-Last synced: 2026-04-12
+Last synced: 2026-04-13
 
-## Done On Main
+## Done (merged to main)
 
-- GH #8 `Scaffold FastAPI service`
-- GH #9 `Define auth API contract`
-- GH #10 `Add Alembic baseline and initial migrations`
-- Docker Compose local stack code is merged
-- GH #12 `Implement JWT auth flow` is merged at the code level
+- Repo scaffold
+- v1 DB schema (all 7 tables in initial migration)
+- FastAPI scaffold (routers, models, config, Docker Compose)
+- Auth API contract (`packages/contracts/auth-contract.md`)
+- JWT auth flow (register, login, refresh, logout, /me)
+- Auth integration tests — 30 tests, GitHub Actions CI
+- S3 image storage adapter (`app/services/storage.py`)
+- Create-outfit endpoint (`POST /outfits` — multipart upload + clothing items)
+- Outfit API contract (`packages/contracts/outfit-contract.md`)
 
-## Still Needs Verification
+## Up Next (Phase 2)
 
-### Docker Compose local stack
-- runtime verification is still pending on a machine with Docker installed
+### GH #23 — Follow and unfollow endpoints
+- Branch: `feat-be-follow-endpoints`
+- `POST /users/{user_id}/follow` (idempotent), `DELETE /users/{user_id}/follow` (idempotent)
+- Self-follow returns 400, unknown user returns 404, both require auth
 
-### GH #12 `Implement JWT auth flow`
-- code is merged, but live verification against a real Postgres-backed environment is still pending
+### GH #39 — Add link_url field to clothing items
+- Branch: `feat-be-clothing-link`
+- Migration adding nullable `link_url` to `clothing_items`
+- Update model, schema, and create-outfit endpoint
 
-## Ready Next
+### GH #40 — User profile and vault endpoints
+- Branch: `feat-be-profile`
+- `GET /users/{username}` — public profile with follower/following counts
+- `GET /users/{username}/outfits` — paginated vault (cursor-based)
+- `GET /outfits/me` — current user's own vault
 
-### GH #13 `Add auth smoke tests and CI hook`
-- Status: ready now
-- Recommended branch: `chore-be-auth-ci-tests`
-- Acceptance criteria:
-  - auth tests cover register, login, refresh, logout, and a protected route
-  - duplicate email registration returns the correct error
-  - invalid credentials return the correct error
-  - revoked or expired refresh tokens are rejected
-  - `.github/workflows/api-ci.yml` runs `pytest` on push and PRs to `main`
-  - workflow installs dependencies and required env vars
-  - `services/api/README.md` documents test execution
+### GH #22 — Feed endpoint with cursor pagination
+- Branch: `feat-be-feed`
+- `GET /feed` — outfits from followed users, newest first, cursor paginated
+- Blocked by: #23 (needs follows to query)
 
-### GH #17 `Add outfit and clothing item schema migration`
-- Status: ready now
-- Recommended branch: `feature-be-outfit-schema`
-- Acceptance criteria:
-  - Alembic migration creates `outfits` and `clothing_items`
-  - indexes match `docs/db-v1-schema.md`
-  - SQLAlchemy models exist for both tables
-  - `alembic upgrade head` works on top of the auth baseline
-  - `alembic downgrade -1` works cleanly
+## Phase 3 — Boards
 
-### GH #18 `Implement image storage adapter`
-- Status: ready now
-- Recommended branch: `feature-be-image-storage-adapter`
-- Acceptance criteria:
-  - storage adapter interface defines `upload()` and `delete()`
-  - local adapter writes to a configurable directory
-  - backend selection is driven by env config
-  - multipart upload helper or dependency exists
-  - non-image MIME types are rejected with a clear error
-  - file size is bounded by config
+### GH #43 — Boards schema migration
+- New tables: `boards`, `board_memberships`, `board_outfits`
+- `boards`: id, creator_id, name, description, event_date, expires_at, invite_token, pinterest_url
+- `board_outfits` is completely separate from the vault `outfits` table
 
-### GH #23 `Implement follow and unfollow endpoints`
-- Status: ready now
-- Recommended branch: `feature-be-follow-endpoints`
-- Acceptance criteria:
-  - follow endpoint is idempotent
-  - unfollow endpoint is idempotent
-  - both endpoints require auth
-  - self-follow returns `400`
-  - non-existent target user returns `404`
+### GH #44 — Board CRUD endpoints
+- `POST /boards`, `GET /boards/{invite_token}`, `GET /boards/{id}`, `PATCH /boards/{id}`, `DELETE /boards/{id}`
+- Expired boards (expires_at in past) return 410
 
-## Blocked
+### GH #45 — Board outfit upload endpoint
+- `POST /boards/{id}/outfits` — multipart upload, stores to `board_outfits` not vault
+- Non-members: 403, expired board: 410
 
-### GH #20 `Implement create-outfit endpoint`
-- Blocked by: GH #17 and GH #18
-- Recommended branch: `feature-be-create-outfit-endpoint`
-- Acceptance criteria:
-  - `POST /outfits` accepts multipart data
-  - image upload flows through the storage adapter
-  - one `clothing_items` row is inserted per submitted item
-  - endpoint requires auth
-  - non-image files return `422`
-  - response payload matches frontend upload expectations
+### GH #46 — Board creator moderation endpoints
+- `DELETE /boards/{id}/outfits/{outfit_id}` (creator or uploader)
+- `DELETE /boards/{id}/members/{user_id}` (creator only, removes their outfits too)
 
-### GH #22 `Implement feed endpoint with cursor pagination`
-- Blocked by: GH #20
-- Recommended branch: `feature-be-feed-endpoint`
-- Acceptance criteria:
-  - `GET /feed` requires auth
-  - cursor pagination is stable and not offset-based
-  - default page size is 20 with max 50
-  - each item includes all fields needed by the feed UI
-  - `next_cursor` is returned
-  - empty follow list returns an empty result instead of an error
+### GH #47 — Board expiry system
+- expires_at = event_date + 30 days, enforced on all endpoints
+- Background cleanup for S3 images from boards expired 90+ days
+
+### GH #48 — Pinterest embed integration
+- `GET /boards/{id}/pinterest-embed` — fetches Pinterest oEmbed, caches 1 hour
+
+### GH #49 — Board activity SMS notifications
+- Add phone_number + sms_opt_in to users, PATCH /users/me to update
+- Twilio: text opted-in members when 5+ outfits uploaded to a board in 1 hour
+
+## Phase 3 — Story Card & AI
+
+### GH #52 — Vibe check AI endpoint
+- `POST /outfits/{id}/vibe-check` — calls Claude, stores witty blurb + tone tag
+- Adds `anthropic` to requirements, `ANTHROPIC_API_KEY` to config
+
+### GH #53 — Story card image generation endpoint
+- `GET /outfits/{id}/story-card` — returns 1080x1920 PNG
+- Full-bleed photo, frosted glass panel, username, date, vibe check text
+- Built with Pillow, works without a vibe check
+
+## Phase 3 — Monthly Fits Wrapped
+
+### GH #TBD — Monthly Fits Wrapped endpoint
+- `GET /users/me/wrapped?month=2026-04`
+- Stats: total outfits, top 3 colors/brands, most active day, most used category, vibe of the month, top outfit, longest streak
+- 404 if no outfits for the month, defaults to current calendar month
+
+## Phase 4
+
+### GH #55 — Likes and comments endpoints
+- Like/unlike, paginated comments, add/delete comment
+- Tables already in schema
+
+### GH #56 — Vault search endpoint
+- `GET /outfits/search?q=black+mini+dress`
+- PostgreSQL full-text search across caption, category, brand, color
+- Scoped to authenticated user's vault
 
 ## Recommended Order
 
-1. GH #13 auth smoke tests and CI
-2. GH #17 outfit and clothing item schema migration
-3. GH #18 image storage adapter
-4. GH #20 create-outfit endpoint
-5. GH #22 feed endpoint with cursor pagination
-6. GH #23 follow and unfollow endpoints
-
-## Definition Of Done For The Current Slice
-
-- auth is covered by repeatable tests and CI
-- local Docker stack is verified on a real machine
-- outfit schema migration is landed
-- storage adapter is landed
-- create-outfit endpoint is ready for frontend upload integration
-- feed endpoint contract is stable enough for frontend feed work
-
-## Source Of Truth
-
-- Shared status: `docs/github-board-status.md`
-- Full long-range backlog: `docs/github-ready-issue-list.md`
+1. #23 follow/unfollow
+2. #39 link_url on clothing items
+3. #40 profile + vault endpoints
+4. #22 feed endpoint
+5. #43 boards schema migration
+6. #44 board CRUD
+7. #45 board outfit upload
+8. #46 board moderation
+9. #47 board expiry
+10. #48 Pinterest embed
+11. #49 SMS notifications
+12. #52 vibe check AI
+13. #53 story card
+14. Wrapped endpoint
+15. #55 likes + comments
+16. #56 vault search

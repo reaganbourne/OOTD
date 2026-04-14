@@ -2,84 +2,95 @@
 
 Owned areas: frontend only in `apps/web/`
 
-Last synced: 2026-04-12
+Last synced: 2026-04-13
 
-## Current Status
+## Done (merged to main)
 
-- Historical early work included the repo scaffold and v1 schema doc
-- Active ownership is now frontend only
-- Auth and entry-flow frontend work is merged through GH #16
+- Typed API client for web (GH #11)
+- Auth screens (login, register)
+- Auth state management (GH #14)
+- Next.js route protection middleware (GH #15)
+- Landing page (GH #16)
 
-## Done On Main
+## Phase 2 — Unblocked now
 
-- auth screens
-- GH #11 `Build typed API client for web`
-- GH #14 `Add auth state management to web app`
-- GH #15 `Add Next.js route protection middleware`
-- GH #16 `Update home page from scaffold placeholder to real landing`
+### GH #58 — Figma design system
+- Color palette, typography, spacing tokens
+- Core components: buttons, cards, inputs, modals, bottom sheets
+- Screen designs: feed, profile/vault, board detail, story card, upload flow
+- Export tokens for Tailwind
+- Tools: Figma + v0.dev
+- **Start here — everything else benefits from having designs first**
 
-## What Is Actually Unblocked
+## Phase 2 — Blocked on backend
 
-- No official GitHub frontend issues are fully unblocked right now
-- The next official frontend issue is GH #19, but it depends on backend work that is not finished yet
+### GH #19 — Build outfit upload flow UI
+- Blocked by: GH #20 (done ✅) and GH #39 (link_url field — Reagan's next)
+- Multipart upload flow: photo picker → clothing item tags (category, brand, color, link_url) → metadata (caption, event, date) → review → submit
+- Mobile-first, loading + error states
 
-## Remaining Frontend Issues
+### GH #21 — Build home feed grid
+- Blocked by: GH #22 (feed endpoint — Reagan's queue)
+- Two-tab layout: Vault Feed + Boards Activity
+- Outfit card component, board activity card, infinite scroll
 
-### GH #19 `Build outfit upload flow UI`
-- Status: blocked
-- Blocked by: GH #18 and GH #20
-- Recommended branch: `feature-fe-upload-flow-ui`
-- Acceptance criteria:
-  - Step 1 photo selection with image preview
-  - Step 2 clothing item tag entry with `brand`, `category`, `color`, and stable `display_order`
-  - Step 3 optional metadata for caption, event name, and worn date
-  - review step before final submit
-  - loading and error states on submit
-  - mobile-first flow
-  - missing required photo or category is blocked with clear messaging
+### GH #41 — Build profile page UI
+- Blocked by: GH #40 (profile endpoints — Reagan's queue)
+- Profile header (avatar, name, bio, follower/following counts, follow button)
+- Vault grid with infinite scroll
+- Own vs other profile view
 
-### GH #21 `Build home feed grid`
-- Status: blocked
-- Blocked by: GH #22
-- Recommended branch: `feature-fe-home-feed-grid`
-- Acceptance criteria:
-  - `/feed` is protected
-  - mobile uses a 2-column grid
-  - desktop uses a 3-column grid
-  - cards show outfit photo, username, and date
-  - tapping a card opens outfit detail
-  - loading skeleton state exists
-  - empty state exists for users who follow nobody yet
-  - pagination or infinite scroll uses cursor-based API responses
+### GH #42 — Build feed tabs UI
+- Blocked by: GH #22 (feed) and boards backend
+- Tab switcher (Vault Feed / Boards)
+- Outfit card + board activity card components
 
-## What Still Needs To Happen Before You Can Pick Up GH #19
+## Phase 3 — Boards
 
-- Reagan finishes GH #18 image storage adapter
-- Reagan finishes GH #20 create-outfit endpoint
-- payload shape for upload submit is frozen so the frontend is not guessing
+### GH #50 — Build board creation and join UI
+- Create board form (name, description, event date, Pinterest URL)
+- Shareable link screen, join landing page, board detail page
+- Pinterest embed rendering, member avatars
 
-## What Still Needs To Happen Before You Can Pick Up GH #21
+### GH #51 — Build board outfit upload UI
+- Camera/gallery picker in board context, caption field
+- Simpler than vault upload — no clothing item tags required
 
-- Reagan finishes GH #22 feed endpoint with cursor pagination
-- feed card payload shape is frozen
-- at least one demo dataset or seeded response shape exists for empty and loaded states
+## Phase 3 — Story Card
 
-## Safe Parallel Prep Work
+### GH #54 — Build story card share UI
+- "Generate vibe check" button on outfit detail
+- Full-screen 9:16 story card preview
+- Download + native share sheet, fallback when no vibe check exists
 
-These are not official issue completions, but they are safe mock-first prep once you want to stay busy before blockers clear:
+## Phase 3 — Monthly Fits Wrapped
 
-- design the upload flow step layout and local component structure
-- build reusable outfit card UI for the future feed
-- polish shared authenticated app chrome for `vault`, `feed`, and `upload`
-- prepare loading, empty, and error states using fixtures
+### GH #TBD — Monthly Fits Wrapped UI
+- Animated presentation (Spotify Wrapped-style)
+- Cards for: total outfits, top colors, top brands, most active day, vibe of the month, top outfit, longest streak
+- Shareable summary card (downloadable image)
 
-## Recommended Next Move
+## Phase 4
 
-Wait for GH #18 and GH #20 if you want the cleanest official path.
+### GH #57 — Likes, comments, and search UI
+- Like button with count on cards and detail page
+- Comments modal on outfit detail
+- Search bar + results grid on vault/profile
 
-If you want momentum before then, build a mock-first shell for GH #19 on a separate branch and treat real API wiring as a later pass.
+### GH #59 — UI polish and redesign pass
+- Redesign: landing, feed, upload flow, profile, outfit detail
+- Depends on GH #58 Figma design system
+- Tools: v0.dev for generation → Next.js
 
-## Source Of Truth
+## Recommended Order
 
-- Shared status: `docs/github-board-status.md`
-- Full long-range backlog: `docs/github-ready-issue-list.md`
+1. #58 Figma design system (start now, no blockers)
+2. #19 outfit upload flow (once #39 lands)
+3. #41 profile page (once #40 lands)
+4. #21 + #42 feed + tabs (once #22 lands)
+5. #50 board creation + join UI
+6. #51 board outfit upload UI
+7. #54 story card share UI
+8. Wrapped UI
+9. #57 likes, comments, search UI
+10. #59 redesign pass
