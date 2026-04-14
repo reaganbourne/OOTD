@@ -1,12 +1,13 @@
 import json
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.crud import outfit as outfit_crud
+from app.crud import user as user_crud
 from app.dependencies import get_current_user, get_db
 from app.models.user import User
-from app.schemas.outfit import OutfitMetadata, OutfitOut
+from app.schemas.outfit import OutfitMetadata, OutfitOut, VaultPage
 from app.services.storage import InvalidImageError, StorageError, upload_image
 
 router = APIRouter(prefix="/outfits", tags=["outfits"])
@@ -85,3 +86,30 @@ def create_outfit(
     )
 
     return OutfitOut.model_validate(outfit)
+
+
+@router.get("/me", response_model=VaultPage)
+def my_vault(
+    cursor: str | None = Query(default=None),
+    limit: int = Query(default=20, ge=1, le=50),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> VaultPage:
+    """Current user's own vault, newest first, cursor paginated."""
+    outfits, next_cursor = outfit_crud.get_user_outfits(db, current_user.id, cursor, limit)
+    return VaultPage(outfits=[OutfitOut.model_validate(o) for o in outfits], next_cursor=next_cursor)
+
+
+@router.get("/user/{username}", response_model=VaultPage)
+def user_vault(
+    username: str,
+    cursor: str | None = Query(default=None),
+    limit: int = Query(default=20, ge=1, le=50),
+    db: Session = Depends(get_db),
+) -> VaultPage:
+    """Public vault for any user by username, newest first, cursor paginated."""
+    user = user_crud.get_by_username(db, username)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    outfits, next_cursor = outfit_crud.get_user_outfits(db, user.id, cursor, limit)
+    return VaultPage(outfits=[OutfitOut.model_validate(o) for o in outfits], next_cursor=next_cursor)

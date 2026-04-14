@@ -4,6 +4,11 @@ from datetime import date, datetime
 from pydantic import BaseModel, Field
 
 
+class VaultPage(BaseModel):
+    outfits: list["OutfitOut"]
+    next_cursor: str | None
+
+
 # ------------------------------------------------------------------ input
 
 
@@ -12,6 +17,7 @@ class ClothingItemIn(BaseModel):
     category: str
     color: str | None = None
     display_order: int = 0
+    link_url: str | None = None
 
 
 class OutfitMetadata(BaseModel):
@@ -44,6 +50,7 @@ class ClothingItemOut(BaseModel):
     category: str
     color: str | None
     display_order: int
+    link_url: str | None
     created_at: datetime
 
     model_config = {"from_attributes": True}
