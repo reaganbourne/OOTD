@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -39,6 +39,7 @@ def create_outfit(
                 category=item.category,
                 color=item.color,
                 display_order=item.display_order,
+                link_url=item.link_url,
             )
         )
 
@@ -49,3 +50,59 @@ def create_outfit(
 
 def get_outfit_with_items(db: Session, outfit_id: uuid.UUID) -> Outfit | None:
     return db.query(Outfit).filter(Outfit.id == outfit_id).first()
+
+
+def get_user_outfits(
+    db: Session,
+    user_id: uuid.UUID,
+    cursor: str | None = None,
+    limit: int = 20,
+) -> tuple[list[Outfit], str | None]:
+    """
+    Paginated vault for one user, newest first.
+    cursor is the ISO timestamp of the last item seen.
+    Returns (outfits, next_cursor).
+    """
+    query = db.query(Outfit).filter(Outfit.user_id == user_id)
+
+    if cursor:
+        cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        query = query.filter(Outfit.created_at < cursor_dt)
+
+    outfits = query.order_by(Outfit.created_at.desc()).limit(limit + 1).all()
+
+    next_cursor = None
+    if len(outfits) > limit:
+        outfits = outfits[:limit]
+        next_cursor = outfits[-1].created_at.isoformat()
+
+    return outfits, next_cursor
+
+
+def get_feed(
+    db: Session,
+    following_ids: list[uuid.UUID],
+    cursor: str | None = None,
+    limit: int = 20,
+) -> tuple[list[Outfit], str | None]:
+    """
+    Feed of outfits from a set of users, newest first.
+    Returns empty list immediately if following_ids is empty.
+    """
+    if not following_ids:
+        return [], None
+
+    query = db.query(Outfit).filter(Outfit.user_id.in_(following_ids))
+
+    if cursor:
+        cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        query = query.filter(Outfit.created_at < cursor_dt)
+
+    outfits = query.order_by(Outfit.created_at.desc()).limit(limit + 1).all()
+
+    next_cursor = None
+    if len(outfits) > limit:
+        outfits = outfits[:limit]
+        next_cursor = outfits[-1].created_at.isoformat()
+
+    return outfits, next_cursor
