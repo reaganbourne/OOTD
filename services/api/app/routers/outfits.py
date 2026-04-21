@@ -1,6 +1,7 @@
 import json
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from app.crud import follow as follow_crud
@@ -10,6 +11,7 @@ from app.dependencies import get_current_user, get_db
 from app.models.user import User
 from app.schemas.outfit import OutfitMetadata, OutfitOut, VaultPage
 from app.services.storage import InvalidImageError, StorageError, upload_image
+from app.services.story_card import fetch_image, generate_story_card
 from app.services.vibe_check import run_vibe_check
 
 router = APIRouter(prefix="/outfits", tags=["outfits"])
@@ -92,6 +94,49 @@ def my_vault(
     """Current user's own vault, newest first."""
     outfits, next_cursor = outfit_crud.get_user_outfits(db, current_user.id, cursor, limit)
     return VaultPage(outfits=[OutfitOut.model_validate(o) for o in outfits], next_cursor=next_cursor)
+
+
+@router.get("/{outfit_id}/story-card", response_class=Response)
+def story_card(
+    outfit_id: str,
+    db: Session = Depends(get_db),
+) -> Response:
+    """
+    Generate and return a 1080×1920 PNG story card for an outfit.
+    No auth required — designed to be shared publicly.
+    """
+    import uuid as _uuid
+    try:
+        oid = _uuid.UUID(outfit_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
+
+    outfit = outfit_crud.get_outfit_with_items(db, oid)
+    if not outfit:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
+
+    owner = user_crud.get_by_id(db, outfit.user_id)
+    username = owner.username or str(outfit.user_id) if owner else str(outfit.user_id)
+
+    try:
+        image_bytes = fetch_image(outfit.image_url)
+    except Exception:
+        image_bytes = b""
+
+    png_bytes = generate_story_card(
+        image_bytes=image_bytes,
+        username=username,
+        caption=outfit.caption,
+        vibe_check_text=outfit.vibe_check_text,
+        vibe_check_tone=outfit.vibe_check_tone,
+        worn_on=outfit.worn_on,
+    )
+
+    return Response(
+        content=png_bytes,
+        media_type="image/png",
+        headers={"Content-Disposition": f'inline; filename="ootd-{outfit_id[:8]}.png"'},
+    )
 
 
 @router.get("/user/{username}", response_model=VaultPage)
