@@ -10,6 +10,7 @@ from app.dependencies import get_current_user, get_db
 from app.models.user import User
 from app.schemas.outfit import OutfitMetadata, OutfitOut, VaultPage
 from app.services.storage import InvalidImageError, StorageError, upload_image
+from app.services.vibe_check import run_vibe_check
 
 router = APIRouter(prefix="/outfits", tags=["outfits"])
 
@@ -37,11 +38,19 @@ def create_outfit(
 
     try:
         file_bytes = image.file.read()
-        image_url = upload_image(file_bytes=file_bytes, content_type=image.content_type or "", user_id=current_user.id)
+        content_type = image.content_type or ""
+        image_url = upload_image(file_bytes=file_bytes, content_type=content_type, user_id=current_user.id)
     except InvalidImageError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
     except StorageError as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
+
+    # Vibe check is best-effort — never blocks outfit creation if it fails.
+    vibe_check_text, vibe_check_tone = run_vibe_check(
+        file_bytes=file_bytes,
+        content_type=content_type,
+        caption=meta.caption,
+    )
 
     outfit = outfit_crud.create_outfit(
         db,
@@ -51,6 +60,8 @@ def create_outfit(
         event_name=meta.event_name,
         worn_on=meta.worn_on,
         clothing_items=meta.clothing_items,
+        vibe_check_text=vibe_check_text,
+        vibe_check_tone=vibe_check_tone,
     )
     return OutfitOut.model_validate(outfit)
 
