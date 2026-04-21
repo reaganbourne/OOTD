@@ -1,15 +1,47 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.crud import follow as follow_crud
 from app.crud import user as user_crud
+from app.crud import wrapped as wrapped_crud
 from app.dependencies import get_current_user, get_db
 from app.models.user import User
+from app.schemas.outfit import OutfitOut
 from app.schemas.user import FollowResponse, PublicProfile
+from app.schemas.wrapped import WrappedStats
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.get("/me/wrapped", response_model=WrappedStats)
+def get_wrapped(
+    month: str = Query(..., description="Month in YYYY-MM format, e.g. 2026-04"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> WrappedStats:
+    """
+    Monthly Fits Wrapped — stats for the current user's outfits in a given month.
+
+    Returns totals, top colors/brands/category, vibe of the month, most active
+    day of the week, longest consecutive streak, and the standout outfit.
+    All fields gracefully degrade to None / [] when there is no data.
+    """
+    try:
+        year_str, mon_str = month.split("-")
+        year, mon = int(year_str), int(mon_str)
+        if not (1 <= mon <= 12):
+            raise ValueError
+    except (ValueError, AttributeError):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="month must be in YYYY-MM format (e.g. 2026-04).",
+        )
+
+    stats = wrapped_crud.get_wrapped_stats(db, current_user.id, year, mon)
+    top_outfit_out = OutfitOut.model_validate(stats["top_outfit"]) if stats["top_outfit"] else None
+    return WrappedStats(**{**stats, "top_outfit": top_outfit_out})
 
 
 @router.get("/{username}", response_model=PublicProfile)
