@@ -16,6 +16,8 @@ def create_outfit(
     caption: str | None = None,
     event_name: str | None = None,
     worn_on: date | None = None,
+    vibe_check_text: str | None = None,
+    vibe_check_tone: str | None = None,
 ) -> Outfit:
     """
     Insert one outfit row and all its clothing_items in a single transaction.
@@ -27,6 +29,8 @@ def create_outfit(
         caption=caption,
         event_name=event_name,
         worn_on=worn_on,
+        vibe_check_text=vibe_check_text,
+        vibe_check_tone=vibe_check_tone,
     )
     db.add(outfit)
     db.flush()  # get outfit.id without committing yet
