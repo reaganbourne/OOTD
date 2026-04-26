@@ -3,13 +3,33 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FeedCard, FeedCardSkeleton } from "@/components/feed/feed-card";
 import { apiClient, type FeedOutfitResponse } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
+import {
+  OutfitCard,
+  OutfitCardSkeleton,
+  type OutfitCardData
+} from "@/components/outfits/outfit-card";
 
 const INITIAL_PAGE_SIZE = 12;
 
 type FeedStatus = "idle" | "loading" | "ready" | "error";
+
+function toOutfitCardData(outfit: FeedOutfitResponse): OutfitCardData {
+  return {
+    id: outfit.id,
+    imageUrl: outfit.image_url,
+    caption: outfit.caption,
+    eventName: outfit.event_name,
+    wornOn: outfit.worn_on,
+    createdAt: outfit.created_at,
+    vibeTone: outfit.vibe_check_tone,
+    author: {
+      username: outfit.author.username,
+      profileImageUrl: outfit.author.profile_image_url
+    }
+  };
+}
 
 export default function FeedPage() {
   const router = useRouter();
@@ -149,7 +169,7 @@ export default function FeedPage() {
         {feedStatus === "loading" ? (
           <section className="grid grid-cols-2 gap-4 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <FeedCardSkeleton key={index} />
+              <OutfitCardSkeleton key={index} />
             ))}
           </section>
         ) : null}
@@ -206,7 +226,7 @@ export default function FeedPage() {
           <>
             <section className="grid grid-cols-2 gap-4 lg:grid-cols-3">
               {outfits.map((outfit) => (
-                <FeedCard key={outfit.id} outfit={outfit} />
+                <OutfitCard key={outfit.id} outfit={toOutfitCardData(outfit)} />
               ))}
             </section>
 
