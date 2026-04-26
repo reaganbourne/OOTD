@@ -17,6 +17,18 @@ class Settings(BaseSettings):
     # Claude AI (vibe check)
     anthropic_api_key: str = ""
 
+    # Public frontend base URL — used for shareable links and OG tags
+    public_base_url: str = "https://ootd.app"
+
+    # Admin secret for internal maintenance endpoints (board cleanup, etc.)
+    # Set this to a long random string in production. Empty = endpoint disabled.
+    admin_secret: str = ""
+
+    # CORS — comma-separated list of allowed origins.
+    # Defaults to localhost:3000 for local dev. Set in production to your real domain.
+    # Example: ALLOWED_ORIGINS=https://ootd.app,https://www.ootd.app
+    allowed_origins: list[str] = []
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property

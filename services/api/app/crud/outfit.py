@@ -1,6 +1,7 @@
 import uuid
 from datetime import date, datetime, timezone
 
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.models.clothing_item import ClothingItem
@@ -81,6 +82,57 @@ def get_user_outfits(
         next_cursor = outfits[-1].created_at.isoformat()
 
     return outfits, next_cursor
+
+
+def search_user_outfits(
+    db: Session,
+    user_id: uuid.UUID,
+    q: str,
+    limit: int = 20,
+) -> list[Outfit]:
+    """
+    Full-text search within a user's own vault.
+    Matches against caption, event_name, and any clothing item's brand/category/color.
+    Returns newest-first, capped at limit.
+    """
+    term = f"%{q.lower()}%"
+    from sqlalchemy import func
+
+    # Outfits that match caption or event_name directly
+    direct_match = (
+        db.query(Outfit.id)
+        .filter(
+            Outfit.user_id == user_id,
+            or_(
+                func.lower(Outfit.caption).like(term),
+                func.lower(Outfit.event_name).like(term),
+            ),
+        )
+    )
+
+    # Outfits whose clothing items match brand/category/color
+    item_match = (
+        db.query(ClothingItem.outfit_id)
+        .join(Outfit, Outfit.id == ClothingItem.outfit_id)
+        .filter(
+            Outfit.user_id == user_id,
+            or_(
+                func.lower(ClothingItem.brand).like(term),
+                func.lower(ClothingItem.category).like(term),
+                func.lower(ClothingItem.color).like(term),
+            ),
+        )
+    )
+
+    all_ids = direct_match.union(item_match).subquery()
+
+    return (
+        db.query(Outfit)
+        .filter(Outfit.id.in_(all_ids.select()))
+        .order_by(Outfit.created_at.desc())
+        .limit(limit)
+        .all()
+    )
 
 
 def get_feed(
