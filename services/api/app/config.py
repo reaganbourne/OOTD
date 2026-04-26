@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     # Claude AI (vibe check)
     anthropic_api_key: str = ""
 
+    # Public frontend base URL — used for shareable links and OG tags
+    public_base_url: str = "https://ootd.app"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

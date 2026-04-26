@@ -70,3 +70,27 @@ class OutfitOut(BaseModel):
 class VaultPage(BaseModel):
     outfits: list[OutfitOut]
     next_cursor: str | None
+
+
+class OutfitOwner(BaseModel):
+    id: uuid.UUID
+    username: str | None
+    display_name: str | None
+    profile_image_url: str | None
+
+    model_config = {"from_attributes": True}
+
+
+class OutfitDetailOut(OutfitOut):
+    """Full outfit detail with embedded owner info — used for the outfit detail page."""
+    owner: OutfitOwner
+
+
+class OutfitOGOut(BaseModel):
+    """Open Graph metadata for a shareable outfit link."""
+    title: str
+    description: str
+    image_url: str
+    page_url: str
+    site_name: str
+    twitter_card: str

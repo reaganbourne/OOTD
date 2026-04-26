@@ -9,7 +9,7 @@ from app.crud import outfit as outfit_crud
 from app.crud import user as user_crud
 from app.dependencies import get_current_user, get_db
 from app.models.user import User
-from app.schemas.outfit import OutfitMetadata, OutfitOut, VaultPage
+from app.schemas.outfit import OutfitDetailOut, OutfitMetadata, OutfitOGOut, OutfitOut, OutfitOwner, VaultPage
 from app.services.storage import InvalidImageError, StorageError, upload_image
 from app.services.story_card import fetch_image, generate_story_card
 from app.services.vibe_check import run_vibe_check
@@ -136,6 +136,84 @@ def story_card(
         content=png_bytes,
         media_type="image/png",
         headers={"Content-Disposition": f'inline; filename="ootd-{outfit_id[:8]}.png"'},
+    )
+
+
+@router.get("/{outfit_id}/og", response_model=OutfitOGOut)
+def outfit_og(
+    outfit_id: str,
+    db: Session = Depends(get_db),
+) -> OutfitOGOut:
+    """
+    Open Graph metadata for a shareable outfit link.
+    No auth required — designed to be read by link-preview crawlers and the frontend.
+
+    Tomi: use these fields to populate <meta property="og:..."> tags on the outfit page.
+    """
+    import uuid as _uuid
+    from app.config import settings
+
+    try:
+        oid = _uuid.UUID(outfit_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
+
+    outfit = outfit_crud.get_outfit_with_items(db, oid)
+    if not outfit:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
+
+    owner = user_crud.get_by_id(db, outfit.user_id)
+    username = owner.username if owner else None
+    display_name = owner.display_name if owner else None
+
+    handle = f"@{username}" if username else "someone"
+    name = display_name or username or "A user"
+
+    title = f"{name}'s outfit on OOTD"
+    description = outfit.caption or f"Check out {handle}'s latest fit on OOTD."
+    page_url = f"{settings.public_base_url}/outfits/{outfit_id}"
+
+    return OutfitOGOut(
+        title=title,
+        description=description,
+        image_url=outfit.image_url,
+        page_url=page_url,
+        site_name="OOTD",
+        twitter_card="summary_large_image",
+    )
+
+
+@router.get("/{outfit_id}", response_model=OutfitDetailOut)
+def get_outfit(
+    outfit_id: str,
+    db: Session = Depends(get_db),
+) -> OutfitDetailOut:
+    """
+    Full outfit detail with owner info — no auth required.
+    This is the primary endpoint for the outfit detail page and public sharing.
+    """
+    import uuid as _uuid
+
+    try:
+        oid = _uuid.UUID(outfit_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
+
+    outfit = outfit_crud.get_outfit_with_items(db, oid)
+    if not outfit:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
+
+    owner = user_crud.get_by_id(db, outfit.user_id)
+    owner_out = OutfitOwner(
+        id=owner.id if owner else outfit.user_id,
+        username=owner.username if owner else None,
+        display_name=owner.display_name if owner else None,
+        profile_image_url=owner.profile_image_url if owner else None,
+    )
+
+    return OutfitDetailOut(
+        **OutfitOut.model_validate(outfit).model_dump(),
+        owner=owner_out,
     )
 
 
