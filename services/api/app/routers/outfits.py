@@ -12,7 +12,7 @@ from app.crud import social as social_crud
 from app.crud import user as user_crud
 from app.dependencies import get_current_user, get_db, get_optional_user
 from app.models.user import User
-from app.schemas.outfit import OutfitDetailOut, OutfitMetadata, OutfitOGOut, OutfitOut, OutfitOwner, VaultPage
+from app.schemas.outfit import CaptionSuggestionsOut, OutfitDetailOut, OutfitMetadata, OutfitOGOut, OutfitOut, OutfitOwner, VaultPage
 from app.schemas.social import (
     CommentOut,
     CommentPage,
@@ -21,6 +21,7 @@ from app.schemas.social import (
     LikeStatus,
     UpdateCommentRequest,
 )
+from app.services.caption import suggest_captions
 from app.services.storage import InvalidImageError, StorageError, upload_image
 from app.services.story_card import fetch_image, generate_story_card
 from app.services.vibe_check import run_vibe_check
@@ -95,6 +96,30 @@ def get_feed(
     return VaultPage(outfits=[OutfitOut.model_validate(o) for o in outfits], next_cursor=next_cursor)
 
 
+@router.post("/caption-suggestion", response_model=CaptionSuggestionsOut)
+def caption_suggestion(
+    image: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+) -> CaptionSuggestionsOut:
+    """
+    Generate AI caption suggestions for an outfit photo.
+
+    Call this during the upload flow — before creating the outfit — so the user
+    can pick a caption before submitting. Auth required to prevent abuse.
+
+    Returns up to 3 short caption ideas. Returns an empty list if the AI service
+    is unavailable (best-effort, never blocks the upload).
+    """
+    try:
+        file_bytes = image.file.read()
+        content_type = image.content_type or "image/jpeg"
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Could not read image: {exc}")
+
+    suggestions = suggest_captions(file_bytes=file_bytes, content_type=content_type)
+    return CaptionSuggestionsOut(suggestions=suggestions)
+
+
 @router.get("/me", response_model=VaultPage)
 def my_vault(
     cursor: str | None = Query(default=None),
@@ -105,6 +130,23 @@ def my_vault(
     """Current user's own vault, newest first."""
     outfits, next_cursor = outfit_crud.get_user_outfits(db, current_user.id, cursor, limit)
     return VaultPage(outfits=[OutfitOut.model_validate(o) for o in outfits], next_cursor=next_cursor)
+
+
+@router.get("/me/search", response_model=list[OutfitOut])
+def search_vault(
+    q: str = Query(..., min_length=1, max_length=100),
+    limit: int = Query(default=20, ge=1, le=50),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[OutfitOut]:
+    """
+    Search your own vault by caption, event name, or clothing item details
+    (brand, category, color). Returns newest-first, no pagination.
+
+    Example: GET /outfits/me/search?q=zara
+    """
+    outfits = outfit_crud.search_user_outfits(db, current_user.id, q, limit)
+    return [OutfitOut.model_validate(o) for o in outfits]
 
 
 @router.get("/{outfit_id}/story-card", response_class=Response)

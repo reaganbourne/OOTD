@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     # Public frontend base URL — used for shareable links and OG tags
     public_base_url: str = "https://ootd.app"
 
+    # Admin secret for internal maintenance endpoints (board cleanup, etc.)
+    # Set this to a long random string in production. Empty = endpoint disabled.
+    admin_secret: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

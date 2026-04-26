@@ -94,3 +94,8 @@ class OutfitOGOut(BaseModel):
     page_url: str
     site_name: str
     twitter_card: str
+
+
+class CaptionSuggestionsOut(BaseModel):
+    """AI-generated caption suggestions for an outfit photo."""
+    suggestions: list[str]
