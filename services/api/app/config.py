@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     # Set this to a long random string in production. Empty = endpoint disabled.
     admin_secret: str = ""
 
+    # CORS — comma-separated list of allowed origins.
+    # Defaults to localhost:3000 for local dev. Set in production to your real domain.
+    # Example: ALLOWED_ORIGINS=https://ootd.app,https://www.ootd.app
+    allowed_origins: list[str] = []
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
