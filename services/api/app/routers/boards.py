@@ -10,6 +10,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.crud import board as board_crud
 from app.crud import outfit as outfit_crud
 from app.crud import user as user_crud
@@ -33,6 +34,8 @@ def _board_or_404(db: Session, board_id: uuid.UUID):
     board = board_crud.get_board(db, board_id)
     if not board:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Board not found.")
+    if board_crud.is_expired(board):
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail="This board has expired.")
     return board
 
 
@@ -270,3 +273,37 @@ def pin_outfit(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not on this board.")
     outfit = outfit_crud.get_outfit_with_items(db, outfit_id)
     return OutfitOut.model_validate(outfit)
+
+
+# ── Admin ─────────────────────────────────────────────────────────────────────
+
+from fastapi import Header as _Header
+from pydantic import BaseModel as _BM
+
+
+class CleanupResult(_BM):
+    deleted: int
+
+
+@router.post("/admin/cleanup", response_model=CleanupResult)
+def cleanup_expired_boards(
+    x_admin_secret: str | None = _Header(default=None),
+    db: Session = Depends(get_db),
+) -> CleanupResult:
+    """
+    Delete all boards whose expiry date has passed.
+    Protected by X-Admin-Secret header — set ADMIN_SECRET in your env.
+
+    Designed to be called by a cron job (e.g. GitHub Actions daily schedule,
+    Render cron, or AWS EventBridge). Returns the number of boards deleted.
+
+    Example cron (GitHub Actions):
+        curl -X POST https://api.ootd.app/boards/admin/cleanup \\
+             -H "X-Admin-Secret: $ADMIN_SECRET"
+    """
+    if not settings.admin_secret:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Admin endpoint not configured.")
+    if x_admin_secret != settings.admin_secret:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid admin secret.")
+    deleted = board_crud.delete_expired_boards(db)
+    return CleanupResult(deleted=deleted)

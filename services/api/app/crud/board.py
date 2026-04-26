@@ -198,6 +198,26 @@ def pin_outfit(
     return row
 
 
+def is_expired(board) -> bool:
+    """Return True if the board's expiry has passed."""
+    return board.expires_at < datetime.now(timezone.utc)
+
+
+def delete_expired_boards(db: Session) -> int:
+    """Delete all boards past their expiry date. Returns count deleted."""
+    expired = (
+        db.query(Board)
+        .filter(Board.expires_at < datetime.now(timezone.utc))
+        .all()
+    )
+    count = len(expired)
+    for board in expired:
+        db.delete(board)
+    if count:
+        db.commit()
+    return count
+
+
 def get_board_outfits(
     db: Session,
     board_id: uuid.UUID,
