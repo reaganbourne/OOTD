@@ -74,3 +74,24 @@ def get_current_user(
         )
 
     return user
+
+
+def get_optional_user(
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """
+    Like get_current_user but returns None instead of 401 when no token is provided.
+    Use on endpoints that are public but have auth-aware behaviour (e.g. liked_by_me).
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    try:
+        token = authorization.removeprefix("Bearer ")
+        payload = decode_access_token(token)
+        user_id: str | None = payload.get("sub")
+        if not user_id:
+            return None
+        return user_crud.get_by_id(db, uuid.UUID(user_id))
+    except (JWTError, ExpiredSignatureError):
+        return None
