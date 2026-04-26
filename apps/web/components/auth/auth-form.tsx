@@ -23,15 +23,13 @@ type SubmitState =
 const copy = {
   login: {
     title: "Log in",
-    intro:
-      "Sign in with the shared auth contract. If the backend is not running yet, the form will surface a connection error instead of the old mock flow.",
-    submitLabel: "Enter the vault"
+    intro: "Welcome back.",
+    submitLabel: "Continue"
   },
   signup: {
     title: "Create account",
-    intro:
-      "Create your account with the shared auth contract fields. Confirm password still stays frontend-only and is stripped before the API call.",
-    submitLabel: "Create my account"
+    intro: "Start saving your outfits.",
+    submitLabel: "Continue"
   }
 } as const;
 
@@ -100,12 +98,11 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <div className="soft-panel p-6 sm:p-8">
-      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/70">
-        Live auth
-      </p>
-      <h2 className="mt-3 text-4xl text-ink">{formCopy.title}</h2>
-      <p className="mt-3 text-sm leading-6 text-plum/80">{formCopy.intro}</p>
+    <div className="soft-panel rounded-[2.1rem] px-6 py-7 sm:px-7 sm:py-8">
+      <h2 className="text-center font-sans text-[2.15rem] font-semibold tracking-[-0.04em] text-ink">
+        {formCopy.title}
+      </h2>
+      <p className="mt-2 text-center text-sm text-plum/55">{formCopy.intro}</p>
 
       <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
         {mode === "signup" ? (
@@ -162,7 +159,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         <button
           type="submit"
           disabled={submitState.status === "submitting" || isLoading}
-          className="mt-2 rounded-[1.5rem] bg-plum px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#5c3049] disabled:cursor-not-allowed disabled:bg-plum/55"
+          className="mt-2 rounded-[1rem] bg-gradient-to-r from-[#ef6c96] to-[#f06e8f] px-5 py-4 text-sm font-semibold text-white transition hover:brightness-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitState.status === "submitting" || isLoading
             ? "Working..."
@@ -201,6 +198,17 @@ function Field({
         type={type}
         value={value}
         placeholder={placeholder}
+        autoComplete={
+          name === "email"
+            ? "email"
+            : name === "password"
+              ? "current-password"
+              : name === "confirmPassword"
+                ? "new-password"
+                : name === "username"
+                  ? "username"
+                  : undefined
+        }
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${name}-error` : undefined}
         onChange={(event) => onChange(event.target.value)}
@@ -227,7 +235,7 @@ function StatusBanner({
       : "border-rose/25 bg-rose/10 text-[#7f2947]";
 
   return (
-    <div className={`rounded-[1.25rem] border px-4 py-3 text-sm ${toneClasses}`}>
+    <div className={`rounded-[1rem] border px-4 py-3 text-sm ${toneClasses}`}>
       {message}
     </div>
   );

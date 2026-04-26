@@ -21,9 +21,9 @@ body {
   min-height: 100vh;
   color: rgb(var(--ink));
   background:
-    radial-gradient(circle at top, rgba(230, 170, 184, 0.28), transparent 32%),
-    radial-gradient(circle at 20% 80%, rgba(107, 57, 85, 0.14), transparent 28%),
-    linear-gradient(180deg, #fff8f5 0%, #f7eef1 100%);
+    radial-gradient(circle at top, rgba(242, 196, 206, 0.4), transparent 26%),
+    radial-gradient(circle at 100% 0%, rgba(255, 230, 237, 0.85), transparent 22%),
+    linear-gradient(180deg, #ffffff 0%, #fff9fb 42%, #fff7fa 100%);
   font-family: var(--font-sans), sans-serif;
 }
 
@@ -48,18 +48,56 @@ a {
 
 @layer components {
   .soft-panel {
-    @apply rounded-[2rem] border border-plum/15 bg-white/75 shadow-card backdrop-blur-xl;
+    @apply rounded-[2rem] border border-rose/10 bg-white shadow-[0_20px_70px_rgba(244,106,147,0.08)];
   }
 
   .field-shell {
-    @apply rounded-2xl border border-plum/15 bg-cream/80 px-4 py-3 transition focus-within:border-plum/45 focus-within:bg-white;
+    @apply rounded-[1.2rem] border border-rose/15 bg-white px-4 py-4 transition focus-within:border-[#f289a8] focus-within:shadow-[0_0_0_4px_rgba(244,106,147,0.08)];
   }
 
   .field-input {
-    @apply mt-1 w-full bg-transparent text-sm text-ink outline-none placeholder:text-plum/35;
+    @apply w-full bg-transparent text-base text-ink outline-none;
+    &::placeholder {
+      color: rgba(107, 57, 85, 0.35);
+    }
   }
 
   .field-label {
-    @apply text-[0.72rem] font-semibold uppercase tracking-[0.22em] text-plum/70;
+    @apply sr-only;
+  }
+
+  .search-shell {
+    @apply flex flex-1 items-center gap-3 rounded-full border bg-white px-4 py-3 shadow-[0_12px_35px_rgba(244,106,147,0.06)];
+    border-color: rgba(230, 170, 184, 0.12);
+  }
+
+  .search-input {
+    @apply min-w-0 flex-1 text-sm;
+    color: rgba(107, 57, 85, 0.48);
+  }
+
+  .icon-button {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-full border bg-white shadow-[0_12px_30px_rgba(244,106,147,0.06)] transition hover:text-plum;
+    border-color: rgba(230, 170, 184, 0.12);
+    color: rgba(107, 57, 85, 0.7);
+    &:hover {
+      border-color: rgba(230, 170, 184, 0.25);
+    }
+  }
+
+  .filter-chip {
+    @apply inline-flex items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm shadow-[0_10px_24px_rgba(244,106,147,0.04)];
+    border-color: rgba(230, 170, 184, 0.12);
+    color: rgba(107, 57, 85, 0.72);
+  }
+
+  .filter-chip-active {
+    @apply border-[#f6a9be] bg-[#fff1f6] text-[#ef5f8a];
+  }
+
+  .mobile-dock {
+    @apply flex w-full max-w-[24rem] items-center justify-between rounded-[2rem] border px-3 py-2 shadow-[0_18px_45px_rgba(244,106,147,0.12)];
+    border-color: rgba(230, 170, 184, 0.12);
+    background-color: rgba(255, 255, 255, 0.98);
   }
 }
