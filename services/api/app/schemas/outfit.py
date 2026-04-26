@@ -67,11 +67,24 @@ class OutfitOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class FeedAuthor(BaseModel):
+    id: uuid.UUID
+    username: str | None
+    profile_image_url: str | None
+
+
+class FeedOutfitOut(OutfitOut):
+    author: FeedAuthor
+
+
 class VaultPage(BaseModel):
     outfits: list[OutfitOut]
     next_cursor: str | None
 
 
+class FeedPage(BaseModel):
+    outfits: list[FeedOutfitOut]
+    next_cursor: str | None
 class OutfitOwner(BaseModel):
     id: uuid.UUID
     username: str | None

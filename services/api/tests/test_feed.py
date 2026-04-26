@@ -54,6 +54,7 @@ class TestFeed:
         assert res.status_code == 200
         assert len(res.json()["outfits"]) == 1
         assert res.json()["outfits"][0]["caption"] == "b's outfit"
+        assert res.json()["outfits"][0]["author"]["username"] == "userb"
 
     def test_feed_does_not_show_unfollowed_users(self, client, monkeypatch):
         monkeypatch.setattr("app.routers.outfits.upload_image", lambda **kw: "https://s3.example.com/test.jpg")

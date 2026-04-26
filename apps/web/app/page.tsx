@@ -41,7 +41,7 @@ export default async function HomePage() {
     cookieStore.get(AUTH_SESSION_COOKIE)?.value === AUTH_SESSION_COOKIE_VALUE;
 
   if (hasActiveSession) {
-    redirect("/vault");
+    redirect("/feed");
   }
 
   return (
