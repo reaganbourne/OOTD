@@ -9,7 +9,7 @@ from app.crud import outfit as outfit_crud
 from app.crud import user as user_crud
 from app.dependencies import get_current_user, get_db
 from app.models.user import User
-from app.schemas.outfit import OutfitMetadata, OutfitOut, VaultPage
+from app.schemas.outfit import FeedAuthor, FeedOutfitOut, FeedPage, OutfitMetadata, OutfitOut, VaultPage
 from app.services.storage import InvalidImageError, StorageError, upload_image
 from app.services.story_card import fetch_image, generate_story_card
 from app.services.vibe_check import run_vibe_check
@@ -68,20 +68,42 @@ def create_outfit(
     return OutfitOut.model_validate(outfit)
 
 
-@router.get("/feed", response_model=VaultPage)
+@router.get("/feed", response_model=FeedPage)
 def get_feed(
     cursor: str | None = Query(default=None),
     limit: int = Query(default=20, ge=1, le=50),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> VaultPage:
+) -> FeedPage:
     """
     Outfits from users the current user follows, newest first.
     Returns an empty list if the user follows nobody yet.
     """
     ids = follow_crud.following_ids(db, current_user.id)
     outfits, next_cursor = outfit_crud.get_feed(db, ids, cursor, limit)
-    return VaultPage(outfits=[OutfitOut.model_validate(o) for o in outfits], next_cursor=next_cursor)
+
+    author_cache: dict[str, FeedAuthor] = {}
+    feed_items: list[FeedOutfitOut] = []
+
+    for outfit in outfits:
+        cache_key = str(outfit.user_id)
+
+        if cache_key not in author_cache:
+            author = user_crud.get_by_id(db, outfit.user_id)
+            author_cache[cache_key] = FeedAuthor(
+                id=outfit.user_id,
+                username=author.username if author else None,
+                profile_image_url=author.profile_image_url if author else None,
+            )
+
+        feed_items.append(
+            FeedOutfitOut(
+                **OutfitOut.model_validate(outfit).model_dump(),
+                author=author_cache[cache_key],
+            )
+        )
+
+    return FeedPage(outfits=feed_items, next_cursor=next_cursor)
 
 
 @router.get("/me", response_model=VaultPage)

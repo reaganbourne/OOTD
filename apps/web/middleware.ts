@@ -6,7 +6,7 @@ import {
 } from "@/lib/auth-session";
 
 const AUTH_ROUTES = new Set(["/login", "/signup"]);
-const PROTECTED_ROUTE_PREFIXES = ["/feed", "/vault", "/upload"];
+const PROTECTED_ROUTE_PREFIXES = ["/feed", "/vault", "/upload", "/outfits"];
 
 function isProtectedRoute(pathname: string) {
   return PROTECTED_ROUTE_PREFIXES.some(

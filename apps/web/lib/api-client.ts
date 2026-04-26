@@ -47,6 +47,7 @@ export type OutfitClothingItem = {
   category: string;
   color?: string | null;
   display_order: number;
+  link_url?: string | null;
   created_at: string;
 };
 
@@ -64,6 +65,21 @@ export type OutfitResponse = {
   clothing_items: OutfitClothingItem[];
 };
 
+export type FeedAuthor = {
+  id: string;
+  username?: string | null;
+  profile_image_url?: string | null;
+};
+
+export type FeedOutfitResponse = OutfitResponse & {
+  author: FeedAuthor;
+};
+
+export type FeedPageResponse = {
+  outfits: FeedOutfitResponse[];
+  next_cursor?: string | null;
+};
+
 export type CreateOutfitInput = {
   image: File;
   metadata: {
@@ -75,6 +91,7 @@ export type CreateOutfitInput = {
       category: string;
       color?: string;
       display_order: number;
+      link_url?: string;
     }>;
   };
 };
@@ -362,6 +379,28 @@ export const outfitApiClient = {
       body: formData,
       requiresAuth: true,
       successMessage: "Outfit uploaded."
+    });
+  },
+
+  async getFeed(input?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<ApiResult<FeedPageResponse>> {
+    const params = new URLSearchParams();
+
+    if (input?.cursor) {
+      params.set("cursor", input.cursor);
+    }
+
+    if (input?.limit) {
+      params.set("limit", String(input.limit));
+    }
+
+    const query = params.toString();
+
+    return sendRequest<FeedPageResponse>(`/outfits/feed${query ? `?${query}` : ""}`, {
+      requiresAuth: true,
+      successMessage: "Loaded feed."
     });
   }
 };
