@@ -48,6 +48,7 @@ def upload_image(
     file_bytes: bytes,
     content_type: str,
     user_id: uuid.UUID,
+    key_prefix: str = "outfits",
 ) -> str:
     """
     Upload an image to S3 and return its public URL.
@@ -56,6 +57,7 @@ def upload_image(
         file_bytes:   Raw file content read from the multipart upload.
         content_type: MIME type declared by the client (e.g. "image/jpeg").
         user_id:      ID of the uploading user — used to namespace the S3 key.
+        key_prefix:   S3 key prefix folder (default "outfits", use "avatars" for profile photos).
 
     Returns:
         The public HTTPS URL of the uploaded object.
@@ -67,7 +69,7 @@ def upload_image(
     _validate(file_bytes, content_type)
 
     ext = _ALLOWED[content_type]
-    key = f"outfits/{user_id}/{uuid.uuid4()}.{ext}"
+    key = f"{key_prefix}/{user_id}/{uuid.uuid4()}.{ext}"
 
     try:
         client = _s3_client()
