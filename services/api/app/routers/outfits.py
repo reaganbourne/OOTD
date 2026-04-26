@@ -4,12 +4,23 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+import uuid
+
 from app.crud import follow as follow_crud
 from app.crud import outfit as outfit_crud
+from app.crud import social as social_crud
 from app.crud import user as user_crud
-from app.dependencies import get_current_user, get_db
+from app.dependencies import get_current_user, get_db, get_optional_user
 from app.models.user import User
 from app.schemas.outfit import OutfitDetailOut, OutfitMetadata, OutfitOGOut, OutfitOut, OutfitOwner, VaultPage
+from app.schemas.social import (
+    CommentOut,
+    CommentPage,
+    CommentAuthor,
+    CreateCommentRequest,
+    LikeStatus,
+    UpdateCommentRequest,
+)
 from app.services.storage import InvalidImageError, StorageError, upload_image
 from app.services.story_card import fetch_image, generate_story_card
 from app.services.vibe_check import run_vibe_check
@@ -215,6 +226,153 @@ def get_outfit(
         **OutfitOut.model_validate(outfit).model_dump(),
         owner=owner_out,
     )
+
+
+# ── Likes ─────────────────────────────────────────────────────────────────────
+
+def _outfit_or_404(db: Session, outfit_id_str: str):
+    try:
+        oid = uuid.UUID(outfit_id_str)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
+    outfit = outfit_crud.get_outfit_with_items(db, oid)
+    if not outfit:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
+    return outfit
+
+
+def _comment_author(db: Session, user_id: uuid.UUID) -> CommentAuthor:
+    u = user_crud.get_by_id(db, user_id)
+    return CommentAuthor(
+        id=u.id if u else user_id,
+        username=u.username if u else None,
+        display_name=u.display_name if u else None,
+        profile_image_url=u.profile_image_url if u else None,
+    )
+
+
+def _comment_out(db: Session, comment) -> CommentOut:
+    return CommentOut(
+        id=comment.id,
+        outfit_id=comment.outfit_id,
+        user_id=comment.user_id,
+        body=comment.body,
+        created_at=comment.created_at,
+        updated_at=comment.updated_at,
+        author=_comment_author(db, comment.user_id),
+    )
+
+
+@router.get("/{outfit_id}/likes", response_model=LikeStatus)
+def get_likes(
+    outfit_id: str,
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_optional_user),
+) -> LikeStatus:
+    """Like count + whether the current user liked this outfit. Auth optional."""
+    outfit = _outfit_or_404(db, outfit_id)
+    like_count = social_crud.get_like_count(db, outfit.id)
+    liked = social_crud.is_liked_by(db, outfit.id, current_user.id) if current_user else False
+    return LikeStatus(like_count=like_count, liked=liked)
+
+
+@router.post("/{outfit_id}/likes", response_model=LikeStatus, status_code=status.HTTP_200_OK)
+def like_outfit(
+    outfit_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> LikeStatus:
+    """Like an outfit. Idempotent — safe to call multiple times."""
+    outfit = _outfit_or_404(db, outfit_id)
+    social_crud.like_outfit(db, current_user.id, outfit.id)
+    return LikeStatus(
+        like_count=social_crud.get_like_count(db, outfit.id),
+        liked=True,
+    )
+
+
+@router.delete("/{outfit_id}/likes", response_model=LikeStatus)
+def unlike_outfit(
+    outfit_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> LikeStatus:
+    """Unlike an outfit. Idempotent."""
+    outfit = _outfit_or_404(db, outfit_id)
+    social_crud.unlike_outfit(db, current_user.id, outfit.id)
+    return LikeStatus(
+        like_count=social_crud.get_like_count(db, outfit.id),
+        liked=False,
+    )
+
+
+# ── Comments ──────────────────────────────────────────────────────────────────
+
+@router.get("/{outfit_id}/comments", response_model=CommentPage)
+def list_comments(
+    outfit_id: str,
+    cursor: str | None = Query(default=None),
+    limit: int = Query(default=20, ge=1, le=50),
+    db: Session = Depends(get_db),
+) -> CommentPage:
+    """List comments on an outfit, oldest first. No auth required."""
+    outfit = _outfit_or_404(db, outfit_id)
+    comments, next_cursor = social_crud.get_outfit_comments(db, outfit.id, cursor, limit)
+    return CommentPage(
+        comments=[_comment_out(db, c) for c in comments],
+        next_cursor=next_cursor,
+    )
+
+
+@router.post("/{outfit_id}/comments", response_model=CommentOut, status_code=status.HTTP_201_CREATED)
+def create_comment(
+    outfit_id: str,
+    body: CreateCommentRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> CommentOut:
+    """Post a comment on an outfit. Auth required."""
+    outfit = _outfit_or_404(db, outfit_id)
+    comment = social_crud.create_comment(db, outfit.id, current_user.id, body.body)
+    return _comment_out(db, comment)
+
+
+@router.patch("/{outfit_id}/comments/{comment_id}", response_model=CommentOut)
+def update_comment(
+    outfit_id: str,
+    comment_id: uuid.UUID,
+    body: UpdateCommentRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> CommentOut:
+    """Edit your own comment."""
+    _outfit_or_404(db, outfit_id)
+    comment = social_crud.get_comment(db, comment_id)
+    if not comment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found.")
+    if comment.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot edit someone else's comment.")
+    updated = social_crud.update_comment(db, comment, body.body)
+    return _comment_out(db, updated)
+
+
+@router.delete("/{outfit_id}/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_comment(
+    outfit_id: str,
+    comment_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> None:
+    """Delete a comment. Author or outfit owner can delete."""
+    outfit = _outfit_or_404(db, outfit_id)
+    comment = social_crud.get_comment(db, comment_id)
+    if not comment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found.")
+    is_author = comment.user_id == current_user.id
+    is_outfit_owner = outfit.user_id == current_user.id
+    if not is_author and not is_outfit_owner:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot delete this comment.")
+    social_crud.delete_comment(db, comment)
 
 
 @router.get("/user/{username}", response_model=VaultPage)
