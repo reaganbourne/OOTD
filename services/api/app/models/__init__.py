@@ -1,5 +1,6 @@
 # Import all models here so that Base.metadata is fully populated
 # for Alembic autogenerate and SQLAlchemy table creation.
+from app.models.board import Board, BoardMember, BoardOutfit
 from app.models.clothing_item import ClothingItem
 from app.models.comment import Comment
 from app.models.follow import Follow
@@ -16,4 +17,7 @@ __all__ = [
     "Follow",
     "Like",
     "Comment",
+    "Board",
+    "BoardMember",
+    "BoardOutfit",
 ]
