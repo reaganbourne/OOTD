@@ -80,6 +80,134 @@ export type FeedPageResponse = {
   next_cursor?: string | null;
 };
 
+// ── Outfit detail ─────────────────────────────────────────────────────────────
+
+export type OutfitOwner = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  profile_image_url: string | null;
+};
+
+/** Full outfit detail — returned by GET /outfits/{id} */
+export type OutfitDetailResponse = OutfitResponse & {
+  owner: OutfitOwner;
+};
+
+export type VaultPage = {
+  outfits: OutfitResponse[];
+  next_cursor: string | null;
+};
+
+export type OutfitOG = {
+  title: string;
+  description: string;
+  image_url: string;
+  page_url: string;
+  site_name: string;
+  twitter_card: string;
+};
+
+export type CaptionSuggestions = {
+  suggestions: string[];
+};
+
+// ── Likes & comments ──────────────────────────────────────────────────────────
+
+export type LikeStatus = {
+  like_count: number;
+  liked: boolean;
+};
+
+export type CommentAuthor = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  profile_image_url: string | null;
+};
+
+export type Comment = {
+  id: string;
+  outfit_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+  author: CommentAuthor;
+};
+
+export type CommentPage = {
+  comments: Comment[];
+  next_cursor: string | null;
+};
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+export type PublicProfile = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  bio: string | null;
+  profile_image_url: string | null;
+  follower_count: number;
+  following_count: number;
+  created_at: string;
+};
+
+export type FollowStatus = {
+  following: boolean;
+  follower_count: number;
+};
+
+export type UserSearchResult = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  profile_image_url: string | null;
+  follower_count: number;
+};
+
+export type WrappedStats = {
+  year: number;
+  month: number;
+  total_outfits: number;
+  total_items: number;
+  top_colors: Array<{ color: string; count: number }>;
+  top_brands: Array<{ brand: string; count: number }>;
+  top_categories: Array<{ category: string; count: number }>;
+  longest_streak: number;
+  current_streak: number;
+  most_worn_vibe: string | null;
+  outfits_by_week: Array<{ week: number; count: number }>;
+};
+
+// ── Boards ────────────────────────────────────────────────────────────────────
+
+export type Board = {
+  id: string;
+  name: string;
+  event_date: string | null;
+  invite_code: string;
+  creator_id: string;
+  expires_at: string;
+  member_count: number;
+  created_at: string;
+};
+
+export type BoardMember = {
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  profile_image_url: string | null;
+  role: "creator" | "member";
+  joined_at: string;
+};
+
+export type BoardOutfitPage = {
+  outfits: OutfitResponse[];
+  next_cursor: string | null;
+};
+
 export type CreateOutfitInput = {
   image: File;
   metadata: {
@@ -387,20 +515,330 @@ export const outfitApiClient = {
     limit?: number;
   }): Promise<ApiResult<FeedPageResponse>> {
     const params = new URLSearchParams();
-
-    if (input?.cursor) {
-      params.set("cursor", input.cursor);
-    }
-
-    if (input?.limit) {
-      params.set("limit", String(input.limit));
-    }
-
+    if (input?.cursor) params.set("cursor", input.cursor);
+    if (input?.limit) params.set("limit", String(input.limit));
     const query = params.toString();
-
     return sendRequest<FeedPageResponse>(`/outfits/feed${query ? `?${query}` : ""}`, {
       requiresAuth: true,
       successMessage: "Loaded feed."
+    });
+  },
+
+  async getVault(input?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<ApiResult<VaultPage>> {
+    const params = new URLSearchParams();
+    if (input?.cursor) params.set("cursor", input.cursor);
+    if (input?.limit) params.set("limit", String(input.limit));
+    const query = params.toString();
+    return sendRequest<VaultPage>(`/outfits/me${query ? `?${query}` : ""}`, {
+      requiresAuth: true,
+      successMessage: "Loaded vault."
+    });
+  },
+
+  async searchVault(q: string, limit?: number): Promise<ApiResult<OutfitResponse[]>> {
+    const params = new URLSearchParams({ q });
+    if (limit) params.set("limit", String(limit));
+    return sendRequest<OutfitResponse[]>(`/outfits/me/search?${params}`, {
+      requiresAuth: true,
+      successMessage: "Search complete."
+    });
+  },
+
+  async getByUser(username: string, input?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<ApiResult<VaultPage>> {
+    const params = new URLSearchParams();
+    if (input?.cursor) params.set("cursor", input.cursor);
+    if (input?.limit) params.set("limit", String(input.limit));
+    const query = params.toString();
+    return sendRequest<VaultPage>(`/outfits/user/${encodeURIComponent(username)}${query ? `?${query}` : ""}`, {
+      successMessage: "Loaded user vault."
+    });
+  },
+
+  async getDetail(outfitId: string): Promise<ApiResult<OutfitDetailResponse>> {
+    return sendRequest<OutfitDetailResponse>(`/outfits/${outfitId}`, {
+      successMessage: "Loaded outfit."
+    });
+  },
+
+  async getOG(outfitId: string): Promise<ApiResult<OutfitOG>> {
+    return sendRequest<OutfitOG>(`/outfits/${outfitId}/og`, {
+      successMessage: "Loaded OG metadata."
+    });
+  },
+
+  /** Returns the direct URL for the story-card PNG — use in an <img> src or download link. */
+  storyCardUrl(outfitId: string): string {
+    return `${DEFAULT_API_BASE_URL}/outfits/${outfitId}/story-card`;
+  },
+
+  async suggestCaptions(image: File): Promise<ApiResult<CaptionSuggestions>> {
+    const formData = new FormData();
+    formData.append("image", image);
+    return sendRequest<CaptionSuggestions>("/outfits/caption-suggestion", {
+      method: "POST",
+      body: formData,
+      requiresAuth: true,
+      successMessage: "Captions generated."
+    });
+  },
+
+  // ── Likes ──────────────────────────────────────────────────────────────────
+
+  async getLikes(outfitId: string): Promise<ApiResult<LikeStatus>> {
+    return sendRequest<LikeStatus>(`/outfits/${outfitId}/likes`, {
+      successMessage: "Loaded likes."
+    });
+  },
+
+  async like(outfitId: string): Promise<ApiResult<LikeStatus>> {
+    return sendRequest<LikeStatus>(`/outfits/${outfitId}/likes`, {
+      method: "POST",
+      requiresAuth: true,
+      successMessage: "Liked."
+    });
+  },
+
+  async unlike(outfitId: string): Promise<ApiResult<LikeStatus>> {
+    return sendRequest<LikeStatus>(`/outfits/${outfitId}/likes`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Unliked."
+    });
+  },
+
+  // ── Comments ───────────────────────────────────────────────────────────────
+
+  async getComments(outfitId: string, input?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<ApiResult<CommentPage>> {
+    const params = new URLSearchParams();
+    if (input?.cursor) params.set("cursor", input.cursor);
+    if (input?.limit) params.set("limit", String(input.limit));
+    const query = params.toString();
+    return sendRequest<CommentPage>(`/outfits/${outfitId}/comments${query ? `?${query}` : ""}`, {
+      successMessage: "Loaded comments."
+    });
+  },
+
+  async createComment(outfitId: string, body: string): Promise<ApiResult<Comment>> {
+    return sendRequest<Comment>(`/outfits/${outfitId}/comments`, {
+      method: "POST",
+      body: { body },
+      requiresAuth: true,
+      successMessage: "Comment posted."
+    });
+  },
+
+  async updateComment(outfitId: string, commentId: string, body: string): Promise<ApiResult<Comment>> {
+    return sendRequest<Comment>(`/outfits/${outfitId}/comments/${commentId}`, {
+      method: "PATCH",
+      body: { body },
+      requiresAuth: true,
+      successMessage: "Comment updated."
+    });
+  },
+
+  async deleteComment(outfitId: string, commentId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/outfits/${outfitId}/comments/${commentId}`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Comment deleted."
+    });
+  }
+};
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+export const userApiClient = {
+  async getProfile(username: string): Promise<ApiResult<PublicProfile>> {
+    return sendRequest<PublicProfile>(`/users/${encodeURIComponent(username)}`, {
+      successMessage: "Loaded profile."
+    });
+  },
+
+  async updateProfile(input: {
+    display_name?: string | null;
+    bio?: string | null;
+    username?: string | null;
+  }): Promise<ApiResult<AuthUser>> {
+    return sendRequest<AuthUser>("/users/me", {
+      method: "PATCH",
+      body: input,
+      requiresAuth: true,
+      successMessage: "Profile updated."
+    });
+  },
+
+  async uploadAvatar(image: File): Promise<ApiResult<AuthUser>> {
+    const formData = new FormData();
+    formData.append("image", image);
+    return sendRequest<AuthUser>("/users/me/avatar", {
+      method: "POST",
+      body: formData,
+      requiresAuth: true,
+      successMessage: "Avatar updated."
+    });
+  },
+
+  async search(q: string, limit?: number): Promise<ApiResult<UserSearchResult[]>> {
+    const params = new URLSearchParams({ q });
+    if (limit) params.set("limit", String(limit));
+    return sendRequest<UserSearchResult[]>(`/users/search?${params}`, {
+      successMessage: "Search complete."
+    });
+  },
+
+  async getSuggested(limit?: number): Promise<ApiResult<UserSearchResult[]>> {
+    const params = limit ? `?limit=${limit}` : "";
+    return sendRequest<UserSearchResult[]>(`/users/suggested${params}`, {
+      requiresAuth: true,
+      successMessage: "Loaded suggestions."
+    });
+  },
+
+  async follow(userId: string): Promise<ApiResult<FollowStatus>> {
+    return sendRequest<FollowStatus>(`/users/${userId}/follow`, {
+      method: "POST",
+      requiresAuth: true,
+      successMessage: "Followed."
+    });
+  },
+
+  async unfollow(userId: string): Promise<ApiResult<FollowStatus>> {
+    return sendRequest<FollowStatus>(`/users/${userId}/follow`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Unfollowed."
+    });
+  },
+
+  async getWrapped(input?: { year?: number; month?: number }): Promise<ApiResult<WrappedStats>> {
+    const params = new URLSearchParams();
+    if (input?.year) params.set("year", String(input.year));
+    if (input?.month) params.set("month", String(input.month));
+    const query = params.toString();
+    return sendRequest<WrappedStats>(`/users/me/wrapped${query ? `?${query}` : ""}`, {
+      requiresAuth: true,
+      successMessage: "Loaded wrapped stats."
+    });
+  }
+};
+
+// ── Boards ────────────────────────────────────────────────────────────────────
+
+export const boardApiClient = {
+  async create(input: { name: string; event_date?: string }): Promise<ApiResult<Board>> {
+    return sendRequest<Board>("/boards", {
+      method: "POST",
+      body: input,
+      requiresAuth: true,
+      successMessage: "Board created."
+    });
+  },
+
+  async list(): Promise<ApiResult<Board[]>> {
+    return sendRequest<Board[]>("/boards/me", {
+      requiresAuth: true,
+      successMessage: "Loaded boards."
+    });
+  },
+
+  async get(boardId: string): Promise<ApiResult<Board>> {
+    return sendRequest<Board>(`/boards/${boardId}`, {
+      requiresAuth: true,
+      successMessage: "Loaded board."
+    });
+  },
+
+  async delete(boardId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/boards/${boardId}`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Board deleted."
+    });
+  },
+
+  /** Preview a board via invite link — no auth required. */
+  async previewInvite(code: string): Promise<ApiResult<Board>> {
+    return sendRequest<Board>(`/boards/invite/${code}`, {
+      successMessage: "Loaded board preview."
+    });
+  },
+
+  async join(code: string): Promise<ApiResult<Board>> {
+    return sendRequest<Board>(`/boards/invite/${code}/join`, {
+      method: "POST",
+      requiresAuth: true,
+      successMessage: "Joined board."
+    });
+  },
+
+  async getMembers(boardId: string): Promise<ApiResult<BoardMember[]>> {
+    return sendRequest<BoardMember[]>(`/boards/${boardId}/members`, {
+      requiresAuth: true,
+      successMessage: "Loaded members."
+    });
+  },
+
+  async leave(boardId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/boards/${boardId}/leave`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Left board."
+    });
+  },
+
+  async removeMember(boardId: string, userId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/boards/${boardId}/members/${userId}`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Member removed."
+    });
+  },
+
+  async addOutfit(boardId: string, outfitId: string): Promise<ApiResult<OutfitResponse>> {
+    return sendRequest<OutfitResponse>(`/boards/${boardId}/outfits?outfit_id=${outfitId}`, {
+      method: "POST",
+      requiresAuth: true,
+      successMessage: "Outfit added to board."
+    });
+  },
+
+  async getOutfits(boardId: string, input?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<ApiResult<BoardOutfitPage>> {
+    const params = new URLSearchParams();
+    if (input?.cursor) params.set("cursor", input.cursor);
+    if (input?.limit) params.set("limit", String(input.limit));
+    const query = params.toString();
+    return sendRequest<BoardOutfitPage>(`/boards/${boardId}/outfits${query ? `?${query}` : ""}`, {
+      requiresAuth: true,
+      successMessage: "Loaded board outfits."
+    });
+  },
+
+  async removeOutfit(boardId: string, outfitId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/boards/${boardId}/outfits/${outfitId}`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Outfit removed from board."
+    });
+  },
+
+  async pinOutfit(boardId: string, outfitId: string, pinned: boolean): Promise<ApiResult<OutfitResponse>> {
+    return sendRequest<OutfitResponse>(`/boards/${boardId}/outfits/${outfitId}/pin`, {
+      method: "PATCH",
+      body: { pinned },
+      requiresAuth: true,
+      successMessage: pinned ? "Outfit pinned." : "Outfit unpinned."
     });
   }
 };
@@ -408,6 +846,8 @@ export const outfitApiClient = {
 export const apiClient = {
   auth: authApiClient,
   outfits: outfitApiClient,
+  users: userApiClient,
+  boards: boardApiClient,
   request: sendRequest,
   clearAccessToken,
   getAccessToken,
