@@ -65,6 +65,13 @@ export type OutfitResponse = {
   clothing_items: OutfitClothingItem[];
 };
 
+export type OutfitOwner = {
+  id: string;
+  username?: string | null;
+  display_name?: string | null;
+  profile_image_url?: string | null;
+};
+
 export type FeedAuthor = {
   id: string;
   username?: string | null;
@@ -78,6 +85,15 @@ export type FeedOutfitResponse = OutfitResponse & {
 export type FeedPageResponse = {
   outfits: FeedOutfitResponse[];
   next_cursor?: string | null;
+};
+
+export type VaultPageResponse = {
+  outfits: OutfitResponse[];
+  next_cursor?: string | null;
+};
+
+export type OutfitDetailResponse = OutfitResponse & {
+  owner: OutfitOwner;
 };
 
 export type CreateOutfitInput = {
@@ -402,6 +418,38 @@ export const outfitApiClient = {
       requiresAuth: true,
       successMessage: "Loaded feed."
     });
+  },
+
+  async getMine(input?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<ApiResult<VaultPageResponse>> {
+    const params = new URLSearchParams();
+
+    if (input?.cursor) {
+      params.set("cursor", input.cursor);
+    }
+
+    if (input?.limit) {
+      params.set("limit", String(input.limit));
+    }
+
+    const query = params.toString();
+
+    return sendRequest<VaultPageResponse>(`/outfits/me${query ? `?${query}` : ""}`, {
+      requiresAuth: true,
+      successMessage: "Loaded vault."
+    });
+  },
+
+  async getById(id: string): Promise<ApiResult<OutfitDetailResponse>> {
+    return sendRequest<OutfitDetailResponse>(`/outfits/${id}`, {
+      successMessage: "Loaded outfit detail."
+    });
+  },
+
+  getStoryCardUrl(id: string) {
+    return `${DEFAULT_API_BASE_URL}/outfits/${id}/story-card`;
   }
 };
 
