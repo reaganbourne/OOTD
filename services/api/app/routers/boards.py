@@ -5,6 +5,7 @@ All board content is private: only members can read or post.
 The invite_code is the only way to join.
 """
 
+import hmac
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -254,6 +255,14 @@ def remove_outfit(
     """Remove an outfit from a board. Creator can remove any; members can remove their own."""
     _board_or_404(db, board_id)
     _require_member(db, board_id, current_user.id)
+    # Non-creators can only remove outfits they personally added.
+    if not board_crud.is_creator(db, board_id, current_user.id):
+        bo = board_crud.get_board_outfit(db, board_id, outfit_id)
+        if bo is None or bo.added_by != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only remove outfits you added.",
+            )
     board_crud.remove_outfit(db, board_id, outfit_id)
 
 
@@ -303,7 +312,8 @@ def cleanup_expired_boards(
     """
     if not settings.admin_secret:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Admin endpoint not configured.")
-    if x_admin_secret != settings.admin_secret:
+    provided = x_admin_secret or ""
+    if not hmac.compare_digest(provided, settings.admin_secret):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid admin secret.")
     deleted = board_crud.delete_expired_boards(db)
     return CleanupResult(deleted=deleted)

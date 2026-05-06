@@ -168,17 +168,15 @@ export type UserSearchResult = {
 };
 
 export type WrappedStats = {
-  year: number;
-  month: number;
+  month: string;           // "2026-04"
   total_outfits: number;
-  total_items: number;
-  top_colors: Array<{ color: string; count: number }>;
-  top_brands: Array<{ brand: string; count: number }>;
-  top_categories: Array<{ category: string; count: number }>;
+  top_colors: string[];    // up to 3, most frequent first
+  top_brands: string[];    // up to 3, most frequent first
+  top_category: string | null;
+  vibe_of_month: string | null;
+  most_active_day: string | null;  // e.g. "Monday"
   longest_streak: number;
-  current_streak: number;
-  most_worn_vibe: string | null;
-  outfits_by_week: Array<{ week: number; count: number }>;
+  top_outfit: OutfitResponse | null;
 };
 
 // ── Boards ────────────────────────────────────────────────────────────────────
