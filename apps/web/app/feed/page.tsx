@@ -469,6 +469,12 @@ export default function FeedPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              <Link href="/explore" className="icon-button" aria-label="Explore">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="m14.5 9.5-5 2-2 5 5-2 2-5Z" />
+                </svg>
+              </Link>
               <Link href="/search" className="icon-button" aria-label="Search people">
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="7" />
