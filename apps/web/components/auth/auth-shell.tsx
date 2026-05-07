@@ -9,12 +9,14 @@ type AuthShellProps = {
 
 const shellCopy = {
   login: {
+    heading: "log in",
     eyebrow: "welcome back.",
     alternateLabel: "need an account?",
     alternateHref: "/signup",
     alternateCta: "sign up"
   },
   signup: {
+    heading: "create account",
     eyebrow: "start saving your fits.",
     alternateLabel: "already have an account?",
     alternateHref: "/login",
@@ -34,6 +36,9 @@ export function AuthShell({ mode, children }: AuthShellProps) {
         </p>
 
         <div className="w-full">
+          <h1 className="mb-1 text-center font-display text-3xl tracking-[-0.02em] text-ink">
+            {copy.heading}
+          </h1>
           <p className="mb-6 text-center text-sm text-mute">{copy.eyebrow}</p>
 
           {children}
