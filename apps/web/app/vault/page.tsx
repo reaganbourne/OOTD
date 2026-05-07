@@ -218,10 +218,10 @@ export default function VaultPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Link href="/feed" className="icon-button" aria-label="Go to feed">
+              <Link href="/search" className="icon-button" aria-label="Search people">
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 10.5 12 4l8 6.5" />
-                  <path d="M6.5 10v8.5h11V10" />
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m21 21-4.35-4.35" />
                 </svg>
               </Link>
             </div>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 type MobileNavProps = {
-  active: "home" | "boards" | "vault" | "profile" | "search";
+  active: "home" | "boards" | "vault" | "profile" | "none";
 };
 
 function HomeIcon({ active }: { active: boolean }) {
@@ -63,24 +63,6 @@ function ProfileIcon({ active }: { active: boolean }) {
   );
 }
 
-function SearchIcon({ active }: { active: boolean }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={`h-5 w-5 ${active ? "text-[#f46a93]" : "text-plum/60"}`}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m21 21-4.35-4.35" />
-    </svg>
-  );
-}
-
 function VaultIcon({ active }: { active: boolean }) {
   return (
     <svg
@@ -104,7 +86,7 @@ function NavItem({
   href,
   label,
   active,
-  icon
+  icon,
 }: {
   href: string;
   label: string;
@@ -114,7 +96,7 @@ function NavItem({
   return (
     <Link
       href={href}
-      className="flex min-w-[72px] flex-col items-center gap-1 rounded-full px-4 py-2 text-[0.72rem] font-medium text-plum/72 transition hover:text-plum"
+      className="flex min-w-[56px] flex-col items-center gap-1 rounded-full px-3 py-2 text-[0.72rem] font-medium text-plum/72 transition hover:text-plum"
     >
       {icon}
       <span className={active ? "text-[#f46a93]" : ""}>{label}</span>
@@ -133,7 +115,28 @@ export function MobileNav({ active }: MobileNavProps) {
       <div className="mobile-dock">
         <NavItem href="/feed" label="Home" active={active === "home"} icon={<HomeIcon active={active === "home"} />} />
         <NavItem href="/boards" label="Boards" active={active === "boards"} icon={<BoardsIcon active={active === "boards"} />} />
-        <NavItem href="/search" label="Search" active={active === "search"} icon={<SearchIcon active={active === "search"} />} />
+
+        {/* Center upload FAB — pops above the dock */}
+        <Link
+          href="/upload"
+          aria-label="Upload outfit"
+          className="-mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#ef6c96] to-[#f493b0] shadow-[0_8px_28px_rgba(244,106,147,0.45)] transition hover:brightness-[0.97] active:scale-[0.96]"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="h-6 w-6 text-white"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 5v14" />
+            <path d="M5 12h14" />
+          </svg>
+        </Link>
+
         <NavItem href="/vault" label="Vault" active={active === "vault"} icon={<VaultIcon active={active === "vault"} />} />
         <NavItem href="/profile" label="Profile" active={active === "profile"} icon={<ProfileIcon active={active === "profile"} />} />
       </div>

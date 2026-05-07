@@ -293,7 +293,7 @@ export default function SearchPage() {
         </section>
       </div>
 
-      <MobileNav active="search" />
+      <MobileNav active="none" />
     </main>
   );
 }
