@@ -191,7 +191,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
             </Link>
           </div>
         </div>
-        <MobileNav active="none" />
+        <MobileNav active="boards" />
       </main>
     );
   }
@@ -209,7 +209,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
             </Link>
           </div>
         </div>
-        <MobileNav active="none" />
+        <MobileNav active="boards" />
       </main>
     );
   }
@@ -359,7 +359,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
           ) : null}
         </section>
       </div>
-      <MobileNav active="none" />
+      <MobileNav active="boards" />
     </main>
   );
 }

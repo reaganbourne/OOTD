@@ -18,55 +18,72 @@ export default async function HomePage() {
   return (
     <main
       className="relative min-h-screen overflow-hidden"
-      style={{ background: "#F8C8DC" }}
+      style={{
+        background:
+          "radial-gradient(120% 80% at 80% 0%, rgba(255,255,255,0.45), transparent 60%), radial-gradient(80% 60% at 0% 100%, rgba(232,168,192,0.55), transparent 60%), #F8C8DC"
+      }}
     >
-      {/* Radial glow overlays — soft depth like the design */}
+      {/* Mobile — full pink, left-aligned, space-between */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(253,237,243,0.55) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 80% 100%, rgba(232,168,192,0.45) 0%, transparent 60%)"
-        }}
-      />
-
-      {/* Mobile-first centered layout */}
-      <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center md:hidden">
-        {/* Wordmark */}
-        <p
-          className="font-display leading-none"
-          style={{ fontSize: "88px", color: "#faf7f5" }}
-        >
-          checkd
-        </p>
-
-        {/* Tagline */}
-        <p
-          className="mt-6 font-display"
-          style={{ fontSize: "22px", color: "#8a7a80", lineHeight: 1.4 }}
-        >
-          your daily fit, kept close.<br />shared with the girls.
-        </p>
-
-        {/* CTAs */}
-        <div className="mt-10 flex w-full max-w-xs flex-col gap-3">
-          <Link
-            href="/signup"
-            className="btn-primary"
-            style={{ background: "#1a1416", color: "#faf7f5" }}
+        className="relative flex min-h-screen flex-col md:hidden"
+        style={{ padding: "60px 28px 40px" }}
+      >
+        {/* Top: est. tag + wordmark + tagline */}
+        <div>
+          <div
+            style={{
+              fontFamily: "ui-monospace, 'SF Mono', Menlo, monospace",
+              fontSize: 10,
+              letterSpacing: "0.15em",
+              color: "#faf7f5",
+              opacity: 0.7,
+              textTransform: "lowercase"
+            }}
           >
-            create account
-          </Link>
-          <Link
-            href="/login"
-            className="inline-flex h-[50px] items-center justify-center rounded-full border border-[rgba(26,20,22,0.25)] px-6 text-sm font-medium lowercase text-ink transition hover:border-ink"
+            est. 2026
+          </div>
+          <div
+            className="font-display"
+            style={{ fontSize: 88, lineHeight: 0.95, letterSpacing: "-0.01em", color: "#faf7f5", marginTop: 40 }}
           >
-            i already have one
-          </Link>
+            checkd
+          </div>
+          <div
+            className="font-display"
+            style={{ fontSize: 22, lineHeight: 1.25, marginTop: 14, color: "#faf7f5", opacity: 0.92, maxWidth: 260 }}
+          >
+            your daily fit, kept&nbsp;close. shared with the&nbsp;girls.
+          </div>
+        </div>
+
+        {/* Bottom: CTAs + terms */}
+        <div>
+          <div className="flex flex-col gap-2.5">
+            <Link
+              href="/signup"
+              className="flex h-[50px] items-center justify-center rounded-full text-sm font-medium lowercase"
+              style={{ background: "#1a1416", color: "#faf7f5" }}
+            >
+              create account
+            </Link>
+            <Link
+              href="/login"
+              className="flex h-[50px] items-center justify-center rounded-full border text-sm font-medium lowercase"
+              style={{ borderColor: "currentColor", color: "#faf7f5" }}
+            >
+              i already have one
+            </Link>
+          </div>
+          <p className="mt-3.5 text-center text-xs" style={{ color: "#faf7f5", opacity: 0.85 }}>
+            by continuing you agree to our{" "}
+            <Link href="/terms" className="underline">terms</Link>
+            {" "}&amp;{" "}
+            <Link href="/privacy" className="underline">privacy</Link>
+          </p>
         </div>
       </div>
 
-      {/* Desktop / laptop — two-column layout, still pink-toned */}
+      {/* Desktop / laptop — two-column card layout */}
       <div className="relative hidden min-h-screen md:flex md:items-center md:justify-center md:px-8 md:py-12">
         <section className="w-full max-w-4xl overflow-hidden rounded-2xl border border-pink-deep/40 bg-paper/90 shadow-lift backdrop-blur-sm">
           <div className="grid lg:grid-cols-[1fr_380px]">

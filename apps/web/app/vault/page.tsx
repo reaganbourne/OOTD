@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MobileNav } from "@/components/chrome/mobile-nav";
-import { SearchBar } from "@/components/chrome/search-bar";
 import {
   OutfitCard,
   OutfitCardSkeleton,
@@ -59,14 +58,6 @@ export default function VaultPage() {
 
   // Like state
   const [likes, setLikes] = useState<LikeMap>({});
-
-  // Search state
-  const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<OutfitResponse[]>([]);
-  const [searchStatus, setSearchStatus] = useState<"idle" | "searching" | "done">("idle");
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isSearching = query.trim().length > 0;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -135,29 +126,6 @@ export default function VaultPage() {
 
   const sentinelRef = useSentinel(() => { void loadMore(); });
 
-  // Debounced search
-  useEffect(() => {
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-
-    const q = query.trim();
-    if (!q) {
-      setSearchResults([]);
-      setSearchStatus("idle");
-      return;
-    }
-
-    setSearchStatus("searching");
-    searchTimerRef.current = setTimeout(async () => {
-      const result = await apiClient.outfits.searchVault(q, 24);
-      if (result.ok) setSearchResults(result.data);
-      setSearchStatus("done");
-    }, 350);
-
-    return () => {
-      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    };
-  }, [query]);
-
   async function handleLike(outfitId: string) {
     const current = likes[outfitId];
     const isLiked = current?.liked ?? false;
@@ -203,63 +171,106 @@ export default function VaultPage() {
   }
 
   const displayName = user?.display_name ?? user?.username ?? "you";
-  const displayOutfits = isSearching ? searchResults : outfits;
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-10">
+    <main className="pb-28">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h1 className="font-display text-[2.5rem] leading-none text-ink">
-                my vault
-              </h1>
-              <p className="mt-1 text-sm text-mute">{displayName}&rsquo;s fits</p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Link href="/search" className="icon-button" aria-label="Search people">
-                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-              </Link>
-            </div>
+        {/* vault topbar — checkd wordmark (ink 30px) + search + filter */}
+        <div
+          className="flex items-center justify-between bg-paper"
+          style={{ padding: "8px 20px 12px" }}
+        >
+          <p
+            className="font-display leading-none text-ink"
+            style={{ fontSize: 30, lineHeight: 0.95, letterSpacing: "-0.01em" }}
+          >
+            checkd
+          </p>
+          <div className="flex items-center" style={{ gap: 6 }}>
+            <button
+              type="button"
+              aria-label="Search"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              style={{ width: 36, height: 36 }}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              aria-label="Filter"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              style={{ width: 36, height: 36 }}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                <path d="M3 6h18M6 12h12M10 18h4" />
+              </svg>
+            </button>
           </div>
+        </div>
 
-          <SearchBar
-            placeholder="Search your vault"
-            value={query}
-            onChange={setQuery}
-          />
-
-          {!isSearching ? (
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="filter-chip filter-chip-active">Recent</span>
-              <span className="filter-chip">Color</span>
-              <span className="filter-chip">Event</span>
-              <span className="filter-chip">Category</span>
-            </div>
-          ) : null}
+        {/* vault-head */}
+        <header style={{ padding: "0 20px 10px" }}>
+          <h1 className="font-display text-ink" style={{ fontSize: 36, margin: 0, lineHeight: 1, letterSpacing: "-0.01em" }}>
+            my vault
+          </h1>
+          <p className="text-mute" style={{ fontSize: 11.5, marginTop: 4 }}>
+            {outfits.length} fits · {displayName}
+          </p>
         </header>
 
-        {/* ── Search results ───────────────────────────────────────── */}
-        {isSearching ? (
-          <section>
-            {searchStatus === "searching" ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {Array.from({ length: 4 }).map((_, i) => <OutfitCardSkeleton key={i} showAuthor={false} />)}
-              </div>
-            ) : searchResults.length === 0 ? (
-              <div className="soft-panel px-6 py-10 text-center">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">No results</p>
-                <p className="mt-3 text-sm leading-6 text-ink-soft">
-                  Nothing in your vault matched &ldquo;{query}&rdquo;.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {searchResults.map((outfit) => (
+        {/* filter chips */}
+        <div
+          className="flex overflow-x-auto"
+          style={{ padding: "4px 20px 12px", gap: 8 }}
+        >
+          {["all", "brown", "formal", "streetwear"].map((chip, i) => (
+            <span
+              key={chip}
+              className="flex-shrink-0 inline-flex items-center rounded-full border text-[11px]"
+              style={{
+                padding: "5px 11px",
+                background: i === 0 ? "var(--ink)" : "#fff",
+                borderColor: i === 0 ? "var(--ink)" : "var(--line)",
+                color: i === 0 ? "var(--paper)" : "var(--ink-soft)",
+              }}
+            >
+              {chip}
+            </span>
+          ))}
+        </div>
+
+        {/* ── Vault grid — 3-col, 2px gap, per design vault-grid ─────── */}
+        <section>
+          {errorMessage && vaultStatus !== "loading" ? (
+            <div className="mx-5 my-3 rounded-xl border border-pink-deep/30 bg-pink-soft px-4 py-3 text-sm text-error">
+              {errorMessage}
+            </div>
+          ) : null}
+
+          {vaultStatus === "loading" ? (
+            <div className="grid grid-cols-3 gap-0.5 pt-0.5">
+              {Array.from({ length: 9 }).map((_, i) => <OutfitCardSkeleton key={i} showAuthor={false} />)}
+            </div>
+          ) : null}
+
+          {vaultStatus === "ready" && outfits.length === 0 ? (
+            <div className="px-5 py-10 text-center">
+              <p className="font-display text-2xl text-ink">your archive is ready.</p>
+              <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
+                it just needs your first look.
+              </p>
+              <Link href="/upload" className="mt-6 inline-block btn-primary">
+                upload your first look
+              </Link>
+            </div>
+          ) : null}
+
+          {vaultStatus === "ready" && outfits.length > 0 ? (
+            <>
+              <div className="grid grid-cols-3 gap-0.5 pt-0.5">
+                {outfits.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     outfit={toCardData(outfit)}
@@ -271,73 +282,22 @@ export default function VaultPage() {
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />
                 ))}
+                {loadingMore
+                  ? Array.from({ length: 3 }).map((_, i) => <OutfitCardSkeleton key={`skel-${i}`} showAuthor={false} />)
+                  : null}
               </div>
-            )}
-          </section>
-        ) : (
-          /* ── Vault grid ─────────────────────────────────────────── */
-          <section>
-            {errorMessage && vaultStatus !== "loading" ? (
-              <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">
-                {errorMessage}
-              </div>
-            ) : null}
+              {nextCursor ? <div ref={sentinelRef} className="h-px" /> : null}
+            </>
+          ) : null}
 
-            {vaultStatus === "loading" ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, i) => <OutfitCardSkeleton key={i} showAuthor={false} />)}
-              </div>
-            ) : null}
-
-            {vaultStatus === "ready" && outfits.length === 0 ? (
-              <div className="soft-panel p-6 sm:p-8">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">Empty vault</p>
-                <h2 className="mt-4 max-w-2xl text-4xl leading-tight text-ink sm:text-5xl">
-                  Your archive is ready. It just needs your first look.
-                </h2>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <Link href="/upload" className="btn-primary">
-                    Upload your first look
-                  </Link>
-                  <Link href="/feed" className="rounded-[1.2rem] border border-rose/12 bg-white px-5 py-4 text-center text-sm font-semibold text-plum transition hover:border-rose/22">
-                    Browse your feed
-                  </Link>
-                </div>
-              </div>
-            ) : null}
-
-            {vaultStatus === "ready" && outfits.length > 0 ? (
-              <>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                  {outfits.map((outfit) => (
-                    <OutfitCard
-                      key={outfit.id}
-                      outfit={toCardData(outfit)}
-                      showAuthor={false}
-                      showCaption={false}
-                      showAccentMarker
-                      liked={likes[outfit.id]?.liked}
-                      likeCount={likes[outfit.id]?.count}
-                      onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
-                    />
-                  ))}
-                  {loadingMore
-                    ? Array.from({ length: 3 }).map((_, i) => <OutfitCardSkeleton key={`skel-${i}`} showAuthor={false} />)
-                    : null}
-                </div>
-                {nextCursor ? <div ref={sentinelRef} className="h-px" /> : null}
-              </>
-            ) : null}
-
-            {vaultStatus === "error" ? (
-              <div className="mt-4 flex justify-center">
-                <button type="button" onClick={() => router.refresh()} className="rounded-full border border-rose/12 bg-white px-4 py-3 text-sm font-semibold text-plum transition hover:border-rose/22">
-                  Refresh the page
-                </button>
-              </div>
-            ) : null}
-          </section>
-        )}
+          {vaultStatus === "error" ? (
+            <div className="mt-4 flex justify-center">
+              <button type="button" onClick={() => router.refresh()} className="rounded-full border border-line bg-white px-4 py-3 text-sm font-medium text-ink-soft transition hover:border-pink-deep">
+                refresh
+              </button>
+            </div>
+          ) : null}
+        </section>
       </div>
       <MobileNav active="vault" />
     </main>

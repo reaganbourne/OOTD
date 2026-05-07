@@ -222,34 +222,51 @@ export default function BoardsPage() {
 
   return (
     <>
-      <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
+      <main className="pb-28">
         <div className="mx-auto max-w-3xl">
 
-          {/* Header */}
-          <header className="mb-6 flex items-start justify-between gap-3">
+          {/* Topbar — matches design 03.01 */}
+          <div
+            className="flex items-center justify-between bg-paper"
+            style={{ padding: "8px 20px 12px" }}
+          >
             <div>
-              <p className="font-display text-[2.2rem] leading-none text-pink-deep">checkd</p>
-              <p className="mt-1 text-sm text-mute">Your outfit boards</p>
+              <p
+                className="font-display leading-none text-pink-deep"
+                style={{ fontSize: 38, lineHeight: 0.95, letterSpacing: "-0.01em" }}
+              >
+                checkd
+              </p>
+              <p style={{ fontSize: 11, color: "var(--mute)", marginTop: 2 }}>
+                your outfit boards
+              </p>
             </div>
-            <div className="flex items-center gap-2 mt-1">
-              <Link href="/search" className="icon-button" aria-label="Search people">
-                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m21 21-4.35-4.35" />
+            <div className="flex items-center" style={{ gap: 6 }}>
+              <Link
+                href="/search"
+                aria-label="Search"
+                className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+                style={{ width: 36, height: 36 }}
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                  <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
                 </svg>
               </Link>
               <button
                 type="button"
                 onClick={() => setShowCreate(true)}
-                className="icon-button"
                 aria-label="Create new board"
+                className="flex items-center justify-center rounded-full border text-paper"
+                style={{ width: 36, height: 36, background: "var(--ink)", borderColor: "var(--ink)" }}
               >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
                   <path d="M12 5v14M5 12h14" />
                 </svg>
               </button>
             </div>
-          </header>
+          </div>
+
+          <div className="px-4 sm:px-5">
 
           {errorMessage ? (
             <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">{errorMessage}</div>
@@ -301,6 +318,7 @@ export default function BoardsPage() {
               {boards.map((b) => <BoardCard key={b.id} board={b} />)}
             </div>
           ) : null}
+          </div>{/* end px wrapper */}
         </div>
       </main>
 
@@ -308,7 +326,7 @@ export default function BoardsPage() {
         <CreateBoardModal onClose={() => setShowCreate(false)} onCreate={handleCreated} />
       ) : null}
 
-      <MobileNav active="none" />
+      <MobileNav active="boards" />
     </>
   );
 }

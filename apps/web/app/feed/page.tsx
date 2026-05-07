@@ -98,13 +98,22 @@ function useSentinel(onIntersect: () => void) {
 
 function TabSwitcher({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
-    <div className="inline-flex rounded-full border border-rose/12 bg-white/80 p-1">
+    <div
+      className="inline-flex border border-line bg-white"
+      style={{ borderRadius: 999, padding: 3, margin: "0 20px 14px" }}
+    >
       {(["vault", "boards"] as Tab[]).map((tab) => (
         <button
           key={tab}
           type="button"
           onClick={() => onChange(tab)}
-          className={`rounded-full px-5 py-2 text-[0.78rem] font-medium lowercase transition ${
+          style={{
+            padding: "7px 16px",
+            borderRadius: 999,
+            fontSize: 12,
+            fontWeight: 500,
+          }}
+          className={`transition ${
             active === tab
               ? "bg-ink text-paper"
               : "text-mute hover:text-ink"
@@ -455,50 +464,74 @@ export default function FeedPage() {
   }
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-10">
+    <main className="pb-28">
       <div className="mx-auto max-w-7xl">
 
-        {/* ── Header ───────────────────────────────────────────────────── */}
-        <header className="mb-6">
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <div>
-              <p className="font-display text-[2.2rem] leading-none text-pink-deep">
-                checkd
-              </p>
-              <p className="mt-1 text-sm text-mute">welcome back, {displayName}.</p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Link href="/explore" className="icon-button" aria-label="Explore">
-                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="m14.5 9.5-5 2-2 5 5-2 2-5Z" />
-                </svg>
-              </Link>
-              <Link href="/search" className="icon-button" aria-label="Search people">
-                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-              </Link>
-              <button type="button" className="icon-button" aria-label="Notifications">
-                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6.5 10a5.5 5.5 0 1 1 11 0c0 5 2 6 2 6h-15s2-1 2-6" />
-                  <path d="M10 19a2 2 0 0 0 4 0" />
-                </svg>
-              </button>
-            </div>
+        {/* ── Topbar ─────────────────────────────────────────────────── */}
+        <div
+          className="flex items-center justify-between bg-paper"
+          style={{ padding: "8px 20px 12px" }}
+        >
+          <div>
+            <p
+              className="font-display leading-none text-pink-deep"
+              style={{ fontSize: 38, lineHeight: 0.95, letterSpacing: "-0.01em" }}
+            >
+              checkd
+            </p>
+            <p style={{ fontSize: 11, color: "var(--mute)", marginTop: 2 }}>
+              welcome back, {displayName}.
+            </p>
           </div>
 
-          <TabSwitcher active={activeTab} onChange={setActiveTab} />
-        </header>
+          <div className="flex items-center" style={{ gap: 6 }}>
+            {/* Explore */}
+            <button
+              type="button"
+              aria-label="Explore"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              style={{ width: 36, height: 36 }}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                <circle cx="12" cy="12" r="9" /><path d="m14.5 9.5-5 2-2 5 5-2 2-5z" />
+              </svg>
+            </button>
+            {/* Search */}
+            <button
+              type="button"
+              aria-label="Search"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              style={{ width: 36, height: 36 }}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
+            {/* Bell */}
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              style={{ width: 36, height: 36 }}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+                <path d="M6.5 10a5.5 5.5 0 1 1 11 0c0 5 2 6 2 6h-15s2-1 2-6" /><path d="M10 19a2 2 0 0 0 4 0" />
+              </svg>
+            </button>
+          </div>
+        </div>
 
-        {/* ── Tab content ──────────────────────────────────────────────── */}
-        {activeTab === "vault" ? (
-          <VaultFeedTab displayName={displayName} />
-        ) : (
-          <BoardsActivityTab />
-        )}
+        {/* ── Pill tabs ──────────────────────────────────────────────── */}
+        <TabSwitcher active={activeTab} onChange={setActiveTab} />
+
+        {/* ── Tab content ──────────────────────────────────────────── */}
+        <div className="px-4 sm:px-5">
+          {activeTab === "vault" ? (
+            <VaultFeedTab displayName={displayName} />
+          ) : (
+            <BoardsActivityTab />
+          )}
+        </div>
       </div>
 
       <MobileNav active="feed" />

@@ -9,16 +9,20 @@ type AuthShellProps = {
 
 const shellCopy = {
   login: {
-    heading: "welcome back",
-    eyebrow: "let's see what you wore today.",
-    alternateLabel: "need an account?",
+    heading: "log in",
+    headingSize: 40,
+    headingMarginTop: 8,
+    eyebrow: "welcome back.",
+    alternateLabel: "new here?",
     alternateHref: "/signup",
-    alternateCta: "sign up"
+    alternateCta: "create account"
   },
   signup: {
-    heading: "make your account",
-    eyebrow: "start your fit diary in seconds.",
-    alternateLabel: "already have an account?",
+    heading: "create account",
+    headingSize: 40,
+    headingMarginTop: 8,
+    eyebrow: "welcome — let's set you up.",
+    alternateLabel: "have an account?",
     alternateHref: "/login",
     alternateCta: "log in"
   }
@@ -28,54 +32,48 @@ export function AuthShell({ mode, children }: AuthShellProps) {
   const copy = shellCopy[mode];
 
   return (
-    <main className="min-h-screen bg-paper px-4 py-10 sm:px-6">
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-sm flex-col justify-center">
+    <main className="flex min-h-screen flex-col bg-paper" style={{ padding: "20px 28px 0" }}>
+      {/* ‹ back — plain text link, exactly as in design */}
+      <div style={{ marginBottom: 20 }}>
+        <Link
+          href="/"
+          className="text-ink-soft transition hover:text-ink"
+          style={{ fontSize: 13 }}
+        >
+          ‹ back
+        </Link>
+      </div>
 
-        {/* Back arrow */}
-        <div className="mb-8">
-          <Link
-            href="/"
-            aria-label="Back to home"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line text-mute transition hover:border-pink-deep hover:text-ink"
-          >
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M19 12H5" />
-              <path d="m12 19-7-7 7-7" />
-            </svg>
-          </Link>
-        </div>
+      <div className="flex flex-1 flex-col" style={{ paddingBottom: 32 }}>
+        {/* Heading — serif italic per design */}
+        <h1
+          className="font-display text-ink"
+          style={{
+            fontSize: copy.headingSize,
+            margin: `${copy.headingMarginTop}px 0 0`,
+            letterSpacing: "-0.01em",
+            lineHeight: 1.1
+          }}
+        >
+          {copy.heading}
+        </h1>
+        <p className="text-mute" style={{ fontSize: 13, marginTop: 8 }}>
+          {copy.eyebrow}
+        </p>
 
-        <div className="w-full">
-          {/* Heading — serif italic, large, per checkd spec */}
-          <h1
-            className="font-display text-ink"
-            style={{ fontSize: mode === "login" ? "44px" : "40px", lineHeight: 1.1 }}
-          >
-            {copy.heading}
-          </h1>
-          <p className="mb-7 mt-2 text-sm text-mute">{copy.eyebrow}</p>
-
+        <div style={{ marginTop: 28 }}>
           {children}
-
-          <p className="mt-5 text-center text-sm text-mute">
-            {copy.alternateLabel}{" "}
-            <Link
-              href={copy.alternateHref}
-              className="font-medium text-ink-soft underline-offset-2 transition hover:text-ink hover:underline"
-            >
-              {copy.alternateCta}
-            </Link>
-          </p>
         </div>
+
+        <p className="mt-5 text-center text-sm text-mute">
+          {copy.alternateLabel}{" "}
+          <Link
+            href={copy.alternateHref}
+            className="text-ink underline-offset-2 transition hover:underline"
+          >
+            {copy.alternateCta}
+          </Link>
+        </p>
       </div>
     </main>
   );

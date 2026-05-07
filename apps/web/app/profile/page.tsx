@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient, type OutfitResponse, type PublicProfile } from "@/lib/api-client";
 import { MobileNav } from "@/components/chrome/mobile-nav";
-import { SearchBar } from "@/components/chrome/search-bar";
 import { OutfitCard, OutfitCardSkeleton, type OutfitCardData } from "@/components/outfits/outfit-card";
 import { useAuth } from "@/lib/auth-context";
 
@@ -28,50 +27,6 @@ function getInitial(displayName?: string | null, username?: string | null) {
   return source.charAt(0).toUpperCase();
 }
 
-// ── Avatar ────────────────────────────────────────────────────────────────────
-
-function Avatar({
-  src,
-  initial,
-  size = "lg",
-}: {
-  src?: string | null;
-  initial: string;
-  size?: "lg" | "xl";
-}) {
-  const dim = size === "xl" ? "h-24 w-24 text-2xl" : "h-16 w-16 text-lg";
-
-  if (src) {
-    return (
-      <img
-        src={src}
-        alt="Your profile photo"
-        className={`${dim} rounded-full border-2 border-line object-cover`}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={`${dim} flex items-center justify-center rounded-full border-2 border-line bg-pink-soft font-semibold text-ink-soft`}
-    >
-      {initial}
-    </div>
-  );
-}
-
-// ── Stat pill ─────────────────────────────────────────────────────────────────
-
-function StatPill({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="flex flex-col items-center gap-0.5">
-      <span className="font-display text-2xl leading-none tracking-[-0.04em] text-ink">
-        {value.toLocaleString()}
-      </span>
-      <span className="text-[0.68rem] uppercase tracking-[0.18em] text-mute">{label}</span>
-    </div>
-  );
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -85,12 +40,6 @@ export default function ProfilePage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<OutfitResponse[]>([]);
-  const [searchStatus, setSearchStatus] = useState<"idle" | "searching" | "done">("idle");
-  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSearching = searchQuery.trim().length > 0;
 
   // Redirect if not authed
   useEffect(() => {
@@ -141,21 +90,6 @@ export default function ProfilePage() {
     };
   }, [authLoading, isAuthenticated, user]);
 
-  useEffect(() => {
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    const q = searchQuery.trim();
-    if (!q) { setSearchResults([]); setSearchStatus("idle"); return; }
-
-    setSearchStatus("searching");
-    searchTimerRef.current = setTimeout(async () => {
-      const result = await apiClient.outfits.searchVault(q, 24);
-      if (result.ok) setSearchResults(result.data);
-      setSearchStatus("done");
-    }, 350);
-
-    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
-  }, [searchQuery]);
-
   async function handleLoadMore() {
     if (!nextCursor || isLoadingMore) return;
     setIsLoadingMore(true);
@@ -194,106 +128,144 @@ export default function ProfilePage() {
     <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
 
-        {/* ── Top bar ────────────────────────────────────────────────────── */}
-        <header className="mb-6 flex items-start justify-between gap-3">
-          <div>
-            <p className="font-display text-[2.2rem] leading-none text-pink-deep">
-              checkd
-            </p>
-            <p className="mt-1 text-sm text-mute">@{username}</p>
-          </div>
-
-          <div className="flex items-center gap-2 pt-1">
-            <Link href="/search" className="icon-button" aria-label="Search people">
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-4.5 w-4.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-            </Link>
-
-            <Link href="/profile/edit" className="icon-button" aria-label="Edit profile">
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-4.5 w-4.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" />
-              </svg>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="icon-button"
-              aria-label="Sign out"
-            >
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-4.5 w-4.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-            </button>
-          </div>
+        {/* ── Top bar — @username + ⋯ per design ─────────────────────────── */}
+        <header className="flex items-center justify-between border-b border-line bg-paper px-5 py-3.5">
+          <p className="font-display text-[22px] leading-none text-ink" style={{ letterSpacing: "-0.005em" }}>
+            @{username}
+          </p>
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="text-mute transition hover:text-ink"
+            aria-label="More options / sign out"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+              <circle cx="5" cy="12" r="1.3" />
+              <circle cx="12" cy="12" r="1.3" />
+              <circle cx="19" cy="12" r="1.3" />
+            </svg>
+          </button>
         </header>
 
-        {/* ── Profile card ───────────────────────────────────────────────── */}
-        <section className="soft-panel mb-6 px-6 py-7">
-          <div className="flex items-start gap-5">
-            <Avatar src={avatarSrc} initial={getInitial(displayName, username)} size="xl" />
+        {/* ── Profile head — centered, matches design exactly ─────────────── */}
+        <section
+          className="border-b border-line text-center"
+          style={{ padding: "24px 20px 18px" }}
+        >
+          {/* 88px pink circle avatar, paper initial in 54px serif italic */}
+          {avatarSrc ? (
+            <img
+              src={avatarSrc}
+              alt="Profile photo"
+              className="mx-auto rounded-full object-cover"
+              style={{ width: 88, height: 88, marginBottom: 12, border: "2px solid var(--line)" }}
+            />
+          ) : (
+            <div
+              className="mx-auto flex items-center justify-center rounded-full font-display"
+              style={{
+                width: 88,
+                height: 88,
+                background: "var(--pink)",
+                color: "var(--paper)",
+                fontSize: 54,
+                lineHeight: 1,
+                marginBottom: 12,
+              }}
+            >
+              {getInitial(displayName, username)}
+            </div>
+          )}
 
-            <div className="min-w-0 flex-1">
-              <h1 className="font-display text-3xl leading-tight tracking-[-0.03em] text-ink">
-                {displayName}
-              </h1>
-              {username ? (
-                <p className="mt-0.5 text-sm text-mute">@{username}</p>
-              ) : null}
-              {bio ? (
-                <p className="mt-3 text-sm leading-6 text-ink-soft">{bio}</p>
-              ) : (
-                <Link
-                  href="/profile/edit"
-                  className="mt-3 inline-block text-sm text-pink-deep hover:underline"
-                >
-                  Add a bio →
-                </Link>
-              )}
+          {/* Name — 28px serif italic */}
+          <h1
+            className="font-display text-ink"
+            style={{ fontSize: 28, lineHeight: 1, margin: 0 }}
+          >
+            {displayName}
+          </h1>
+
+          {/* Handle */}
+          <p className="text-mute" style={{ fontSize: 13, marginTop: 4 }}>
+            @{username}
+          </p>
+
+          {/* Bio */}
+          {bio ? (
+            <p className="mx-auto text-ink-soft" style={{ fontSize: 13, marginTop: 10, lineHeight: 1.4, maxWidth: 280 }}>
+              {bio}
+            </p>
+          ) : (
+            <Link
+              href="/profile/edit"
+              className="text-pink-deep hover:underline"
+              style={{ fontSize: 13, marginTop: 10, display: "inline-block" }}
+            >
+              add a bio →
+            </Link>
+          )}
+
+          {/* Stats — fits / followers / following */}
+          <div className="mx-auto flex justify-center" style={{ gap: 24, marginTop: 14 }}>
+            <div className="text-center">
+              <div className="font-medium text-ink" style={{ fontSize: 18 }}>
+                {outfits.length + (nextCursor ? 1 : 0)}
+              </div>
+              <div className="text-mute" style={{ fontSize: 10 }}>fits</div>
+            </div>
+            <div className="text-center">
+              <div className="font-medium text-ink" style={{ fontSize: 18 }}>
+                {followerCount}
+              </div>
+              <div className="text-mute" style={{ fontSize: 10 }}>followers</div>
+            </div>
+            <div className="text-center">
+              <div className="font-medium text-ink" style={{ fontSize: 18 }}>
+                {followingCount}
+              </div>
+              <div className="text-mute" style={{ fontSize: 10 }}>following</div>
             </div>
           </div>
 
-          {/* Stats row */}
-          <div className="mt-6 flex items-center justify-around border-t border-rose/8 pt-5">
-            <StatPill value={outfits.length + (nextCursor ? 1 : 0)} label="Outfits" />
-            <div className="h-8 w-px bg-rose/10" />
-            <StatPill value={followerCount} label="Followers" />
-            <div className="h-8 w-px bg-rose/10" />
-            <StatPill value={followingCount} label="Following" />
+          {/* Action buttons — edit profile + share + wrapped ✦ */}
+          <div className="mt-4 flex w-full gap-2">
+            <Link
+              href="/profile/edit"
+              className="flex flex-1 items-center justify-center rounded-full bg-ink text-paper transition hover:opacity-90"
+              style={{ height: 36, fontSize: 12 }}
+            >
+              edit profile
+            </Link>
+            <button
+              type="button"
+              className="flex flex-1 items-center justify-center rounded-full border border-line text-ink transition hover:border-ink"
+              style={{ height: 36, fontSize: 12 }}
+            >
+              share
+            </button>
+            <button
+              type="button"
+              className="flex flex-1 items-center justify-center rounded-full border border-line text-ink transition hover:border-ink"
+              style={{ height: 36, fontSize: 12 }}
+            >
+              wrapped ✦
+            </button>
           </div>
         </section>
+
+        {/* ── Profile tabs ─────────────────────────────────────────────── */}
+        <div className="flex border-b border-line">
+          {["fits", "tagged", "saved", "about"].map((tab, i) => (
+            <button
+              key={tab}
+              type="button"
+              className={`flex-1 py-[11px] text-center text-[12px] font-medium transition ${i === 0 ? "border-b-[1.5px] border-ink text-ink" : "text-mute hover:text-ink"}`}
+              style={{ marginBottom: i === 0 ? -1 : 0 }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
 
         {/* ── Error state ─────────────────────────────────────────────────── */}
         {errorMessage ? (
@@ -302,86 +274,37 @@ export default function ProfilePage() {
           </div>
         ) : null}
 
-        {/* ── Outfit grid ─────────────────────────────────────────────────── */}
+        {/* ── Outfit grid — 3-col, 2px gap, matches design vault-grid ─────── */}
         <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Your looks</h2>
-            <Link
-              href="/upload"
-              className="inline-flex items-center gap-1.5 rounded-full border border-rose/15 bg-white px-4 py-2 text-[0.78rem] font-semibold text-pink-deep transition hover:border-rose/28"
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 5v14" />
-                <path d="M5 12h14" />
-              </svg>
-              Add look
-            </Link>
-          </div>
-
-          <div className="mb-4">
-            <SearchBar
-              placeholder="Search your looks"
-              value={searchQuery}
-              onChange={setSearchQuery}
-            />
-          </div>
-
-          {/* Search results */}
-          {isSearching ? (
-            <>
-              {searchStatus === "searching" ? (
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  {Array.from({ length: 4 }).map((_, i) => <OutfitCardSkeleton key={i} showAuthor={false} />)}
-                </div>
-              ) : searchResults.length === 0 ? (
-                <div className="soft-panel px-5 py-8 text-center">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">No results</p>
-                  <p className="mt-2 text-sm text-mute">Nothing matched &ldquo;{searchQuery}&rdquo;.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                  {searchResults.map((outfit) => (
-                    <OutfitCard key={outfit.id} outfit={toCardData(outfit)} showAuthor={false} showCaption={false} showAccentMarker />
-                  ))}
-                </div>
-              )}
-            </>
-          ) : null}
-
-          {status === "loading" && !isSearching ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
+          {status === "loading" ? (
+            <div className="grid grid-cols-3 gap-0.5 pt-0.5">
+              {Array.from({ length: 9 }).map((_, i) => (
                 <OutfitCardSkeleton key={i} showAuthor={false} />
               ))}
             </div>
           ) : null}
 
-          {status === "ready" && outfits.length === 0 && !isSearching ? (
-            <div className="soft-panel px-6 py-10 text-center">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">
-                Nothing yet
-              </p>
-              <h2 className="mt-3 text-3xl text-ink">Start your style archive</h2>
+          {status === "ready" && outfits.length === 0 ? (
+            <div className="px-6 py-10 text-center">
+              <p className="font-display text-2xl text-ink">start your archive</p>
               <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
-                Upload your first outfit and it will live here, forever ready to revisit.
+                upload your first outfit and it will live here.
               </p>
-              <Link
-                href="/upload"
-                className="mt-6 inline-block btn-primary"
-              >
-                Upload your first look
+              <Link href="/upload" className="mt-6 inline-block btn-primary">
+                upload your first look
               </Link>
             </div>
           ) : null}
 
-          {status === "ready" && outfits.length > 0 && !isSearching ? (
+          {status === "ready" && outfits.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-3 gap-0.5 pt-0.5">
                 {outfits.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     outfit={toCardData(outfit)}
                     showAuthor={false}
+                    showCaption={false}
                     showAccentMarker
                   />
                 ))}
@@ -393,9 +316,9 @@ export default function ProfilePage() {
                     type="button"
                     onClick={() => void handleLoadMore()}
                     disabled={isLoadingMore}
-                    className="rounded-full border border-rose/12 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/22 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-full border border-line bg-white px-5 py-3 text-sm font-medium text-ink-soft transition hover:border-pink-deep disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {isLoadingMore ? "Loading more..." : "Load more looks"}
+                    {isLoadingMore ? "loading..." : "load more"}
                   </button>
                 </div>
               ) : null}
