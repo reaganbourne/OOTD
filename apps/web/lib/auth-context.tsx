@@ -43,6 +43,8 @@ type AuthContextValue = {
   login: (input: LoginInput) => Promise<AuthActionResult>;
   signup: (input: SignupInput) => Promise<AuthActionResult>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  setUser: (user: AuthUser) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -147,6 +149,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }
 
+  async function refreshUser() {
+    const meResult = await authApiClient.me();
+    if (meResult.ok) {
+      setUser(meResult.data);
+    }
+  }
+
   async function logout() {
     setIsLoading(true);
 
@@ -166,7 +175,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         signup,
-        logout
+        logout,
+        refreshUser,
+        setUser
       }}
     >
       {children}
