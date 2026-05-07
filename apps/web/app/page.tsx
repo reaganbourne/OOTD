@@ -45,41 +45,39 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="px-4 py-6 sm:px-6 lg:px-10">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl items-center">
+    <main className="px-4 py-10 sm:px-6 lg:px-10">
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-5xl items-center">
         <section className="soft-panel w-full overflow-hidden">
-          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="bg-brand-glow px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-plum/70">
-                OOTD Vault
-              </p>
-              <h1 className="mt-4 max-w-2xl text-5xl leading-none text-ink sm:text-6xl">
-                Your personal style archive, built for the plans that become memories.
+          <div className="grid lg:grid-cols-[1fr_380px]">
+            {/* Left — brand + feature pillars */}
+            <div className="border-b border-line px-6 py-8 sm:px-8 sm:py-10 lg:border-b-0 lg:border-r lg:px-10 lg:py-12">
+              <p className="font-display text-6xl italic text-pink-deep sm:text-7xl">OOTD</p>
+              <h1 className="mt-5 max-w-xl text-3xl leading-snug text-ink sm:text-4xl">
+                your daily fit, kept close,<br />shared with the girls.
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-plum/85 sm:text-lg">
-                OOTD Vault helps you log outfits, coordinate looks with friends, and turn
-                great nights into reusable style history instead of one-off screenshots.
+              <p className="mt-4 max-w-md text-sm leading-7 text-ink-soft">
+                log outfits, coordinate with friends, and turn great nights into reusable style history.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-wrap gap-2">
                 {highlights.map((highlight) => (
                   <span
                     key={highlight}
-                    className="rounded-full border border-plum/15 bg-white/75 px-4 py-2 text-sm text-plum/85"
+                    className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-xs lowercase text-mute"
                   >
                     {highlight}
                   </span>
                 ))}
               </div>
 
-              <div className="mt-10 grid gap-4 sm:grid-cols-2">
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {productPillars.map((pillar) => (
                   <article
                     key={pillar.title}
-                    className="rounded-[1.75rem] border border-plum/12 bg-white/72 p-5 shadow-card"
+                    className="rounded-xl border border-line bg-paper p-4"
                   >
-                    <h2 className="text-2xl text-ink">{pillar.title}</h2>
-                    <p className="mt-3 text-sm leading-6 text-plum/82">
+                    <h2 className="font-display text-xl italic text-ink">{pillar.title}</h2>
+                    <p className="mt-2 text-xs leading-5 text-mute">
                       {pillar.description}
                     </p>
                   </article>
@@ -87,43 +85,32 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="flex flex-col justify-between gap-8 px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+            {/* Right — CTA */}
+            <div className="flex flex-col justify-between gap-8 px-6 py-8 sm:px-8 sm:py-10 lg:px-8 lg:py-12">
               <div>
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-plum/70">
-                  Launch loop
-                </p>
-                <h2 className="mt-4 max-w-lg text-4xl leading-tight text-ink">
-                  Save the outfit, share the vibe, and remember what actually worked.
+                <h2 className="text-2xl leading-snug text-ink">
+                  a soft place for outfits.
                 </h2>
-                <p className="mt-4 max-w-lg text-base leading-7 text-plum/85">
-                  Start with your archive, then layer on social discovery, event planning,
-                  AI support, and instant export for the looks worth keeping.
+                <p className="mt-3 text-sm leading-6 text-ink-soft">
+                  start with your archive, then layer on social discovery, event planning, and story-ready exports.
                 </p>
               </div>
 
-              <div className="rounded-[1.75rem] border border-plum/12 bg-cream/75 p-5">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.26em] text-plum/70">
-                  Built for
-                </p>
-                <ul className="mt-4 grid gap-3 text-sm leading-6 text-plum/85">
-                  <li>People who want a real archive of what they wore and loved</li>
-                  <li>Friends coordinating events without matching by accident</li>
-                  <li>Creators who want captions and exports without extra steps</li>
+              <div className="rounded-xl border border-line bg-paper p-4">
+                <p className="text-xs font-medium lowercase text-mute">built for</p>
+                <ul className="mt-3 grid gap-2 text-xs leading-5 text-ink-soft">
+                  <li>people who want a real archive of what they wore</li>
+                  <li>friends coordinating events without matching by accident</li>
+                  <li>creators who want captions and exports without extra steps</li>
                 </ul>
               </div>
 
-              <div className="grid gap-4">
-                <Link
-                  href="/signup"
-                  className="rounded-[1.5rem] bg-plum px-5 py-4 text-center text-sm font-semibold text-white transition hover:bg-[#5c3049]"
-                >
-                  Create your account
+              <div className="grid gap-3">
+                <Link href="/signup" className="btn-primary text-center">
+                  get started
                 </Link>
-                <Link
-                  href="/login"
-                  className="rounded-[1.5rem] border border-plum/20 bg-white/80 px-5 py-4 text-center text-sm font-semibold text-plum transition hover:bg-white"
-                >
-                  Log in
+                <Link href="/login" className="btn-secondary text-center">
+                  log in
                 </Link>
               </div>
             </div>

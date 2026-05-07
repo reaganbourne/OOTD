@@ -194,7 +194,7 @@ export default function VaultPage() {
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl items-center justify-center">
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
-            <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">OOTD</p>
             <h1 className="mt-4 text-4xl text-ink">Checking your session</h1>
           </section>
         </div>
@@ -211,10 +211,10 @@ export default function VaultPage() {
         <header className="mb-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">
+              <p className="font-display text-[3.4rem] leading-none text-pink-deep">
                 OOTD
               </p>
-              <p className="mt-1 text-sm text-plum/54">{displayName}&rsquo;s vault</p>
+              <p className="mt-1 text-sm text-mute">{displayName}&rsquo;s vault</p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -252,8 +252,8 @@ export default function VaultPage() {
               </div>
             ) : searchResults.length === 0 ? (
               <div className="soft-panel px-6 py-10 text-center">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/52">No results</p>
-                <p className="mt-3 text-sm leading-6 text-plum/68">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">No results</p>
+                <p className="mt-3 text-sm leading-6 text-ink-soft">
                   Nothing in your vault matched &ldquo;{query}&rdquo;.
                 </p>
               </div>
@@ -278,7 +278,7 @@ export default function VaultPage() {
           /* ── Vault grid ─────────────────────────────────────────── */
           <section>
             {errorMessage && vaultStatus !== "loading" ? (
-              <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-[#fff3f7] px-4 py-3 text-sm text-[#c04b72]">
+              <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">
                 {errorMessage}
               </div>
             ) : null}
@@ -291,12 +291,12 @@ export default function VaultPage() {
 
             {vaultStatus === "ready" && outfits.length === 0 ? (
               <div className="soft-panel p-6 sm:p-8">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/58">Empty vault</p>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">Empty vault</p>
                 <h2 className="mt-4 max-w-2xl text-4xl leading-tight text-ink sm:text-5xl">
                   Your archive is ready. It just needs your first look.
                 </h2>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <Link href="/upload" className="rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-5 py-4 text-center text-sm font-semibold text-white transition hover:brightness-[0.98]">
+                  <Link href="/upload" className="btn-primary">
                     Upload your first look
                   </Link>
                   <Link href="/feed" className="rounded-[1.2rem] border border-rose/12 bg-white px-5 py-4 text-center text-sm font-semibold text-plum transition hover:border-rose/22">

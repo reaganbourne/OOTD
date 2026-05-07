@@ -98,16 +98,11 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <div className="soft-panel rounded-[2.1rem] px-6 py-7 sm:px-7 sm:py-8">
-      <h2 className="text-center font-sans text-[2.15rem] font-semibold tracking-[-0.04em] text-ink">
-        {formCopy.title}
-      </h2>
-      <p className="mt-2 text-center text-sm text-plum/55">{formCopy.intro}</p>
-
-      <form className="mt-8 grid gap-4" onSubmit={handleSubmit} noValidate>
+    <div className="soft-panel px-6 py-7 sm:px-7 sm:py-8">
+      <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
         {mode === "signup" ? (
           <Field
-            label="Username"
+            label="username"
             name="username"
             placeholder="@closetmaincharacter"
             value={values.username}
@@ -117,7 +112,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         ) : null}
 
         <Field
-          label="Email"
+          label="email"
           name="email"
           type="email"
           placeholder="you@example.com"
@@ -127,10 +122,10 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
 
         <Field
-          label="Password"
+          label="password"
           name="password"
           type="password"
-          placeholder="At least 8 characters"
+          placeholder="at least 8 characters"
           value={values.password}
           error={errors.password}
           onChange={(value) => setValue("password", value)}
@@ -138,10 +133,10 @@ export function AuthForm({ mode }: AuthFormProps) {
 
         {mode === "signup" ? (
           <Field
-            label="Confirm password"
+            label="confirm password"
             name="confirmPassword"
             type="password"
-            placeholder="Repeat your password"
+            placeholder="repeat your password"
             value={values.confirmPassword}
             error={errors.confirmPassword}
             onChange={(value) => setValue("confirmPassword", value)}
@@ -159,11 +154,11 @@ export function AuthForm({ mode }: AuthFormProps) {
         <button
           type="submit"
           disabled={submitState.status === "submitting" || isLoading}
-          className="mt-2 rounded-[1rem] bg-gradient-to-r from-[#ef6c96] to-[#f06e8f] px-5 py-4 text-sm font-semibold text-white transition hover:brightness-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn-primary w-full"
         >
           {submitState.status === "submitting" || isLoading
-            ? "Working..."
-            : formCopy.submitLabel}
+            ? "working..."
+            : mode === "login" ? "log in" : "create account"}
         </button>
       </form>
     </div>
@@ -190,35 +185,38 @@ function Field({
   type = "text"
 }: FieldProps) {
   return (
-    <label className={`field-shell ${error ? "border-rose/80 bg-rose/10" : ""}`}>
-      <span className="field-label">{label}</span>
-      <input
-        className="field-input"
-        name={name}
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        autoComplete={
-          name === "email"
-            ? "email"
-            : name === "password"
-              ? "current-password"
-              : name === "confirmPassword"
-                ? "new-password"
-                : name === "username"
-                  ? "username"
-                  : undefined
-        }
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${name}-error` : undefined}
-        onChange={(event) => onChange(event.target.value)}
-      />
+    <div>
+      <label className="field-label" htmlFor={name}>{label}</label>
+      <div className={`field-shell ${error ? "border-error/60 bg-error/5" : ""}`}>
+        <input
+          id={name}
+          className="field-input"
+          name={name}
+          type={type}
+          value={value}
+          placeholder={placeholder}
+          autoComplete={
+            name === "email"
+              ? "email"
+              : name === "password"
+                ? "current-password"
+                : name === "confirmPassword"
+                  ? "new-password"
+                  : name === "username"
+                    ? "username"
+                    : undefined
+          }
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${name}-error` : undefined}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </div>
       {error ? (
-        <span id={`${name}-error`} className="mt-2 block text-xs text-[#9c425d]">
+        <span id={`${name}-error`} className="mt-1.5 block text-xs text-error">
           {error}
         </span>
       ) : null}
-    </label>
+    </div>
   );
 }
 
@@ -231,11 +229,11 @@ function StatusBanner({
 }) {
   const toneClasses =
     tone === "success"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-      : "border-rose/25 bg-rose/10 text-[#7f2947]";
+      ? "border-success/25 bg-success/8 text-success"
+      : "border-error/25 bg-error/8 text-error";
 
   return (
-    <div className={`rounded-[1rem] border px-4 py-3 text-sm ${toneClasses}`}>
+    <div className={`rounded-md border px-4 py-3 text-sm ${toneClasses}`}>
       {message}
     </div>
   );

@@ -24,10 +24,10 @@ function StepDots({ total, current }: { total: number; current: number }) {
           key={i}
           className={`h-1.5 rounded-full transition-all duration-300 ${
             i === current
-              ? "w-5 bg-[#f46a93]"
+              ? "w-5 bg-pink-deep"
               : i < current
-              ? "w-1.5 bg-[#f46a93]/40"
-              : "w-1.5 bg-plum/14"
+              ? "w-1.5 bg-pink-deep/40"
+              : "w-1.5 bg-line"
           }`}
         />
       ))}
@@ -40,7 +40,7 @@ function StepDots({ total, current }: { total: number; current: number }) {
 function StepWelcome({ onNext }: { onNext: () => void }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="font-display text-[4.5rem] leading-none tracking-[-0.08em] text-[#f09ab4]">
+      <p className="font-display text-[4.5rem] leading-none text-pink-deep">
         OOTD
       </p>
       <h1 className="mt-8 text-3xl leading-tight text-ink sm:text-4xl">
@@ -52,7 +52,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
       <button
         type="button"
         onClick={onNext}
-        className="mt-10 rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-8 py-4 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(244,106,147,0.3)] transition hover:brightness-[0.97]"
+        className="mt-10 btn-primary"
       >
         Let&rsquo;s build your vault →
       </button>
@@ -82,7 +82,7 @@ function UserSuggestionRow({
           className="h-11 w-11 shrink-0 rounded-full border border-plum/10 object-cover"
         />
       ) : (
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#fce4ec] to-[#f8bbd0] text-sm font-semibold text-[#c0476e]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pink-soft text-sm font-semibold text-ink-soft">
           {getInitial(user.display_name, user.username)}
         </div>
       )}
@@ -92,9 +92,9 @@ function UserSuggestionRow({
           {user.display_name ?? user.username ?? "Unknown"}
         </p>
         {user.username ? (
-          <p className="text-[0.68rem] text-plum/50">@{user.username}</p>
+          <p className="text-[0.68rem] text-mute">@{user.username}</p>
         ) : null}
-        <p className="text-[0.65rem] uppercase tracking-[0.14em] text-plum/38">
+        <p className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
           {user.follower_count.toLocaleString()} {user.follower_count === 1 ? "follower" : "followers"}
         </p>
       </div>
@@ -102,10 +102,10 @@ function UserSuggestionRow({
       <button
         type="button"
         onClick={following ? onUnfollow : onFollow}
-        className={`shrink-0 rounded-full px-4 py-1.5 text-[0.75rem] font-semibold transition ${
+        className={`shrink-0 rounded-full px-4 py-1.5 text-[0.75rem] font-medium lowercase transition ${
           following
-            ? "border border-rose/15 bg-white text-plum hover:border-rose/28"
-            : "bg-gradient-to-r from-[#ef6c96] to-[#f493b0] text-white hover:brightness-[0.97]"
+            ? "border border-line bg-white text-ink-soft hover:border-pink-deep"
+            : "bg-ink text-paper hover:opacity-90"
         }`}
       >
         {following ? "Following" : "Follow"}
@@ -138,7 +138,7 @@ function StepFollow({
   return (
     <div className="w-full">
       <h2 className="text-2xl text-ink">Find people to follow</h2>
-      <p className="mt-1.5 text-sm text-plum/60">
+      <p className="mt-1.5 text-sm text-mute">
         See what the community is wearing. You can always find more later.
       </p>
 
@@ -146,12 +146,12 @@ function StepFollow({
         {loading
           ? Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 py-3">
-                <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-[#ffe8ef]" />
+                <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-pink-soft" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-3 w-28 animate-pulse rounded-full bg-[#ffe8ef]" />
-                  <div className="h-2.5 w-20 animate-pulse rounded-full bg-[#fff3f7]" />
+                  <div className="h-3 w-28 animate-pulse rounded-full bg-pink-soft" />
+                  <div className="h-2.5 w-20 animate-pulse rounded-full bg-pink-soft" />
                 </div>
-                <div className="h-7 w-20 animate-pulse rounded-full bg-[#ffe8ef]" />
+                <div className="h-7 w-20 animate-pulse rounded-full bg-pink-soft" />
               </div>
             ))
           : users.map((user) => (
@@ -168,7 +168,7 @@ function StepFollow({
       <button
         type="button"
         onClick={onNext}
-        className="mt-8 w-full rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] py-4 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(244,106,147,0.25)] transition hover:brightness-[0.97]"
+        className="btn-primary mt-8 w-full"
       >
         Continue
       </button>
@@ -182,8 +182,8 @@ function StepUpload({ onDone }: { onDone: () => void }) {
   return (
     <div className="flex flex-col items-center text-center">
       {/* Decorative outfit frame */}
-      <div className="flex h-36 w-28 items-center justify-center rounded-[1.75rem] border-2 border-dashed border-rose/25 bg-gradient-to-b from-[#fff0f4] to-[#fff7fa]">
-        <svg viewBox="0 0 24 24" className="h-10 w-10 text-[#f09ab4]" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <div className="flex h-36 w-28 items-center justify-center rounded-[1.75rem] border-2 border-dashed border-rose/25 bg-pink-soft">
+        <svg viewBox="0 0 24 24" className="h-10 w-10 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="17 8 12 3 7 8" />
           <line x1="12" y1="3" x2="12" y2="15" />
@@ -200,14 +200,14 @@ function StepUpload({ onDone }: { onDone: () => void }) {
       <Link
         href="/upload"
         onClick={onDone}
-        className="mt-8 block w-full rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] py-4 text-center text-sm font-semibold text-white shadow-[0_8px_24px_rgba(244,106,147,0.3)] transition hover:brightness-[0.97]"
+        className="mt-8 btn-primary block w-full"
       >
         Upload my first look →
       </Link>
       <button
         type="button"
         onClick={onDone}
-        className="mt-3 text-sm text-plum/50 transition hover:text-plum"
+        className="mt-3 text-sm text-mute transition hover:text-plum"
       >
         Maybe later
       </button>
@@ -265,14 +265,14 @@ export default function OnboardingPage() {
 
   if (!ready) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fffafc] px-4">
-        <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+      <main className="flex min-h-screen items-center justify-center bg-paper px-4">
+        <p className="font-display text-5xl text-pink-deep">OOTD</p>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-[#fffafc] px-5 pb-10 pt-6 sm:px-8">
+    <main className="flex min-h-screen flex-col bg-paper px-5 pb-10 pt-6 sm:px-8">
       {/* ── Top bar ──────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <StepDots total={STEPS} current={step} />

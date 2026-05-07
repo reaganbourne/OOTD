@@ -46,14 +46,14 @@ function Avatar({
       <img
         src={src}
         alt="Your profile photo"
-        className={`${dim} rounded-full border-2 border-rose/20 object-cover shadow-[0_8px_24px_rgba(244,106,147,0.16)]`}
+        className={`${dim} rounded-full border-2 border-line object-cover`}
       />
     );
   }
 
   return (
     <div
-      className={`${dim} flex items-center justify-center rounded-full border-2 border-rose/20 bg-gradient-to-br from-[#fce4ec] to-[#f8bbd0] font-semibold text-[#c0476e] shadow-[0_8px_24px_rgba(244,106,147,0.14)]`}
+      className={`${dim} flex items-center justify-center rounded-full border-2 border-line bg-pink-soft font-semibold text-ink-soft`}
     >
       {initial}
     </div>
@@ -68,7 +68,7 @@ function StatPill({ value, label }: { value: number; label: string }) {
       <span className="font-display text-2xl leading-none tracking-[-0.04em] text-ink">
         {value.toLocaleString()}
       </span>
-      <span className="text-[0.68rem] uppercase tracking-[0.18em] text-plum/52">{label}</span>
+      <span className="text-[0.68rem] uppercase tracking-[0.18em] text-mute">{label}</span>
     </div>
   );
 }
@@ -175,7 +175,7 @@ export default function ProfilePage() {
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-2xl items-center justify-center">
           <section className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">OOTD</p>
             <h1 className="mt-4 text-3xl text-ink">Loading your profile</h1>
           </section>
         </div>
@@ -197,10 +197,10 @@ export default function ProfilePage() {
         {/* ── Top bar ────────────────────────────────────────────────────── */}
         <header className="mb-6 flex items-start justify-between gap-3">
           <div>
-            <p className="font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">
+            <p className="font-display text-[3.4rem] leading-none text-pink-deep">
               OOTD
             </p>
-            <p className="mt-1 text-sm text-plum/54">@{username}</p>
+            <p className="mt-1 text-sm text-mute">@{username}</p>
           </div>
 
           <div className="flex items-center gap-2 pt-1">
@@ -270,14 +270,14 @@ export default function ProfilePage() {
                 {displayName}
               </h1>
               {username ? (
-                <p className="mt-0.5 text-sm text-plum/58">@{username}</p>
+                <p className="mt-0.5 text-sm text-mute">@{username}</p>
               ) : null}
               {bio ? (
-                <p className="mt-3 text-sm leading-6 text-plum/72">{bio}</p>
+                <p className="mt-3 text-sm leading-6 text-ink-soft">{bio}</p>
               ) : (
                 <Link
                   href="/profile/edit"
-                  className="mt-3 inline-block text-sm text-[#ef5f8a] hover:underline"
+                  className="mt-3 inline-block text-sm text-pink-deep hover:underline"
                 >
                   Add a bio →
                 </Link>
@@ -297,7 +297,7 @@ export default function ProfilePage() {
 
         {/* ── Error state ─────────────────────────────────────────────────── */}
         {errorMessage ? (
-          <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-[#fff3f7] px-4 py-3 text-sm text-[#c04b72]">
+          <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">
             {errorMessage}
           </div>
         ) : null}
@@ -308,7 +308,7 @@ export default function ProfilePage() {
             <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Your looks</h2>
             <Link
               href="/upload"
-              className="inline-flex items-center gap-1.5 rounded-full border border-rose/15 bg-white px-4 py-2 text-[0.78rem] font-semibold text-[#ef5f8a] shadow-[0_8px_20px_rgba(244,106,147,0.07)] transition hover:border-rose/28"
+              className="inline-flex items-center gap-1.5 rounded-full border border-rose/15 bg-white px-4 py-2 text-[0.78rem] font-semibold text-pink-deep transition hover:border-rose/28"
             >
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14" />
@@ -335,8 +335,8 @@ export default function ProfilePage() {
                 </div>
               ) : searchResults.length === 0 ? (
                 <div className="soft-panel px-5 py-8 text-center">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/52">No results</p>
-                  <p className="mt-2 text-sm text-plum/65">Nothing matched &ldquo;{searchQuery}&rdquo;.</p>
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">No results</p>
+                  <p className="mt-2 text-sm text-mute">Nothing matched &ldquo;{searchQuery}&rdquo;.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -358,16 +358,16 @@ export default function ProfilePage() {
 
           {status === "ready" && outfits.length === 0 && !isSearching ? (
             <div className="soft-panel px-6 py-10 text-center">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/52">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">
                 Nothing yet
               </p>
               <h2 className="mt-3 text-3xl text-ink">Start your style archive</h2>
-              <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-plum/68">
+              <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
                 Upload your first outfit and it will live here, forever ready to revisit.
               </p>
               <Link
                 href="/upload"
-                className="mt-6 inline-block rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-6 py-3.5 text-sm font-semibold text-white transition hover:brightness-[0.98]"
+                className="mt-6 inline-block btn-primary"
               >
                 Upload your first look
               </Link>

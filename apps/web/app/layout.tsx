@@ -1,24 +1,25 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Instrument_Serif, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
-const display = Cormorant_Garamond({
+const display = Instrument_Serif({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400"],
+  style: ["italic"],
   variable: "--font-display"
 });
 
-const sans = Manrope({
+const sans = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   variable: "--font-sans"
 });
 
 export const metadata: Metadata = {
-  title: "OOTD Vault",
-  description: "Social outfit logging with a personal vault, event boards, and story-ready sharing."
+  title: "OOTD",
+  description: "a soft place for outfits — your daily fit, kept close, shared with the girls."
 };
 
 export default function RootLayout({

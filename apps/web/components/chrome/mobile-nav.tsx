@@ -12,7 +12,7 @@ function HomeIcon({ active }: { active: boolean }) {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className={`h-5 w-5 ${active ? "text-[#f46a93]" : "text-plum/60"}`}
+      className={`h-5 w-5 ${active ? "text-ink" : "text-mute"}`}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
@@ -30,7 +30,7 @@ function BoardsIcon({ active }: { active: boolean }) {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className={`h-5 w-5 ${active ? "text-[#f46a93]" : "text-plum/60"}`}
+      className={`h-5 w-5 ${active ? "text-ink" : "text-mute"}`}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
@@ -50,7 +50,7 @@ function ProfileIcon({ active }: { active: boolean }) {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className={`h-5 w-5 ${active ? "text-[#f46a93]" : "text-plum/60"}`}
+      className={`h-5 w-5 ${active ? "text-ink" : "text-mute"}`}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
@@ -68,7 +68,7 @@ function VaultIcon({ active }: { active: boolean }) {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className={`h-5 w-5 ${active ? "text-[#f46a93]" : "text-plum/60"}`}
+      className={`h-5 w-5 ${active ? "text-ink" : "text-mute"}`}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
@@ -96,12 +96,13 @@ function NavItem({
   return (
     <Link
       href={href}
-      className="flex min-w-[56px] flex-col items-center gap-1 rounded-full px-3 py-2 text-[0.72rem] font-medium text-plum/72 transition hover:text-plum"
+      className={`flex min-w-[56px] flex-col items-center gap-1 px-3 py-2 text-[0.7rem] font-medium lowercase transition ${active ? "text-ink" : "text-mute hover:text-ink-soft"}`}
     >
       {icon}
-      <span className={active ? "text-[#f46a93]" : ""}>{label}</span>
+      <span>{label}</span>
+      {/* 4px pink-deep active dot per checkd spec */}
       <span
-        className={`h-1.5 w-1.5 rounded-full bg-[#f46a93] transition ${
+        className={`h-[3px] w-[3px] rounded-full bg-pink-deep transition ${
           active ? "opacity-100" : "opacity-0"
         }`}
       />
@@ -113,19 +114,19 @@ export function MobileNav({ active }: MobileNavProps) {
   return (
     <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
       <div className="mobile-dock">
-        <NavItem href="/feed" label="Home" active={active === "home"} icon={<HomeIcon active={active === "home"} />} />
-        <NavItem href="/boards" label="Boards" active={active === "boards"} icon={<BoardsIcon active={active === "boards"} />} />
+        <NavItem href="/feed" label="home" active={active === "home"} icon={<HomeIcon active={active === "home"} />} />
+        <NavItem href="/boards" label="boards" active={active === "boards"} icon={<BoardsIcon active={active === "boards"} />} />
 
-        {/* Center upload FAB — pops above the dock */}
+        {/* Center upload FAB — ink circle, pops above the dock */}
         <Link
           href="/upload"
-          aria-label="Upload outfit"
-          className="-mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#ef6c96] to-[#f493b0] shadow-[0_8px_28px_rgba(244,106,147,0.45)] transition hover:brightness-[0.97] active:scale-[0.96]"
+          aria-label="post a fit"
+          className="-mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-ink shadow-lift transition hover:opacity-90 active:scale-[0.96]"
         >
           <svg
             aria-hidden="true"
             viewBox="0 0 24 24"
-            className="h-6 w-6 text-white"
+            className="h-6 w-6 text-paper"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.2"
@@ -137,8 +138,8 @@ export function MobileNav({ active }: MobileNavProps) {
           </svg>
         </Link>
 
-        <NavItem href="/vault" label="Vault" active={active === "vault"} icon={<VaultIcon active={active === "vault"} />} />
-        <NavItem href="/profile" label="Profile" active={active === "profile"} icon={<ProfileIcon active={active === "profile"} />} />
+        <NavItem href="/vault" label="vault" active={active === "vault"} icon={<VaultIcon active={active === "vault"} />} />
+        <NavItem href="/profile" label="me" active={active === "profile"} icon={<ProfileIcon active={active === "profile"} />} />
       </div>
     </nav>
   );

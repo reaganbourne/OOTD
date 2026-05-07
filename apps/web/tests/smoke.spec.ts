@@ -109,16 +109,17 @@ test.describe("public routes", () => {
   test("landing page links to auth screens", async ({ page }) => {
     await page.goto("/");
 
+    // Heading text reflects the checkd redesign copy
     await expect(
       page.getByRole("heading", {
-        name: /your personal style archive/i
+        name: /your daily fit/i
       })
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: /create your account/i })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: /get started/i })).toHaveAttribute(
       "href",
       "/signup"
     );
-    await expect(page.getByRole("link", { name: /log in/i })).toHaveAttribute("href", "/login");
+    await expect(page.getByRole("link", { name: /^log in$/i })).toHaveAttribute("href", "/login");
   });
 
   test("login and signup pages render their forms", async ({ page }) => {

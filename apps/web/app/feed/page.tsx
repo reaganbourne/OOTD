@@ -98,19 +98,19 @@ function useSentinel(onIntersect: () => void) {
 
 function TabSwitcher({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
-    <div className="inline-flex rounded-full border border-rose/12 bg-white/80 p-1 shadow-[0_4px_14px_rgba(244,106,147,0.08)]">
+    <div className="inline-flex rounded-full border border-rose/12 bg-white/80 p-1">
       {(["vault", "boards"] as Tab[]).map((tab) => (
         <button
           key={tab}
           type="button"
           onClick={() => onChange(tab)}
-          className={`rounded-full px-5 py-2 text-[0.78rem] font-semibold transition ${
+          className={`rounded-full px-5 py-2 text-[0.78rem] font-medium lowercase transition ${
             active === tab
-              ? "bg-gradient-to-r from-[#ef6c96] to-[#f493b0] text-white shadow-[0_4px_10px_rgba(244,106,147,0.3)]"
-              : "text-plum/60 hover:text-plum"
+              ? "bg-ink text-paper"
+              : "text-mute hover:text-ink"
           }`}
         >
-          {tab === "vault" ? "Vault Feed" : "Boards"}
+          {tab === "vault" ? "vault feed" : "boards"}
         </button>
       ))}
     </div>
@@ -131,7 +131,7 @@ function BoardActivityCard({
       <OutfitCard outfit={toBoardCardData(outfit)} showAuthor={false} />
       {/* Board name badge */}
       <div className="pointer-events-none absolute left-3 bottom-[4.5rem] right-3">
-        <span className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-plum/10 bg-white/88 px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-plum/70 backdrop-blur">
+        <span className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-plum/10 bg-white/88 px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-ink-soft backdrop-blur">
           <svg viewBox="0 0 24 24" className="h-3 w-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
             <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
@@ -201,7 +201,7 @@ function VaultFeedTab({ displayName }: { displayName: string }) {
   if (status === "error") {
     return (
       <div className="soft-panel px-6 py-8 text-center">
-        <p className="text-sm text-[#c04b72]">{error}</p>
+        <p className="text-sm text-error">{error}</p>
       </div>
     );
   }
@@ -209,15 +209,15 @@ function VaultFeedTab({ displayName }: { displayName: string }) {
   if (status === "ready" && outfits.length === 0) {
     return (
       <section className="soft-panel p-6 sm:p-8">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/58">Empty feed</p>
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">Empty feed</p>
         <h2 className="mt-4 max-w-2xl text-4xl leading-tight text-ink sm:text-5xl">
           Your feed is ready. It just needs people.
         </h2>
-        <p className="mt-4 max-w-2xl text-sm leading-7 text-plum/70 sm:text-base">
+        <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-soft sm:text-base">
           Once you follow people, their outfits will land here newest first. Until then, keep building your own archive.
         </p>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Link href="/upload" className="rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-5 py-4 text-center text-sm font-semibold text-white transition hover:brightness-[0.98]">
+          <Link href="/upload" className="btn-primary">
             Upload your next outfit
           </Link>
           <Link href="/vault" className="rounded-[1.2rem] border border-rose/12 bg-white px-5 py-4 text-center text-sm font-semibold text-plum transition hover:border-rose/22">
@@ -339,7 +339,7 @@ function BoardsActivityTab() {
       <div className="space-y-8">
         {Array.from({ length: 2 }).map((_, i) => (
           <div key={i}>
-            <div className="mb-4 h-5 w-36 animate-pulse rounded-full bg-[#ffe8ef]" />
+            <div className="mb-4 h-5 w-36 animate-pulse rounded-full bg-pink-soft" />
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
               {Array.from({ length: 4 }).map((_, j) => <OutfitCardSkeleton key={j} showAuthor={false} />)}
             </div>
@@ -352,7 +352,7 @@ function BoardsActivityTab() {
   if (boardsStatus === "error") {
     return (
       <div className="soft-panel px-6 py-8 text-center">
-        <p className="text-sm text-[#c04b72]">{boardsError}</p>
+        <p className="text-sm text-error">{boardsError}</p>
       </div>
     );
   }
@@ -360,12 +360,12 @@ function BoardsActivityTab() {
   if (boardsStatus === "ready" && sections.length === 0) {
     return (
       <section className="soft-panel p-6 sm:p-8">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/58">No boards yet</p>
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">No boards yet</p>
         <h2 className="mt-4 text-4xl leading-tight text-ink">Join a board to see activity here</h2>
-        <p className="mt-4 text-sm leading-7 text-plum/70">
+        <p className="mt-4 text-sm leading-7 text-ink-soft">
           Boards are where you coordinate looks with friends for events. Get an invite link from someone to join.
         </p>
-        <Link href="/boards" className="mt-6 inline-block rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-5 py-4 text-sm font-semibold text-white transition hover:brightness-[0.98]">
+        <Link href="/boards" className="mt-6 inline-block btn-primary">
           Go to boards
         </Link>
       </section>
@@ -383,21 +383,21 @@ function BoardsActivityTab() {
                 {section.board.name}
               </h2>
               {section.board.event_date ? (
-                <p className="mt-0.5 text-[0.68rem] uppercase tracking-[0.18em] text-plum/50">
+                <p className="mt-0.5 text-[0.68rem] uppercase tracking-[0.18em] text-mute">
                   {formatEventDate(section.board.event_date)}
                 </p>
               ) : null}
             </div>
             <Link
               href={`/boards/${section.board.id}`}
-              className="shrink-0 text-[0.72rem] font-semibold text-[#ef5f8a] hover:underline"
+              className="shrink-0 text-[0.72rem] font-semibold text-pink-deep hover:underline"
             >
               View board →
             </Link>
           </div>
 
           {section.outfits.length === 0 ? (
-            <p className="rounded-2xl border border-rose/10 bg-white/70 px-4 py-5 text-sm text-plum/54">
+            <p className="rounded-2xl border border-rose/10 bg-white/70 px-4 py-5 text-sm text-mute">
               No outfits posted yet.
             </p>
           ) : (
@@ -446,7 +446,7 @@ export default function FeedPage() {
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl items-center justify-center">
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
-            <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">OOTD</p>
             <h1 className="mt-4 text-4xl text-ink">Opening your feed</h1>
           </section>
         </div>
@@ -462,10 +462,10 @@ export default function FeedPage() {
         <header className="mb-6">
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
-              <p className="font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">
+              <p className="font-display text-[3.4rem] leading-none text-pink-deep">
                 OOTD
               </p>
-              <p className="mt-1 text-sm text-plum/54">Welcome back, {displayName}.</p>
+              <p className="mt-1 text-sm text-mute">Welcome back, {displayName}.</p>
             </div>
 
             <div className="flex items-center gap-2">

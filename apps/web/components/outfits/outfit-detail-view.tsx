@@ -97,9 +97,9 @@ export function OutfitDetailView({ id }: { id: string }) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+          <p className="font-display text-5xl text-pink-deep">OOTD</p>
           <h1 className="mt-4 text-3xl text-ink">Outfit not found</h1>
-          <p className="mt-3 text-sm leading-6 text-plum/68">This look may have been removed.</p>
+          <p className="mt-3 text-sm leading-6 text-ink-soft">This look may have been removed.</p>
           <Link href="/feed" className="mt-6 inline-block rounded-[1.2rem] border border-rose/15 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/25">
             Back to feed
           </Link>
@@ -123,7 +123,7 @@ export function OutfitDetailView({ id }: { id: string }) {
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex items-center gap-1.5 text-sm text-plum/58 transition hover:text-plum"
+              className="flex items-center gap-1.5 text-sm text-mute transition hover:text-plum"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m15 18-6-6 6-6" />
@@ -134,7 +134,7 @@ export function OutfitDetailView({ id }: { id: string }) {
             <button
               type="button"
               onClick={() => setShowShare(true)}
-              className="flex items-center gap-2 rounded-full border border-rose/15 bg-white px-4 py-2.5 text-[0.78rem] font-semibold text-plum shadow-[0_8px_20px_rgba(244,106,147,0.07)] transition hover:border-rose/28"
+              className="flex items-center gap-2 rounded-full border border-rose/15 bg-white px-4 py-2.5 text-[0.78rem] font-semibold text-plum transition hover:border-rose/28"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="18" cy="5" r="3" />
@@ -177,10 +177,10 @@ export function OutfitDetailView({ id }: { id: string }) {
               {/* Author */}
               {status === "loading" ? (
                 <div className="soft-panel flex animate-pulse items-center gap-3 px-5 py-4">
-                  <div className="h-11 w-11 rounded-full bg-[#ffe8ef]" />
+                  <div className="h-11 w-11 rounded-full bg-pink-soft" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-3.5 w-28 rounded-full bg-[#ffe8ef]" />
-                    <div className="h-3 w-20 rounded-full bg-[#fff3f7]" />
+                    <div className="h-3.5 w-28 rounded-full bg-pink-soft" />
+                    <div className="h-3 w-20 rounded-full bg-pink-soft" />
                   </div>
                 </div>
               ) : outfit?.owner ? (
@@ -195,7 +195,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                       className="h-11 w-11 rounded-full border border-plum/10 object-cover"
                     />
                   ) : (
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-plum/14 bg-gradient-to-br from-[#fce4ec] to-[#f8bbd0] text-sm font-semibold text-[#c0476e]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-plum/14 bg-pink-soft text-sm font-semibold text-ink-soft">
                       {(outfit.owner.display_name ?? outfit.owner.username ?? "?").charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -204,7 +204,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                       {outfit.owner.display_name ?? outfit.owner.username}
                     </p>
                     {outfit.owner.username ? (
-                      <p className="text-[0.7rem] text-plum/50">@{outfit.owner.username}</p>
+                      <p className="text-[0.7rem] text-mute">@{outfit.owner.username}</p>
                     ) : null}
                   </div>
                   <svg viewBox="0 0 24 24" className="ml-auto h-4 w-4 shrink-0 text-plum/30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -217,30 +217,30 @@ export function OutfitDetailView({ id }: { id: string }) {
               <div className="soft-panel px-5 py-5 space-y-4">
                 {status === "loading" ? (
                   <div className="space-y-3">
-                    <div className="h-4 w-full rounded-full bg-[#ffe8ef]" />
-                    <div className="h-4 w-4/5 rounded-full bg-[#fff3f7]" />
-                    <div className="h-3 w-1/3 rounded-full bg-[#fff6f9]" />
+                    <div className="h-4 w-full rounded-full bg-pink-soft" />
+                    <div className="h-4 w-4/5 rounded-full bg-pink-soft" />
+                    <div className="h-3 w-1/3 rounded-full bg-line/60" />
                   </div>
                 ) : (
                   <>
                     {outfit?.caption ? (
-                      <p className="text-sm leading-7 text-plum/84">{outfit.caption}</p>
+                      <p className="text-sm leading-7 text-ink-soft">{outfit.caption}</p>
                     ) : null}
 
                     {outfit?.event_name ? (
-                      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-plum/52">
+                      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-mute">
                         {outfit.event_name}
                       </p>
                     ) : null}
 
                     {dateLabel ? (
-                      <p className="text-[0.7rem] uppercase tracking-[0.18em] text-plum/42">{dateLabel}</p>
+                      <p className="text-[0.7rem] uppercase tracking-[0.18em] text-mute">{dateLabel}</p>
                     ) : null}
 
                     {outfit?.vibe_check_text ? (
-                      <div className="rounded-[1rem] border border-rose/10 bg-[#fff8fb] px-4 py-3">
-                        <p className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#ef5f8a]">Vibe check</p>
-                        <p className="text-sm leading-6 text-plum/80">{outfit.vibe_check_text}</p>
+                      <div className="rounded-[1rem] border border-rose/10 bg-pink-soft px-4 py-3">
+                        <p className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-pink-deep">Vibe check</p>
+                        <p className="text-sm leading-6 text-ink-soft">{outfit.vibe_check_text}</p>
                       </div>
                     ) : null}
                   </>
@@ -250,13 +250,13 @@ export function OutfitDetailView({ id }: { id: string }) {
               {/* Clothing items */}
               {status === "ready" && outfit && outfit.clothing_items.length > 0 ? (
                 <div className="soft-panel px-5 py-5">
-                  <p className="mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-plum/48">Pieces</p>
+                  <p className="mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">Pieces</p>
                   <ul className="space-y-3">
                     {outfit.clothing_items.map((item) => (
                       <li key={item.id} className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-ink capitalize">{item.category}</p>
-                          <p className="text-[0.7rem] text-plum/52">
+                          <p className="text-[0.7rem] text-mute">
                             {[item.brand, item.color].filter(Boolean).join(" · ")}
                           </p>
                         </div>
@@ -265,7 +265,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                             href={item.link_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="shrink-0 rounded-full border border-rose/15 px-3 py-1 text-[0.68rem] font-semibold text-[#ef5f8a] transition hover:border-rose/28"
+                            className="shrink-0 rounded-full border border-rose/15 px-3 py-1 text-[0.68rem] font-semibold text-pink-deep transition hover:border-rose/28"
                           >
                             Shop
                           </a>
@@ -284,7 +284,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                   disabled={likeLoading || !isAuthenticated}
                   className={`flex flex-1 items-center justify-center gap-2 rounded-[1.2rem] border py-3.5 text-sm font-semibold transition disabled:cursor-default ${
                     liked
-                      ? "border-[#f6a9be] bg-[#fff1f6] text-[#ef5f8a]"
+                      ? "border-[#f6a9be] bg-pink-soft text-pink-deep"
                       : "border-rose/15 bg-white text-plum hover:border-rose/28"
                   }`}
                 >
@@ -308,7 +308,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                 <button
                   type="button"
                   onClick={() => setShowShare(true)}
-                  className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-rose/15 bg-white p-3.5 text-plum/60 transition hover:border-rose/28 hover:text-plum"
+                  className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-rose/15 bg-white p-3.5 text-mute transition hover:border-rose/28 hover:text-plum"
                   aria-label="Share"
                 >
                   <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -323,7 +323,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                 {isOwn ? (
                   <Link
                     href="/vault"
-                    className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-rose/15 bg-white p-3.5 text-plum/60 transition hover:border-rose/28 hover:text-plum"
+                    className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-rose/15 bg-white p-3.5 text-mute transition hover:border-rose/28 hover:text-plum"
                     aria-label="View in vault"
                   >
                     <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">

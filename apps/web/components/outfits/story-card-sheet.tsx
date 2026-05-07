@@ -46,7 +46,7 @@ export function StoryCardSheet({ outfitId, onClose }: StoryCardSheetProps) {
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-rose/12 text-plum/50 transition hover:border-rose/22 hover:text-plum"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-rose/12 text-mute transition hover:border-rose/22 hover:text-plum"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18M6 6l12 12" />
@@ -75,7 +75,7 @@ export function StoryCardSheet({ outfitId, onClose }: StoryCardSheetProps) {
           <button
             type="button"
             onClick={handleDownload}
-            className="flex w-full items-center gap-3 rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-5 py-3.5 text-sm font-semibold text-white transition hover:brightness-[0.98]"
+            className="btn-primary flex w-full items-center gap-3"
           >
             <svg viewBox="0 0 24 24" className="h-4.5 w-4.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

@@ -36,17 +36,17 @@ function AvatarUpload({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
-        className="group relative h-24 w-24 flex-shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ef5f8a]/50"
+        className="group relative h-24 w-24 flex-shrink-0 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-deep/50"
         aria-label="Change profile photo"
       >
         {src ? (
           <img
             src={src}
             alt="Your profile photo"
-            className="h-24 w-24 rounded-full border-2 border-rose/20 object-cover shadow-[0_8px_24px_rgba(244,106,147,0.16)]"
+            className="h-24 w-24 rounded-full border-2 border-line object-cover"
           />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-rose/20 bg-gradient-to-br from-[#fce4ec] to-[#f8bbd0] text-2xl font-semibold text-[#c0476e] shadow-[0_8px_24px_rgba(244,106,147,0.14)]">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-line bg-pink-soft text-2xl font-semibold text-ink-soft">
             {initial}
           </div>
         )}
@@ -70,7 +70,7 @@ function AvatarUpload({
         </span>
       </button>
 
-      <p className="text-[0.72rem] text-plum/52">Tap to change photo</p>
+      <p className="text-[0.72rem] text-mute">Tap to change photo</p>
 
       <input
         ref={inputRef}
@@ -103,7 +103,7 @@ function UsernameHint({ status }: { status: UsernameStatus }) {
 
   if (status === "taken") {
     return (
-      <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[#c04b72]">
+      <p className="mt-1.5 flex items-center gap-1.5 text-xs text-error">
         <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
@@ -236,7 +236,7 @@ export default function EditProfilePage() {
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-2xl items-center justify-center">
           <section className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">OOTD</p>
             <h1 className="mt-4 text-3xl text-ink">Loading…</h1>
           </section>
         </div>
@@ -254,7 +254,7 @@ export default function EditProfilePage() {
 
         {/* ── Top bar ─────────────────────────────────────────────────────── */}
         <header className="mb-6 flex items-center justify-between">
-          <p className="font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">
+          <p className="font-display text-[3.4rem] leading-none text-pink-deep">
             OOTD
           </p>
           <button
@@ -273,7 +273,7 @@ export default function EditProfilePage() {
         {/* ── Title ───────────────────────────────────────────────────────── */}
         <div className="mb-6">
           <h1 className="font-display text-3xl tracking-[-0.03em] text-ink">Edit profile</h1>
-          <p className="mt-1 text-sm text-plum/54">Changes are visible on your public profile</p>
+          <p className="mt-1 text-sm text-mute">Changes are visible on your public profile</p>
         </div>
 
         <form onSubmit={(e) => void handleSave(e)} noValidate>
@@ -287,7 +287,7 @@ export default function EditProfilePage() {
               onFile={(file) => void handleAvatarFile(file)}
             />
             {avatarError ? (
-              <p className="mt-3 text-center text-xs text-[#c04b72]">{avatarError}</p>
+              <p className="mt-3 text-center text-xs text-error">{avatarError}</p>
             ) : null}
           </section>
 
@@ -296,7 +296,7 @@ export default function EditProfilePage() {
 
             {/* Display name */}
             <div>
-              <label htmlFor="display-name" className="block text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-plum/60">
+              <label htmlFor="display-name" className="block text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-mute">
                 Display name
               </label>
               <input
@@ -310,17 +310,17 @@ export default function EditProfilePage() {
                 className="mt-2 w-full rounded-2xl border border-rose/12 bg-white/70 px-4 py-3 text-sm text-ink placeholder-plum/35 outline-none transition focus:border-[#ef5f8a]/40 focus:ring-2 focus:ring-[#ef5f8a]/12 disabled:opacity-50"
               />
               {fieldErrors.display_name ? (
-                <p className="mt-1.5 text-xs text-[#c04b72]">{fieldErrors.display_name}</p>
+                <p className="mt-1.5 text-xs text-error">{fieldErrors.display_name}</p>
               ) : null}
             </div>
 
             {/* Username */}
             <div>
-              <label htmlFor="username" className="block text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-plum/60">
+              <label htmlFor="username" className="block text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-mute">
                 Username
               </label>
               <div className="relative mt-2">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-plum/40">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-mute">
                   @
                 </span>
                 <input
@@ -345,17 +345,17 @@ export default function EditProfilePage() {
               </div>
               <UsernameHint status={usernameStatus} />
               {fieldErrors.username ? (
-                <p className="mt-1.5 text-xs text-[#c04b72]">{fieldErrors.username}</p>
+                <p className="mt-1.5 text-xs text-error">{fieldErrors.username}</p>
               ) : null}
             </div>
 
             {/* Bio */}
             <div>
               <div className="flex items-baseline justify-between">
-                <label htmlFor="bio" className="block text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-plum/60">
+                <label htmlFor="bio" className="block text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-mute">
                   Bio
                 </label>
-                <span className={`text-[0.68rem] tabular-nums ${bioRemaining < 20 ? "text-[#c04b72]" : "text-plum/40"}`}>
+                <span className={`text-[0.68rem] tabular-nums ${bioRemaining < 20 ? "text-error" : "text-mute"}`}>
                   {bioRemaining}
                 </span>
               </div>
@@ -373,14 +373,14 @@ export default function EditProfilePage() {
                 className="mt-2 w-full resize-none rounded-2xl border border-rose/12 bg-white/70 px-4 py-3 text-sm text-ink placeholder-plum/35 outline-none transition focus:border-[#ef5f8a]/40 focus:ring-2 focus:ring-[#ef5f8a]/12 disabled:opacity-50"
               />
               {fieldErrors.bio ? (
-                <p className="mt-1.5 text-xs text-[#c04b72]">{fieldErrors.bio}</p>
+                <p className="mt-1.5 text-xs text-error">{fieldErrors.bio}</p>
               ) : null}
             </div>
           </section>
 
           {/* ── Error banner ──────────────────────────────────────────────── */}
           {saveError ? (
-            <div className="mb-4 rounded-[1.25rem] border border-rose/25 bg-[#fff3f7] px-4 py-3 text-sm text-[#c04b72]">
+            <div className="mb-4 rounded-[1.25rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">
               {saveError}
             </div>
           ) : null}
@@ -390,7 +390,7 @@ export default function EditProfilePage() {
             <button
               type="submit"
               disabled={isSaving || usernameStatus === "taken" || avatarUploading}
-              className="w-full rounded-[1.5rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-5 py-4 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(244,106,147,0.28)] transition hover:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-primary w-full"
             >
               {saveStatus === "saving" ? "Saving…" : saveStatus === "saved" ? "Saved!" : "Save changes"}
             </button>
