@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 type MobileNavProps = {
-  active: "home" | "boards" | "vault";
+  active: "home" | "boards" | "vault" | "profile";
 };
 
 function HomeIcon({ active }: { active: boolean }) {
@@ -41,6 +41,24 @@ function BoardsIcon({ active }: { active: boolean }) {
       <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
       <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4" />
       <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
+    </svg>
+  );
+}
+
+function ProfileIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className={`h-5 w-5 ${active ? "text-[#f46a93]" : "text-plum/60"}`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
     </svg>
   );
 }
@@ -106,6 +124,7 @@ export function MobileNav({ active }: MobileNavProps) {
           <span className="text-[0.62rem] uppercase tracking-[0.18em] text-plum/36">Soon</span>
         </button>
         <NavItem href="/vault" label="Vault" active={active === "vault"} icon={<VaultIcon active={active === "vault"} />} />
+        <NavItem href="/profile" label="Profile" active={active === "profile"} icon={<ProfileIcon active={active === "profile"} />} />
       </div>
     </nav>
   );
