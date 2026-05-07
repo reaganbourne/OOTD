@@ -83,10 +83,13 @@ def _font(path: Path, size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont
         return ImageFont.load_default()
 
 
+_MAX_IMAGE_BYTES = 20 * 1024 * 1024  # 20 MB — sanity cap to prevent OOM
+
+
 def fetch_image(url: str) -> bytes:
     """Download image bytes from a URL. Isolated for easy monkeypatching in tests."""
     with urllib.request.urlopen(url, timeout=10) as resp:  # noqa: S310
-        return resp.read()
+        return resp.read(_MAX_IMAGE_BYTES)
 
 
 def generate_story_card(

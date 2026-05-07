@@ -8,6 +8,8 @@ Comments — full CRUD; only the author or the outfit owner may delete.
 import uuid
 from datetime import datetime, timezone
 
+from fastapi import HTTPException, status as http_status
+
 from sqlalchemy.orm import Session
 
 from app.models.comment import Comment
@@ -81,7 +83,10 @@ def get_outfit_comments(
     query = db.query(Comment).filter(Comment.outfit_id == outfit_id)
 
     if cursor:
-        cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        try:
+            cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        except ValueError:
+            raise HTTPException(status_code=http_status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid cursor.")
         query = query.filter(Comment.created_at > cursor_dt)
 
     comments = query.order_by(Comment.created_at.asc()).limit(limit + 1).all()

@@ -1,6 +1,8 @@
 import uuid
 from datetime import date, datetime, timezone
 
+from fastapi import HTTPException, status as http_status
+
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -71,7 +73,10 @@ def get_user_outfits(
     query = db.query(Outfit).filter(Outfit.user_id == user_id)
 
     if cursor:
-        cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        try:
+            cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        except ValueError:
+            raise HTTPException(status_code=http_status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid cursor.")
         query = query.filter(Outfit.created_at < cursor_dt)
 
     outfits = query.order_by(Outfit.created_at.desc()).limit(limit + 1).all()
@@ -151,7 +156,10 @@ def get_feed(
     query = db.query(Outfit).filter(Outfit.user_id.in_(following_ids))
 
     if cursor:
-        cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        try:
+            cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        except ValueError:
+            raise HTTPException(status_code=http_status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid cursor.")
         query = query.filter(Outfit.created_at < cursor_dt)
 
     outfits = query.order_by(Outfit.created_at.desc()).limit(limit + 1).all()
