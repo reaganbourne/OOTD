@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   apiClient,
   type Board,
+  type BoardOutfitResponse,
   type FeedOutfitResponse,
   type OutfitResponse,
 } from "@/lib/api-client";
@@ -24,7 +25,7 @@ type Status = "idle" | "loading" | "ready" | "error";
 
 type BoardSection = {
   board: Board;
-  outfits: OutfitResponse[];
+  outfits: BoardOutfitResponse[];
   cursor: string | null;
   status: Status;
   loadingMore: boolean;
@@ -48,7 +49,7 @@ function toVaultCardData(outfit: FeedOutfitResponse): OutfitCardData {
   };
 }
 
-function toBoardCardData(outfit: OutfitResponse): OutfitCardData {
+function toBoardCardData(outfit: BoardOutfitResponse): OutfitCardData {
   return {
     id: outfit.id,
     imageUrl: outfit.image_url,
@@ -57,11 +58,10 @@ function toBoardCardData(outfit: OutfitResponse): OutfitCardData {
     wornOn: outfit.worn_on,
     createdAt: outfit.created_at,
     vibeTone: outfit.vibe_check_tone,
-    // TODO: OutfitOut from GET /boards/{id}/outfits does not include author.
-    // Need backend to add `author: { id, username, profile_image_url }` to
-    // OutfitOut (matching the FeedAuthor shape) so "who uploaded" can be shown
-    // on each board activity card. Until then, author is omitted here.
-    author: null,
+    author: {
+      username: outfit.author.username,
+      profileImageUrl: outfit.author.profile_image_url,
+    },
   };
 }
 
@@ -123,12 +123,12 @@ function BoardActivityCard({
   outfit,
   boardName,
 }: {
-  outfit: OutfitResponse;
+  outfit: BoardOutfitResponse;
   boardName: string;
 }) {
   return (
     <div className="relative">
-      <OutfitCard outfit={toBoardCardData(outfit)} showAuthor={false} />
+      <OutfitCard outfit={toBoardCardData(outfit)} showAuthor />
       {/* Board name badge */}
       <div className="pointer-events-none absolute left-3 bottom-[4.5rem] right-3">
         <span className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-plum/10 bg-white/88 px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-plum/70 backdrop-blur">

@@ -20,11 +20,10 @@ from app.models.user import User
 from app.schemas.board import (
     BoardMemberOut,
     BoardOut,
-    BoardOutfitPage,
     CreateBoardRequest,
     PinRequest,
 )
-from app.schemas.outfit import OutfitOut
+from app.schemas.outfit import BoardOutfitOut, BoardOutfitPage, FeedAuthor, OutfitOut
 
 router = APIRouter(prefix="/boards", tags=["boards"])
 
@@ -235,14 +234,35 @@ def get_outfits(
     """
     Outfits on a board — pinned first, then newest-added.
     Members only. Cursor-paginated.
+
+    Each outfit includes an `author` field with the uploader's id, username,
+    and profile_image_url (matches the FeedOutfitOut shape).
     """
     _board_or_404(db, board_id)
     _require_member(db, board_id, current_user.id)
     outfits, next_cursor = board_crud.get_board_outfits(db, board_id, cursor, limit)
-    return BoardOutfitPage(
-        outfits=[OutfitOut.model_validate(o) for o in outfits],
-        next_cursor=next_cursor,
-    )
+
+    # Build author cache to avoid N+1 queries
+    author_cache: dict[str, FeedAuthor] = {}
+    items: list[BoardOutfitOut] = []
+
+    for outfit in outfits:
+        cache_key = str(outfit.user_id)
+        if cache_key not in author_cache:
+            author = user_crud.get_by_id(db, outfit.user_id)
+            author_cache[cache_key] = FeedAuthor(
+                id=outfit.user_id,
+                username=author.username if author else None,
+                profile_image_url=author.profile_image_url if author else None,
+            )
+        items.append(
+            BoardOutfitOut(
+                **OutfitOut.model_validate(outfit).model_dump(),
+                author=author_cache[cache_key],
+            )
+        )
+
+    return BoardOutfitPage(outfits=items, next_cursor=next_cursor)
 
 
 @router.delete("/{board_id}/outfits/{outfit_id}", status_code=status.HTTP_204_NO_CONTENT)

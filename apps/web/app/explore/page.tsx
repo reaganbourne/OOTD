@@ -171,7 +171,7 @@ export default function ExplorePage() {
     let active = true;
     setGridStatus("loading");
 
-    apiClient.outfits.getFeed({ limit: PAGE_SIZE }).then((result) => {
+    apiClient.outfits.getExplore({ limit: PAGE_SIZE }).then((result) => {
       if (!active) return;
       if (!result.ok) { setGridStatus("error"); return; }
       setOutfits(result.data.outfits);
@@ -201,7 +201,7 @@ export default function ExplorePage() {
     if (!nextCursor || loadingMore || gridStatus !== "ready") return;
     setLoadingMore(true);
 
-    const result = await apiClient.outfits.getFeed({ cursor: nextCursor, limit: PAGE_SIZE });
+    const result = await apiClient.outfits.getExplore({ cursor: nextCursor, limit: PAGE_SIZE });
     if (result.ok) {
       setOutfits((prev) => [...prev, ...result.data.outfits]);
       setNextCursor(result.data.next_cursor ?? null);

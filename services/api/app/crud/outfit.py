@@ -170,3 +170,31 @@ def get_feed(
         next_cursor = outfits[-1].created_at.isoformat()
 
     return outfits, next_cursor
+
+
+def get_explore(
+    db: Session,
+    cursor: str | None = None,
+    limit: int = 20,
+) -> tuple[list[Outfit], str | None]:
+    """
+    All outfits on the platform, newest first.
+    No user filter — public explore feed. Cursor-paginated.
+    """
+    query = db.query(Outfit)
+
+    if cursor:
+        try:
+            cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        except ValueError:
+            raise HTTPException(status_code=http_status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid cursor.")
+        query = query.filter(Outfit.created_at < cursor_dt)
+
+    outfits = query.order_by(Outfit.created_at.desc()).limit(limit + 1).all()
+
+    next_cursor = None
+    if len(outfits) > limit:
+        outfits = outfits[:limit]
+        next_cursor = outfits[-1].created_at.isoformat()
+
+    return outfits, next_cursor

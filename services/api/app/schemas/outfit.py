@@ -85,6 +85,19 @@ class VaultPage(BaseModel):
 class FeedPage(BaseModel):
     outfits: list[FeedOutfitOut]
     next_cursor: str | None
+
+
+# BoardOutfitOut reuses FeedAuthor — the author is the outfit's original creator
+# (outfit.user_id), same pattern as the personal feed.
+class BoardOutfitOut(OutfitOut):
+    author: FeedAuthor
+
+
+class BoardOutfitPage(BaseModel):
+    outfits: list[BoardOutfitOut]
+    next_cursor: str | None
+
+
 class OutfitOwner(BaseModel):
     id: uuid.UUID
     username: str | None
