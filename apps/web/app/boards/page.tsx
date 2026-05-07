@@ -63,7 +63,7 @@ function CreateBoardModal({ onClose, onCreate }: {
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-rose/12 text-plum/50 transition hover:border-rose/22 hover:text-plum"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-rose/12 text-mute transition hover:border-rose/22 hover:text-plum"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18M6 6l12 12" />
@@ -87,8 +87,8 @@ function CreateBoardModal({ onClose, onCreate }: {
           </div>
 
           <div className="field-shell">
-            <label className="block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-plum/52 mb-1" htmlFor="event-date">
-              Event date <span className="font-normal normal-case tracking-normal text-plum/38">(optional)</span>
+            <label className="block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-mute mb-1" htmlFor="event-date">
+              Event date <span className="font-normal normal-case tracking-normal text-mute">(optional)</span>
             </label>
             <input
               id="event-date"
@@ -100,7 +100,7 @@ function CreateBoardModal({ onClose, onCreate }: {
           </div>
 
           {error ? (
-            <p className="rounded-[1rem] border border-rose/25 bg-[#fff3f7] px-4 py-3 text-sm text-[#c04b72]">{error}</p>
+            <p className="rounded-[1rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">{error}</p>
           ) : null}
 
           <div className="flex gap-3 pt-1">
@@ -114,7 +114,7 @@ function CreateBoardModal({ onClose, onCreate }: {
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="flex-1 rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] py-3.5 text-sm font-semibold text-white transition hover:brightness-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
+              className="btn-primary flex-1"
             >
               {loading ? "Creating…" : "Create board"}
             </button>
@@ -135,11 +135,11 @@ function BoardCard({ board }: { board: Board }) {
   return (
     <Link
       href={`/boards/${board.id}`}
-      className={`group block overflow-hidden rounded-[1.75rem] border bg-white shadow-[0_18px_42px_rgba(244,106,147,0.07)] transition hover:-translate-y-0.5 hover:border-rose/22 ${expired ? "border-rose/8 opacity-60" : "border-rose/10"}`}
+      className={`group block overflow-hidden rounded-[1.75rem] border bg-white transition hover:-translate-y-0.5 hover:border-rose/22 ${expired ? "border-rose/8 opacity-60" : "border-rose/10"}`}
     >
-      <div className="bg-gradient-to-br from-[#fce4ec] to-[#fdf2f5] px-5 pt-5 pb-4">
+      <div className="bg-pink-soft px-5 pt-5 pb-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-rose/15 bg-white/80 text-[#ef5f8a]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-rose/15 bg-white/80 text-pink-deep">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
               <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
@@ -147,7 +147,7 @@ function BoardCard({ board }: { board: Board }) {
               <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
             </svg>
           </div>
-          <span className={`rounded-full px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] ${expired ? "bg-rose/10 text-plum/50" : "bg-white/80 text-[#ef5f8a]"}`}>
+          <span className={`rounded-full px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] ${expired ? "bg-rose/10 text-mute" : "bg-white/80 text-pink-deep"}`}>
             {expiryLabel}
           </span>
         </div>
@@ -156,9 +156,9 @@ function BoardCard({ board }: { board: Board }) {
       <div className="px-5 py-4 space-y-1">
         <h3 className="font-display text-xl tracking-[-0.02em] text-ink leading-tight">{board.name}</h3>
         {eventLabel ? (
-          <p className="text-[0.72rem] uppercase tracking-[0.18em] text-plum/52">{eventLabel}</p>
+          <p className="text-[0.72rem] uppercase tracking-[0.18em] text-mute">{eventLabel}</p>
         ) : null}
-        <p className="text-[0.72rem] uppercase tracking-[0.16em] text-plum/42">
+        <p className="text-[0.72rem] uppercase tracking-[0.16em] text-mute">
           {board.member_count} {board.member_count === 1 ? "member" : "members"}
         </p>
       </div>
@@ -212,7 +212,7 @@ export default function BoardsPage() {
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-3xl items-center justify-center">
           <section className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">OOTD</p>
             <h1 className="mt-4 text-3xl text-ink">Loading boards</h1>
           </section>
         </div>
@@ -228,8 +228,8 @@ export default function BoardsPage() {
           {/* Header */}
           <header className="mb-6 flex items-start justify-between gap-3">
             <div>
-              <p className="font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
-              <p className="mt-1 text-sm text-plum/54">Your outfit boards</p>
+              <p className="font-display text-[3.4rem] leading-none text-pink-deep">OOTD</p>
+              <p className="mt-1 text-sm text-mute">Your outfit boards</p>
             </div>
             <div className="flex items-center gap-2 mt-1">
               <Link href="/search" className="icon-button" aria-label="Search people">
@@ -252,7 +252,7 @@ export default function BoardsPage() {
           </header>
 
           {errorMessage ? (
-            <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-[#fff3f7] px-4 py-3 text-sm text-[#c04b72]">{errorMessage}</div>
+            <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">{errorMessage}</div>
           ) : null}
 
           {/* Loading skeletons */}
@@ -262,8 +262,8 @@ export default function BoardsPage() {
                 <div key={i} className="animate-pulse overflow-hidden rounded-[1.75rem] border border-rose/10 bg-white">
                   <div className="h-20 bg-[linear-gradient(120deg,_rgba(255,236,242,0.8),_rgba(255,255,255,0.98))]" />
                   <div className="space-y-2 px-5 py-4">
-                    <div className="h-4 w-2/3 rounded-full bg-[#ffe8ef]" />
-                    <div className="h-3 w-1/3 rounded-full bg-[#fff3f7]" />
+                    <div className="h-4 w-2/3 rounded-full bg-pink-soft" />
+                    <div className="h-3 w-1/3 rounded-full bg-pink-soft" />
                   </div>
                 </div>
               ))}
@@ -273,7 +273,7 @@ export default function BoardsPage() {
           {/* Empty state */}
           {status === "ready" && boards.length === 0 ? (
             <section className="soft-panel px-6 py-10 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-rose/12 bg-[#fff4f7] text-[#ef5f8a]">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-rose/12 bg-pink-soft text-pink-deep">
                 <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
                   <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
@@ -282,13 +282,13 @@ export default function BoardsPage() {
                 </svg>
               </div>
               <h2 className="mt-5 text-3xl text-ink">No boards yet</h2>
-              <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-plum/68">
+              <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
                 Boards are private spaces for an event — create one and invite your crew to post their looks together.
               </p>
               <button
                 type="button"
                 onClick={() => setShowCreate(true)}
-                className="mt-6 rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-6 py-3.5 text-sm font-semibold text-white transition hover:brightness-[0.98]"
+                className="mt-6 btn-primary"
               >
                 Create your first board
               </button>

@@ -51,7 +51,7 @@ function CommentRow({ comment, isOwn, editing, onStartEdit, onCancelEdit, onSave
           className="h-8 w-8 shrink-0 rounded-full border border-plum/10 object-cover"
         />
       ) : (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-plum/12 bg-gradient-to-br from-[#fce4ec] to-[#f8bbd0] text-xs font-semibold text-[#c0476e]">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-plum/12 bg-pink-soft text-xs font-semibold text-ink-soft">
           {getInitial(comment.author.display_name ?? comment.author.username)}
         </div>
       )}
@@ -61,7 +61,7 @@ function CommentRow({ comment, isOwn, editing, onStartEdit, onCancelEdit, onSave
           <span className="text-xs font-semibold text-ink">
             {comment.author.display_name ?? comment.author.username ?? "Someone"}
           </span>
-          <span className="text-[0.65rem] text-plum/42">{formatCommentDate(comment.created_at)}</span>
+          <span className="text-[0.65rem] text-mute">{formatCommentDate(comment.created_at)}</span>
         </div>
 
         {editing ? (
@@ -70,14 +70,14 @@ function CommentRow({ comment, isOwn, editing, onStartEdit, onCancelEdit, onSave
               value={editBody}
               onChange={(e) => setEditBody(e.target.value)}
               rows={2}
-              className="w-full resize-none rounded-xl border border-rose/15 bg-white px-3 py-2 text-sm text-ink outline-none focus:border-[#ef5f8a]/40 focus:ring-2 focus:ring-[#ef5f8a]/10"
+              className="w-full resize-none rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-pink-deep"
             />
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => void handleSave()}
                 disabled={saving || !editBody.trim()}
-                className="rounded-full bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-3 py-1 text-xs font-semibold text-white disabled:opacity-50"
+                className="rounded-full bg-ink px-3 py-1 text-xs font-medium lowercase text-paper transition hover:opacity-90 disabled:opacity-50"
               >
                 {saving ? "Saving…" : "Save"}
               </button>
@@ -91,15 +91,15 @@ function CommentRow({ comment, isOwn, editing, onStartEdit, onCancelEdit, onSave
             </div>
           </div>
         ) : (
-          <p className="mt-0.5 text-sm leading-6 text-plum/80">{comment.body}</p>
+          <p className="mt-0.5 text-sm leading-6 text-ink-soft">{comment.body}</p>
         )}
 
         {isOwn && !editing ? (
           <div className="mt-1 flex gap-3">
-            <button type="button" onClick={onStartEdit} className="text-[0.65rem] text-plum/42 hover:text-plum/70 transition">
+            <button type="button" onClick={onStartEdit} className="text-[0.65rem] text-mute hover:text-ink-soft transition">
               Edit
             </button>
-            <button type="button" onClick={() => void onDelete()} className="text-[0.65rem] text-[#c04b72]/60 hover:text-[#c04b72] transition">
+            <button type="button" onClick={() => void onDelete()} className="text-[0.65rem] text-error/60 hover:text-error transition">
               Delete
             </button>
           </div>
@@ -208,7 +208,7 @@ export function CommentsSheet({ outfitId, onClose }: CommentsSheetProps) {
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-rose/12 text-plum/50 transition hover:border-rose/22 hover:text-plum"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-rose/12 text-mute transition hover:border-rose/22 hover:text-plum"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M18 6 6 18M6 6l12 12" />
@@ -222,19 +222,19 @@ export function CommentsSheet({ outfitId, onClose }: CommentsSheetProps) {
             <li className="flex flex-col gap-3 py-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex gap-3">
-                  <div className="h-8 w-8 shrink-0 animate-pulse rounded-full bg-[#ffe8ef]" />
+                  <div className="h-8 w-8 shrink-0 animate-pulse rounded-full bg-pink-soft" />
                   <div className="flex-1 space-y-2 pt-1">
-                    <div className="h-2.5 w-24 animate-pulse rounded-full bg-[#ffe8ef]" />
-                    <div className="h-3 w-full animate-pulse rounded-full bg-[#fff3f7]" />
-                    <div className="h-3 w-3/4 animate-pulse rounded-full bg-[#fff3f7]" />
+                    <div className="h-2.5 w-24 animate-pulse rounded-full bg-pink-soft" />
+                    <div className="h-3 w-full animate-pulse rounded-full bg-pink-soft" />
+                    <div className="h-3 w-3/4 animate-pulse rounded-full bg-pink-soft" />
                   </div>
                 </div>
               ))}
             </li>
           ) : comments.length === 0 ? (
             <li className="py-10 text-center">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-plum/40">No comments yet</p>
-              <p className="mt-2 text-sm text-plum/55">Be the first to say something.</p>
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-mute">No comments yet</p>
+              <p className="mt-2 text-sm text-mute">Be the first to say something.</p>
             </li>
           ) : (
             <>
@@ -252,7 +252,7 @@ export function CommentsSheet({ outfitId, onClose }: CommentsSheetProps) {
               ))}
               {cursor ? <div ref={sentinelRef} className="h-px" /> : null}
               {loadingMore ? (
-                <li className="py-3 text-center text-xs text-plum/40">Loading more…</li>
+                <li className="py-3 text-center text-xs text-mute">Loading more…</li>
               ) : null}
             </>
           )}
@@ -278,12 +278,12 @@ export function CommentsSheet({ outfitId, onClose }: CommentsSheetProps) {
                 placeholder="Add a comment…"
                 rows={1}
                 disabled={submitting}
-                className="min-h-[2.5rem] flex-1 resize-none rounded-2xl border border-rose/12 bg-white/80 px-4 py-2.5 text-sm text-ink placeholder-plum/35 outline-none transition focus:border-[#ef5f8a]/40 focus:ring-2 focus:ring-[#ef5f8a]/10 disabled:opacity-50"
+                className="min-h-[2.5rem] flex-1 resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink outline-none transition focus:border-pink-deep disabled:opacity-50 placeholder:text-mute"
               />
               <button
                 type="submit"
                 disabled={!newBody.trim() || submitting}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#ef6c96] to-[#f493b0] text-white shadow-[0_4px_12px_rgba(244,106,147,0.3)] transition hover:brightness-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-paper transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Post comment"
               >
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -294,7 +294,7 @@ export function CommentsSheet({ outfitId, onClose }: CommentsSheetProps) {
             </div>
           </form>
         ) : (
-          <p className="shrink-0 border-t border-rose/8 px-6 py-4 text-center text-xs text-plum/50">
+          <p className="shrink-0 border-t border-rose/8 px-6 py-4 text-center text-xs text-mute">
             Log in to leave a comment.
           </p>
         )}

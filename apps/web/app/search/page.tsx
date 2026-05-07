@@ -39,7 +39,7 @@ function UserRow({
           className="h-11 w-11 shrink-0 rounded-full border border-plum/10 object-cover"
         />
       ) : (
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-plum/12 bg-gradient-to-br from-[#fce4ec] to-[#f8bbd0] text-sm font-semibold text-[#c0476e]">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-plum/12 bg-pink-soft text-sm font-semibold text-ink-soft">
           {getInitial(user.display_name, user.username)}
         </div>
       )}
@@ -49,9 +49,9 @@ function UserRow({
           {user.display_name ?? user.username ?? "Unknown"}
         </p>
         {user.username ? (
-          <p className="text-[0.68rem] text-plum/52">@{user.username}</p>
+          <p className="text-[0.68rem] text-mute">@{user.username}</p>
         ) : null}
-        <p className="text-[0.65rem] uppercase tracking-[0.14em] text-plum/40">
+        <p className="text-[0.65rem] uppercase tracking-[0.14em] text-mute">
           {followerCount.toLocaleString()} {followerCount === 1 ? "follower" : "followers"}
         </p>
       </div>
@@ -59,10 +59,10 @@ function UserRow({
       <button
         type="button"
         onClick={following ? onUnfollow : onFollow}
-        className={`shrink-0 rounded-full px-4 py-1.5 text-[0.75rem] font-semibold transition ${
+        className={`shrink-0 rounded-full px-4 py-1.5 text-[0.75rem] font-medium lowercase transition ${
           following
-            ? "border border-rose/15 bg-white text-plum hover:border-rose/28"
-            : "bg-gradient-to-r from-[#ef6c96] to-[#f493b0] text-white hover:brightness-[0.97]"
+            ? "border border-line bg-white text-ink-soft hover:border-pink-deep"
+            : "bg-ink text-paper hover:opacity-90"
         }`}
       >
         {following ? "Following" : "Follow"}
@@ -74,13 +74,13 @@ function UserRow({
 function UserRowSkeleton() {
   return (
     <div className="flex items-center gap-3 py-3">
-      <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-[#ffe8ef]" />
+      <div className="h-11 w-11 shrink-0 animate-pulse rounded-full bg-pink-soft" />
       <div className="flex-1 space-y-2">
-        <div className="h-3 w-32 animate-pulse rounded-full bg-[#ffe8ef]" />
-        <div className="h-2.5 w-20 animate-pulse rounded-full bg-[#fff3f7]" />
-        <div className="h-2 w-16 animate-pulse rounded-full bg-[#fff6f9]" />
+        <div className="h-3 w-32 animate-pulse rounded-full bg-pink-soft" />
+        <div className="h-2.5 w-20 animate-pulse rounded-full bg-pink-soft" />
+        <div className="h-2 w-16 animate-pulse rounded-full bg-line/60" />
       </div>
-      <div className="h-7 w-20 animate-pulse rounded-full bg-[#ffe8ef]" />
+      <div className="h-7 w-20 animate-pulse rounded-full bg-pink-soft" />
     </div>
   );
 }
@@ -194,7 +194,7 @@ export default function SearchPage() {
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-lg items-center justify-center">
           <section className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">OOTD</p>
             <h1 className="mt-4 text-3xl text-ink">Loading</h1>
           </section>
         </div>
@@ -210,10 +210,10 @@ export default function SearchPage() {
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <header className="mb-5">
-          <p className="font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">
+          <p className="font-display text-[3.4rem] leading-none text-pink-deep">
             OOTD
           </p>
-          <p className="mt-1 text-sm text-plum/54">Find people</p>
+          <p className="mt-1 text-sm text-mute">Find people</p>
         </header>
 
         {/* ── Search bar ─────────────────────────────────────────────────── */}
@@ -227,7 +227,7 @@ export default function SearchPage() {
 
         {/* ── Section label ──────────────────────────────────────────────── */}
         {!isSearching ? (
-          <p className="mb-1 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-plum/42">
+          <p className="mb-1 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">
             People you may know
           </p>
         ) : null}
@@ -246,10 +246,10 @@ export default function SearchPage() {
           {/* Search empty */}
           {isSearching && searchStatus === "done" && searchResults.length === 0 ? (
             <div className="py-10 text-center">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/42">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">
                 No results
               </p>
-              <p className="mt-2 text-sm text-plum/60">
+              <p className="mt-2 text-sm text-mute">
                 No users found for &ldquo;{query}&rdquo;.
               </p>
             </div>
@@ -267,10 +267,10 @@ export default function SearchPage() {
           {/* Suggested empty */}
           {!isSearching && !suggestedLoading && suggested.length === 0 ? (
             <div className="py-10 text-center">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/42">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">
                 Nothing yet
               </p>
-              <p className="mt-2 text-sm text-plum/60">
+              <p className="mt-2 text-sm text-mute">
                 Search to find people to follow.
               </p>
             </div>

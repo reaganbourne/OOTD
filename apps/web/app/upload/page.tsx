@@ -21,11 +21,11 @@ export default function UploadPage() {
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl items-center justify-center">
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-plum/70">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-ink-soft">
               Upload flow
             </p>
             <h1 className="mt-4 text-4xl text-ink">Opening your upload studio</h1>
-            <p className="mt-4 text-sm leading-6 text-plum/82">
+            <p className="mt-4 text-sm leading-6 text-ink-soft">
               We&apos;re checking your session before we load the outfit builder.
             </p>
           </section>
@@ -41,13 +41,13 @@ export default function UploadPage() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-plum/70">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-ink-soft">
               Outfit upload
             </p>
             <h1 className="mt-2 text-4xl text-ink sm:text-5xl">
               Build the look before you post the memory.
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-plum/82 sm:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-soft sm:text-base">
               Hi, {displayName}. Add the photo, tag what you wore, and send the outfit
               straight into your vault in one clean flow.
             </p>

@@ -174,9 +174,9 @@ export function OutfitCard({
   return (
     <Link
       href={href}
-      className="group overflow-hidden rounded-[1.75rem] border border-rose/10 bg-white shadow-[0_18px_42px_rgba(244,106,147,0.08)] transition hover:-translate-y-1 hover:border-rose/20"
+      className="group overflow-hidden rounded-xl border border-line bg-white transition hover:-translate-y-0.5 hover:border-pink-deep"
     >
-      <div className="relative overflow-hidden bg-cream/65">
+      <div className="relative overflow-hidden bg-pink-soft/30">
         <img
           src={outfit.imageUrl}
           alt={outfit.caption?.trim() || "Outfit card photo"}
@@ -184,11 +184,11 @@ export function OutfitCard({
         />
 
         {showAccentMarker ? (
-          <div className="pointer-events-none absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full border border-white/55 bg-white/72 backdrop-blur">
+          <div className="pointer-events-none absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-white/85 backdrop-blur">
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
-              className="h-3.5 w-3.5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.18)]"
+              className="h-3 w-3 text-ink-soft"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.9"
@@ -201,9 +201,9 @@ export function OutfitCard({
         ) : null}
 
         {toneClasses && toneLabel ? (
-          <div className="pointer-events-none absolute left-4 top-4">
+          <div className="pointer-events-none absolute left-3 top-3">
             <span
-              className={`inline-flex items-center rounded-full border px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] backdrop-blur ${toneClasses.border} ${toneClasses.background} ${toneClasses.text}`}
+              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[0.6rem] font-medium lowercase backdrop-blur ${toneClasses.border} ${toneClasses.background} ${toneClasses.text}`}
             >
               {toneLabel}
             </span>
@@ -215,11 +215,11 @@ export function OutfitCard({
             type="button"
             onClick={onLike}
             aria-label={liked ? "Unlike" : "Like"}
-            className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full border border-white/40 bg-white/80 px-2.5 py-1.5 backdrop-blur transition hover:bg-white/95"
+            className="absolute bottom-2.5 right-2.5 flex items-center gap-1 rounded-full border border-white/50 bg-white/85 px-2 py-1.5 backdrop-blur transition hover:bg-white"
           >
             <svg
               viewBox="0 0 24 24"
-              className={`h-3.5 w-3.5 transition ${liked ? "text-[#ef5f8a]" : "text-plum/50"}`}
+              className={`h-3.5 w-3.5 transition ${liked ? "text-pink-deep" : "text-mute"}`}
               fill={liked ? "currentColor" : "none"}
               stroke="currentColor"
               strokeWidth="2"
@@ -229,7 +229,7 @@ export function OutfitCard({
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
             {likeCount !== undefined && likeCount > 0 ? (
-              <span className={`text-[0.64rem] font-semibold tabular-nums ${liked ? "text-[#ef5f8a]" : "text-plum/60"}`}>
+              <span className={`text-[0.6rem] font-medium tabular-nums ${liked ? "text-ink-soft" : "text-mute"}`}>
                 {likeCount.toLocaleString()}
               </span>
             ) : null}
@@ -237,48 +237,48 @@ export function OutfitCard({
         ) : null}
       </div>
 
-      <div className={`px-4 py-4 sm:px-5 sm:py-5 ${showCaption ? "space-y-4" : "space-y-2"}`}>
+      <div className={`px-3.5 py-3.5 ${showCaption ? "space-y-3" : "space-y-2"}`}>
         {showAuthor ? (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             {outfit.author?.profileImageUrl ? (
               <img
                 src={outfit.author.profileImageUrl}
                 alt={getAuthorLabel(outfit.author)}
-                className="h-11 w-11 rounded-full border border-plum/12 object-cover"
+                className="h-8 w-8 rounded-full border border-line object-cover"
               />
             ) : (
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-plum/14 bg-brand-glow text-sm font-semibold text-plum">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-pink bg-pink-soft font-display text-sm italic text-ink-soft">
                 {getAuthorInitial(outfit)}
               </div>
             )}
 
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-ink">
+              <p className="truncate text-xs font-medium text-ink">
                 {getAuthorLabel(outfit.author)}
               </p>
-              <p className="text-[0.68rem] uppercase tracking-[0.18em] text-plum/54">
+              <p className="text-[0.65rem] text-mute">
                 {dateLabel}
               </p>
             </div>
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[0.68rem] uppercase tracking-[0.18em] text-plum/54">{dateLabel}</p>
+            <p className="text-[0.65rem] text-mute">{dateLabel}</p>
             {!toneClasses && toneLabel ? (
-              <span className="rounded-full border border-rose/12 bg-[#fff4f7] px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-[#ef5f8a]">
+              <span className="rounded-full border border-line bg-pink-soft px-2.5 py-0.5 text-[0.6rem] font-medium lowercase text-ink-soft">
                 {toneLabel}
               </span>
             ) : null}
           </div>
         )}
 
-        <div className={showCaption ? "space-y-2" : "space-y-1"}>
+        <div className={showCaption ? "space-y-1.5" : "space-y-1"}>
           {showCaption ? (
-            <p className="line-clamp-2 text-sm leading-6 text-plum/84">{caption}</p>
+            <p className="line-clamp-2 font-display text-sm italic leading-snug text-ink-soft">{caption}</p>
           ) : null}
 
           {metadataLine ? (
-            <p className="line-clamp-1 text-[0.68rem] uppercase tracking-[0.16em] text-plum/54">
+            <p className="line-clamp-1 text-[0.65rem] lowercase text-mute">
               {metadataLine}
             </p>
           ) : null}
@@ -294,28 +294,27 @@ export function OutfitCardSkeleton({
   showAuthor?: boolean;
 }) {
   return (
-    <article className="overflow-hidden rounded-[1.75rem] border border-rose/10 bg-white shadow-[0_18px_42px_rgba(244,106,147,0.06)]">
-      <div className="aspect-[4/5] w-full animate-pulse bg-[linear-gradient(120deg,_rgba(255,236,242,0.8),_rgba(255,255,255,0.98),_rgba(250,216,225,0.62))]" />
-      <div className="space-y-4 px-4 py-4 sm:px-5 sm:py-5">
+    <article className="overflow-hidden rounded-xl border border-line bg-white">
+      <div className="aspect-[4/5] w-full animate-pulse bg-pink-soft" />
+      <div className="space-y-3 px-3.5 py-3.5">
         {showAuthor ? (
-          <div className="flex items-center gap-3">
-            <div className="h-11 w-11 animate-pulse rounded-full bg-[#ffe8ef]" />
-            <div className="min-w-0 flex-1 space-y-2">
-              <div className="h-3 w-24 animate-pulse rounded-full bg-[#ffe8ef]" />
-              <div className="h-2.5 w-20 animate-pulse rounded-full bg-[#fff3f7]" />
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 animate-pulse rounded-full bg-line" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="h-2.5 w-24 animate-pulse rounded-full bg-line" />
+              <div className="h-2 w-16 animate-pulse rounded-full bg-line/60" />
             </div>
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3">
-            <div className="h-2.5 w-20 animate-pulse rounded-full bg-[#fff3f7]" />
-            <div className="h-6 w-20 animate-pulse rounded-full bg-[#ffe8ef]" />
+            <div className="h-2 w-16 animate-pulse rounded-full bg-line/60" />
+            <div className="h-5 w-16 animate-pulse rounded-full bg-line" />
           </div>
         )}
 
-        <div className="space-y-2">
-          <div className="h-3 w-full animate-pulse rounded-full bg-[#ffe8ef]" />
-          <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#fff3f7]" />
-          <div className="h-2.5 w-1/3 animate-pulse rounded-full bg-[#fff6f9]" />
+        <div className="space-y-1.5">
+          <div className="h-2.5 w-full animate-pulse rounded-full bg-line" />
+          <div className="h-2.5 w-4/5 animate-pulse rounded-full bg-line/70" />
         </div>
       </div>
     </article>

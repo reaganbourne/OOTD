@@ -368,13 +368,13 @@ export function UploadFlow() {
     <section className="soft-panel overflow-hidden">
       <div className="grid gap-8 lg:grid-cols-[0.32fr_0.68fr]">
         <aside className="bg-brand-glow px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-10">
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-plum/70">
+          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-ink-soft">
             Four-step flow
           </p>
           <h2 className="mt-3 text-4xl leading-tight text-ink">
             Build the outfit once, then reuse it everywhere.
           </h2>
-          <p className="mt-4 text-sm leading-6 text-plum/82">
+          <p className="mt-4 text-sm leading-6 text-ink-soft">
             This upload flow posts the same structured payload the backend uses for the
             vault, feed, event boards, and AI features.
           </p>
@@ -402,7 +402,7 @@ export function UploadFlow() {
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-[0.24em] text-plum/72">
+                    <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-soft">
                       Step {step.id}
                     </span>
                     <span
@@ -411,14 +411,14 @@ export function UploadFlow() {
                           ? "bg-plum text-white"
                           : isComplete
                             ? "bg-emerald-50 text-emerald-900"
-                            : "bg-white/75 text-plum/70"
+                            : "bg-white/75 text-ink-soft"
                       }`}
                     >
                       {isComplete ? "Done" : step.label}
                     </span>
                   </div>
                   <p className="mt-3 text-lg text-ink">{step.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-plum/80">{step.hint}</p>
+                  <p className="mt-2 text-sm leading-6 text-ink-soft">{step.hint}</p>
                 </button>
               );
             })}
@@ -428,11 +428,11 @@ export function UploadFlow() {
         <div className="px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-10">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-plum/70">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-ink-soft">
                 {currentConfig.label}
               </p>
               <h3 className="mt-2 text-4xl text-ink">{currentConfig.title}</h3>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-plum/82">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-soft">
                 {currentConfig.hint}
               </p>
             </div>
@@ -465,11 +465,11 @@ export function UploadFlow() {
                     ) : (
                       <div className="flex aspect-[4/5] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(230,170,184,0.2),_transparent_45%),linear-gradient(180deg,_#fff8f5_0%,_#f8eef1_100%)] px-8 text-center">
                         <div>
-                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-plum/70">
+                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-ink-soft">
                             Step 1
                           </p>
                           <h4 className="mt-3 text-3xl text-ink">Choose the hero image</h4>
-                          <p className="mt-3 text-sm leading-6 text-plum/80">
+                          <p className="mt-3 text-sm leading-6 text-ink-soft">
                             Pick the photo that best captures the whole look. You can swap
                             it later before submitting.
                           </p>
@@ -499,17 +499,17 @@ export function UploadFlow() {
                 </div>
 
                 <div className="rounded-[1.75rem] border border-plum/12 bg-white/75 p-5">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/70">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
                     Photo note
                   </p>
                   <h4 className="mt-3 text-2xl text-ink">Use the version you would actually post</h4>
-                  <p className="mt-3 text-sm leading-6 text-plum/80">
+                  <p className="mt-3 text-sm leading-6 text-ink-soft">
                     The preview here drives the later review card, feed card, and story
                     export surfaces.
                   </p>
 
                   {photo ? (
-                    <div className="mt-5 rounded-[1.25rem] border border-plum/12 bg-cream/70 px-4 py-4 text-sm leading-6 text-plum/82">
+                    <div className="mt-5 rounded-[1.25rem] border border-plum/12 bg-cream/70 px-4 py-4 text-sm leading-6 text-ink-soft">
                       <p className="font-semibold text-ink">{photo.name}</p>
                       <p>{(photo.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
@@ -531,7 +531,7 @@ export function UploadFlow() {
                   >
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/70">
+                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
                           Item {index + 1}
                         </p>
                         <p className="mt-1 text-sm text-plum/78">display_order: {index}</p>
@@ -541,7 +541,7 @@ export function UploadFlow() {
                         type="button"
                         onClick={() => removeItem(item.id)}
                         disabled={items.length === 1}
-                        className="rounded-[1rem] border border-plum/15 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-plum/75 transition hover:bg-cream/65 disabled:cursor-not-allowed disabled:opacity-45"
+                        className="rounded-[1rem] border border-plum/15 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-soft transition hover:bg-cream/65 disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         Remove
                       </button>
@@ -646,7 +646,7 @@ export function UploadFlow() {
                   </label>
                 </div>
 
-                <div className="rounded-[1.5rem] border border-plum/12 bg-cream/55 px-4 py-4 text-sm leading-6 text-plum/80">
+                <div className="rounded-[1.5rem] border border-plum/12 bg-cream/55 px-4 py-4 text-sm leading-6 text-ink-soft">
                   Context is optional now, but these fields make the vault, event boards,
                   and AI features much more useful later.
                 </div>
@@ -673,7 +673,7 @@ export function UploadFlow() {
 
                 <div className="grid gap-4">
                   <section className="rounded-[1.75rem] border border-plum/12 bg-white/78 p-5">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/70">
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
                       Tagged items
                     </p>
                     <div className="mt-4 grid gap-3">
@@ -682,7 +682,7 @@ export function UploadFlow() {
                           key={item.id}
                           className="rounded-[1.25rem] border border-plum/10 bg-cream/55 px-4 py-3"
                         >
-                          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-plum/70">
+                          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-ink-soft">
                             Item {index + 1}
                           </p>
                           <p className="mt-2 text-sm text-ink">
@@ -696,10 +696,10 @@ export function UploadFlow() {
                   </section>
 
                   <section className="rounded-[1.75rem] border border-plum/12 bg-white/78 p-5">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/70">
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
                       Metadata
                     </p>
-                    <div className="mt-4 grid gap-3 text-sm leading-6 text-plum/82">
+                    <div className="mt-4 grid gap-3 text-sm leading-6 text-ink-soft">
                       <p>
                         <span className="font-semibold text-ink">Caption:</span>{" "}
                         {metadata.caption.trim() || "None yet"}
@@ -716,10 +716,10 @@ export function UploadFlow() {
                   </section>
 
                   <section className="rounded-[1.75rem] border border-plum/12 bg-cream/65 p-5">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/70">
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
                       Submit mode
                     </p>
-                    <p className="mt-3 text-sm leading-6 text-plum/82">
+                    <p className="mt-3 text-sm leading-6 text-ink-soft">
                       Submitting sends your image plus structured metadata to the real
                       create-outfit endpoint.
                     </p>
@@ -787,7 +787,7 @@ function StatusBanner({
   const toneClasses =
     tone === "success"
       ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-      : "border-rose/25 bg-rose/10 text-[#7f2947]";
+      : "border-rose/25 bg-rose/10 text-error";
 
   return (
     <div className={`rounded-[1.25rem] border px-4 py-3 text-sm ${toneClasses} ${className}`}>

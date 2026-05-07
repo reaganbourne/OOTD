@@ -35,12 +35,12 @@ function Avatar({ src, initial }: { src?: string | null; initial: string }) {
       <img
         src={src}
         alt="Profile photo"
-        className="h-24 w-24 rounded-full border-2 border-rose/20 object-cover shadow-[0_8px_24px_rgba(244,106,147,0.16)]"
+        className="h-24 w-24 rounded-full border-2 border-line object-cover"
       />
     );
   }
   return (
-    <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-rose/20 bg-gradient-to-br from-[#fce4ec] to-[#f8bbd0] text-2xl font-semibold text-[#c0476e] shadow-[0_8px_24px_rgba(244,106,147,0.14)]">
+    <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-line bg-pink-soft text-2xl font-semibold text-ink-soft">
       {initial}
     </div>
   );
@@ -52,7 +52,7 @@ function StatPill({ value, label }: { value: number; label: string }) {
       <span className="font-display text-2xl leading-none tracking-[-0.04em] text-ink">
         {value.toLocaleString()}
       </span>
-      <span className="text-[0.68rem] uppercase tracking-[0.18em] text-plum/52">{label}</span>
+      <span className="text-[0.68rem] uppercase tracking-[0.18em] text-mute">{label}</span>
     </div>
   );
 }
@@ -165,9 +165,9 @@ export default function PublicProfilePage({
       <main className="px-4 pb-28 pt-6 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">OOTD</p>
             <h1 className="mt-4 text-3xl text-ink">Profile not found</h1>
-            <p className="mt-3 text-sm leading-6 text-plum/68">
+            <p className="mt-3 text-sm leading-6 text-ink-soft">
               @{username} doesn&apos;t exist or may have changed their username.
             </p>
             <Link
@@ -197,7 +197,7 @@ export default function PublicProfilePage({
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-sm text-plum/60 transition hover:text-plum"
+              className="flex items-center gap-2 text-sm text-mute transition hover:text-plum"
             >
               <svg
                 aria-hidden="true"
@@ -213,7 +213,7 @@ export default function PublicProfilePage({
               </svg>
               Back
             </button>
-            <p className="mt-2 font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">
+            <p className="mt-2 font-display text-[3.4rem] leading-none text-pink-deep">
               OOTD
             </p>
           </div>
@@ -223,12 +223,12 @@ export default function PublicProfilePage({
         {status === "loading" ? (
           <section className="soft-panel mb-6 animate-pulse px-6 py-7">
             <div className="flex items-start gap-5">
-              <div className="h-24 w-24 rounded-full bg-[#ffe8ef]" />
+              <div className="h-24 w-24 rounded-full bg-pink-soft" />
               <div className="flex-1 space-y-3 pt-1">
-                <div className="h-5 w-36 rounded-full bg-[#ffe8ef]" />
-                <div className="h-3.5 w-24 rounded-full bg-[#fff3f7]" />
-                <div className="h-3 w-full rounded-full bg-[#fff6f9]" />
-                <div className="h-3 w-4/5 rounded-full bg-[#fff6f9]" />
+                <div className="h-5 w-36 rounded-full bg-pink-soft" />
+                <div className="h-3.5 w-24 rounded-full bg-pink-soft" />
+                <div className="h-3 w-full rounded-full bg-line/60" />
+                <div className="h-3 w-4/5 rounded-full bg-line/60" />
               </div>
             </div>
           </section>
@@ -244,9 +244,9 @@ export default function PublicProfilePage({
                 <h1 className="font-display text-3xl leading-tight tracking-[-0.03em] text-ink">
                   {displayName}
                 </h1>
-                <p className="mt-0.5 text-sm text-plum/58">@{username}</p>
+                <p className="mt-0.5 text-sm text-mute">@{username}</p>
                 {bio ? (
-                  <p className="mt-3 text-sm leading-6 text-plum/72">{bio}</p>
+                  <p className="mt-3 text-sm leading-6 text-ink-soft">{bio}</p>
                 ) : null}
 
                 {isAuthenticated ? (
@@ -254,20 +254,20 @@ export default function PublicProfilePage({
                     type="button"
                     onClick={() => void handleFollow()}
                     disabled={followLoading}
-                    className={`mt-4 rounded-full px-5 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                    className={`mt-4 rounded-full px-5 py-2 text-sm font-medium lowercase transition disabled:cursor-not-allowed disabled:opacity-60 ${
                       following
-                        ? "border border-rose/20 bg-white text-plum hover:border-rose/35 hover:bg-[#fff4f7]"
-                        : "bg-gradient-to-r from-[#ef6c96] to-[#f493b0] text-white hover:brightness-[0.98]"
+                        ? "border border-line bg-white text-ink-soft hover:border-pink-deep"
+                        : "bg-ink text-paper hover:opacity-90"
                     }`}
                   >
-                    {followLoading ? "…" : following ? "Following" : "Follow"}
+                    {followLoading ? "…" : following ? "following" : "follow"}
                   </button>
                 ) : (
                   <Link
                     href="/login"
-                    className="mt-4 inline-block rounded-full bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-5 py-2 text-sm font-semibold text-white transition hover:brightness-[0.98]"
+                    className="mt-4 inline-block rounded-full bg-ink px-5 py-2 text-sm font-medium lowercase text-paper transition hover:opacity-90"
                   >
-                    Follow
+                    follow
                   </Link>
                 )}
               </div>
@@ -301,7 +301,7 @@ export default function PublicProfilePage({
           {status === "ready" && outfits.length === 0 ? (
             <div className="soft-panel px-6 py-10 text-center">
               <h2 className="text-2xl text-ink">No looks yet</h2>
-              <p className="mt-3 text-sm leading-6 text-plum/68">
+              <p className="mt-3 text-sm leading-6 text-ink-soft">
                 @{username} hasn&apos;t uploaded any outfits yet.
               </p>
             </div>
