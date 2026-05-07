@@ -65,13 +65,6 @@ export type OutfitResponse = {
   clothing_items: OutfitClothingItem[];
 };
 
-export type OutfitOwner = {
-  id: string;
-  username?: string | null;
-  display_name?: string | null;
-  profile_image_url?: string | null;
-};
-
 export type FeedAuthor = {
   id: string;
   username?: string | null;
@@ -87,13 +80,132 @@ export type FeedPageResponse = {
   next_cursor?: string | null;
 };
 
-export type VaultPageResponse = {
-  outfits: OutfitResponse[];
-  next_cursor?: string | null;
+// ── Outfit detail ─────────────────────────────────────────────────────────────
+
+export type OutfitOwner = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  profile_image_url: string | null;
 };
 
+/** Full outfit detail — returned by GET /outfits/{id} */
 export type OutfitDetailResponse = OutfitResponse & {
   owner: OutfitOwner;
+};
+
+export type VaultPage = {
+  outfits: OutfitResponse[];
+  next_cursor: string | null;
+};
+
+export type OutfitOG = {
+  title: string;
+  description: string;
+  image_url: string;
+  page_url: string;
+  site_name: string;
+  twitter_card: string;
+};
+
+export type CaptionSuggestions = {
+  suggestions: string[];
+};
+
+// ── Likes & comments ──────────────────────────────────────────────────────────
+
+export type LikeStatus = {
+  like_count: number;
+  liked: boolean;
+};
+
+export type CommentAuthor = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  profile_image_url: string | null;
+};
+
+export type Comment = {
+  id: string;
+  outfit_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+  updated_at: string;
+  author: CommentAuthor;
+};
+
+export type CommentPage = {
+  comments: Comment[];
+  next_cursor: string | null;
+};
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+
+export type PublicProfile = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  bio: string | null;
+  profile_image_url: string | null;
+  follower_count: number;
+  following_count: number;
+  created_at: string;
+};
+
+export type FollowStatus = {
+  following: boolean;
+  follower_count: number;
+};
+
+export type UserSearchResult = {
+  id: string;
+  username: string | null;
+  display_name: string | null;
+  profile_image_url: string | null;
+  follower_count: number;
+};
+
+export type WrappedStats = {
+  year: number;
+  month: number;
+  total_outfits: number;
+  total_items: number;
+  top_colors: Array<{ color: string; count: number }>;
+  top_brands: Array<{ brand: string; count: number }>;
+  top_categories: Array<{ category: string; count: number }>;
+  longest_streak: number;
+  current_streak: number;
+  most_worn_vibe: string | null;
+  outfits_by_week: Array<{ week: number; count: number }>;
+};
+
+// ── Boards ────────────────────────────────────────────────────────────────────
+
+export type Board = {
+  id: string;
+  name: string;
+  event_date: string | null;
+  invite_code: string;
+  creator_id: string;
+  expires_at: string;
+  member_count: number;
+  created_at: string;
+};
+
+export type BoardMember = {
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  profile_image_url: string | null;
+  role: "creator" | "member";
+  joined_at: string;
+};
+
+export type BoardOutfitPage = {
+  outfits: OutfitResponse[];
+  next_cursor: string | null;
 };
 
 export type CreateOutfitInput = {
@@ -607,12 +719,10 @@ export const userApiClient = {
     });
   },
 
-  async getWrapped(input?: { year?: number; month?: number }): Promise<ApiResult<WrappedStats>> {
-    const params = new URLSearchParams();
-    if (input?.year) params.set("year", String(input.year));
-    if (input?.month) params.set("month", String(input.month));
-    const query = params.toString();
-    return sendRequest<WrappedStats>(`/users/me/wrapped${query ? `?${query}` : ""}`, {
+  /** month must be "YYYY-MM" (e.g. "2026-04"). Defaults to the current calendar month. */
+  async getWrapped(month?: string): Promise<ApiResult<WrappedStats>> {
+    const m = month ?? new Date().toISOString().slice(0, 7); // "YYYY-MM"
+    return sendRequest<WrappedStats>(`/users/me/wrapped?month=${encodeURIComponent(m)}`, {
       requiresAuth: true,
       successMessage: "Loaded wrapped stats."
     });
@@ -728,38 +838,6 @@ export const boardApiClient = {
       requiresAuth: true,
       successMessage: pinned ? "Outfit pinned." : "Outfit unpinned."
     });
-  },
-
-  async getMine(input?: {
-    cursor?: string;
-    limit?: number;
-  }): Promise<ApiResult<VaultPageResponse>> {
-    const params = new URLSearchParams();
-
-    if (input?.cursor) {
-      params.set("cursor", input.cursor);
-    }
-
-    if (input?.limit) {
-      params.set("limit", String(input.limit));
-    }
-
-    const query = params.toString();
-
-    return sendRequest<VaultPageResponse>(`/outfits/me${query ? `?${query}` : ""}`, {
-      requiresAuth: true,
-      successMessage: "Loaded vault."
-    });
-  },
-
-  async getById(id: string): Promise<ApiResult<OutfitDetailResponse>> {
-    return sendRequest<OutfitDetailResponse>(`/outfits/${id}`, {
-      successMessage: "Loaded outfit detail."
-    });
-  },
-
-  getStoryCardUrl(id: string) {
-    return `${DEFAULT_API_BASE_URL}/outfits/${id}/story-card`;
   }
 };
 

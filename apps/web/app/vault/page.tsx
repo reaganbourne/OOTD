@@ -55,7 +55,7 @@ export default function VaultPage() {
       setVaultStatus("loading");
       setErrorMessage(null);
 
-      const result = await apiClient.outfits.getMine({ limit: INITIAL_PAGE_SIZE });
+      const result = await apiClient.outfits.getVault({ limit: INITIAL_PAGE_SIZE });
 
       if (!isActive) {
         return;
@@ -89,7 +89,7 @@ export default function VaultPage() {
     setIsLoadingMore(true);
     setErrorMessage(null);
 
-    const result = await apiClient.outfits.getMine({
+    const result = await apiClient.outfits.getVault({
       cursor: nextCursor,
       limit: INITIAL_PAGE_SIZE
     });
