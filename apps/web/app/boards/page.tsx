@@ -1,0 +1,306 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { apiClient, type Board } from "@/lib/api-client";
+import { MobileNav } from "@/components/chrome/mobile-nav";
+import { useAuth } from "@/lib/auth-context";
+
+type PageStatus = "loading" | "ready" | "error";
+
+function formatEventDate(d?: string | null) {
+  if (!d) return null;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(d));
+}
+
+function formatExpiry(d: string) {
+  const days = Math.ceil((new Date(d).getTime() - Date.now()) / 86_400_000);
+  if (days < 0) return "Expired";
+  if (days === 0) return "Expires today";
+  if (days === 1) return "1 day left";
+  return `${days} days left`;
+}
+
+// ── Create board modal ────────────────────────────────────────────────────────
+
+function CreateBoardModal({ onClose, onCreate }: {
+  onClose: () => void;
+  onCreate: (board: Board) => void;
+}) {
+  const [name, setName] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setLoading(true);
+    setError(null);
+
+    const result = await apiClient.boards.create({
+      name: name.trim(),
+      event_date: eventDate || undefined,
+    });
+
+    if (result.ok) {
+      onCreate(result.data);
+    } else {
+      setError(result.message);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(36,21,28,0.38)] px-4 pb-4 sm:items-center sm:pb-0 backdrop-blur-sm">
+      <div className="soft-panel w-full max-w-md px-6 py-7">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="font-display text-2xl tracking-[-0.03em] text-ink">New board</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-rose/12 text-plum/50 transition hover:border-rose/22 hover:text-plum"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+          <div className="field-shell">
+            <label className="field-label" htmlFor="board-name">Board name</label>
+            <input
+              ref={inputRef}
+              id="board-name"
+              type="text"
+              placeholder="e.g. Met Gala 2026, Summer wedding"
+              maxLength={120}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="field-input"
+            />
+          </div>
+
+          <div className="field-shell">
+            <label className="block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-plum/52 mb-1" htmlFor="event-date">
+              Event date <span className="font-normal normal-case tracking-normal text-plum/38">(optional)</span>
+            </label>
+            <input
+              id="event-date"
+              type="date"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+              className="field-input text-sm"
+            />
+          </div>
+
+          {error ? (
+            <p className="rounded-[1rem] border border-rose/25 bg-[#fff3f7] px-4 py-3 text-sm text-[#c04b72]">{error}</p>
+          ) : null}
+
+          <div className="flex gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-[1.2rem] border border-rose/12 bg-white py-3.5 text-sm font-semibold text-plum transition hover:border-rose/22"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || !name.trim()}
+              className="flex-1 rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] py-3.5 text-sm font-semibold text-white transition hover:brightness-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
+            >
+              {loading ? "Creating…" : "Create board"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Board card ────────────────────────────────────────────────────────────────
+
+function BoardCard({ board }: { board: Board }) {
+  const eventLabel = formatEventDate(board.event_date);
+  const expiryLabel = formatExpiry(board.expires_at);
+  const expired = expiryLabel === "Expired";
+
+  return (
+    <Link
+      href={`/boards/${board.id}`}
+      className={`group block overflow-hidden rounded-[1.75rem] border bg-white shadow-[0_18px_42px_rgba(244,106,147,0.07)] transition hover:-translate-y-0.5 hover:border-rose/22 ${expired ? "border-rose/8 opacity-60" : "border-rose/10"}`}
+    >
+      <div className="bg-gradient-to-br from-[#fce4ec] to-[#fdf2f5] px-5 pt-5 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-rose/15 bg-white/80 text-[#ef5f8a]">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
+              <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
+              <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4" />
+              <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
+            </svg>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] ${expired ? "bg-rose/10 text-plum/50" : "bg-white/80 text-[#ef5f8a]"}`}>
+            {expiryLabel}
+          </span>
+        </div>
+      </div>
+
+      <div className="px-5 py-4 space-y-1">
+        <h3 className="font-display text-xl tracking-[-0.02em] text-ink leading-tight">{board.name}</h3>
+        {eventLabel ? (
+          <p className="text-[0.72rem] uppercase tracking-[0.18em] text-plum/52">{eventLabel}</p>
+        ) : null}
+        <p className="text-[0.72rem] uppercase tracking-[0.16em] text-plum/42">
+          {board.member_count} {board.member_count === 1 ? "member" : "members"}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default function BoardsPage() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  const [status, setStatus] = useState<PageStatus>("loading");
+  const [boards, setBoards] = useState<Board[]>([]);
+  const [showCreate, setShowCreate] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) router.replace("/login");
+  }, [isAuthenticated, authLoading, router]);
+
+  useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
+    let active = true;
+
+    async function load() {
+      setStatus("loading");
+      const result = await apiClient.boards.list();
+      if (!active) return;
+      if (result.ok) {
+        setBoards(result.data);
+        setStatus("ready");
+      } else {
+        setErrorMessage(result.message);
+        setStatus("error");
+      }
+    }
+
+    void load();
+    return () => { active = false; };
+  }, [isAuthenticated, authLoading]);
+
+  function handleCreated(board: Board) {
+    setBoards((prev) => [board, ...prev]);
+    setShowCreate(false);
+  }
+
+  if (authLoading || !isAuthenticated) {
+    return (
+      <main className="px-4 py-6 sm:px-6">
+        <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-3xl items-center justify-center">
+          <section className="soft-panel w-full max-w-sm px-6 py-10 text-center">
+            <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+            <h1 className="mt-4 text-3xl text-ink">Loading boards</h1>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <>
+      <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+
+          {/* Header */}
+          <header className="mb-6 flex items-start justify-between gap-3">
+            <div>
+              <p className="font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
+              <p className="mt-1 text-sm text-plum/54">Your outfit boards</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="icon-button mt-1"
+              aria-label="Create new board"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+          </header>
+
+          {errorMessage ? (
+            <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-[#fff3f7] px-4 py-3 text-sm text-[#c04b72]">{errorMessage}</div>
+          ) : null}
+
+          {/* Loading skeletons */}
+          {status === "loading" ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse overflow-hidden rounded-[1.75rem] border border-rose/10 bg-white">
+                  <div className="h-20 bg-[linear-gradient(120deg,_rgba(255,236,242,0.8),_rgba(255,255,255,0.98))]" />
+                  <div className="space-y-2 px-5 py-4">
+                    <div className="h-4 w-2/3 rounded-full bg-[#ffe8ef]" />
+                    <div className="h-3 w-1/3 rounded-full bg-[#fff3f7]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {/* Empty state */}
+          {status === "ready" && boards.length === 0 ? (
+            <section className="soft-panel px-6 py-10 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-rose/12 bg-[#fff4f7] text-[#ef5f8a]">
+                <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
+                  <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
+                  <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4" />
+                  <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
+                </svg>
+              </div>
+              <h2 className="mt-5 text-3xl text-ink">No boards yet</h2>
+              <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-plum/68">
+                Boards are private spaces for an event — create one and invite your crew to post their looks together.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowCreate(true)}
+                className="mt-6 rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-6 py-3.5 text-sm font-semibold text-white transition hover:brightness-[0.98]"
+              >
+                Create your first board
+              </button>
+            </section>
+          ) : null}
+
+          {/* Board grid */}
+          {status === "ready" && boards.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {boards.map((b) => <BoardCard key={b.id} board={b} />)}
+            </div>
+          ) : null}
+        </div>
+      </main>
+
+      {showCreate ? (
+        <CreateBoardModal onClose={() => setShowCreate(false)} onCreate={handleCreated} />
+      ) : null}
+
+      <MobileNav active="boards" />
+    </>
+  );
+}
