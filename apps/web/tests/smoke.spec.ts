@@ -124,12 +124,12 @@ test.describe("public routes", () => {
 
   test("login and signup pages render their forms", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.getByRole("heading", { name: /^log in$/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /welcome back/i })).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(page.getByLabel(/password/i)).toBeVisible();
 
     await page.goto("/signup");
-    await expect(page.getByRole("heading", { name: /^create account$/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /make your account/i })).toBeVisible();
     await expect(page.getByLabel(/username/i)).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(page.getByLabel(/^password$/i)).toBeVisible();
@@ -142,7 +142,7 @@ test.describe("protected routes", () => {
     await page.goto("/upload");
 
     await expect(page).toHaveURL(/\/login\?next=%2Fupload$/);
-    await expect(page.getByRole("heading", { name: /^log in$/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /welcome back/i })).toBeVisible();
   });
 
   test("shows upload validation before a photo is selected", async ({ page }) => {

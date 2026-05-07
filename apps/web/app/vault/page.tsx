@@ -194,7 +194,7 @@ export default function VaultPage() {
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl items-center justify-center">
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
-            <p className="font-display text-5xl text-pink-deep">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-4xl text-ink">Checking your session</h1>
           </section>
         </div>
@@ -211,10 +211,10 @@ export default function VaultPage() {
         <header className="mb-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="font-display text-[3.4rem] leading-none text-pink-deep">
-                OOTD
-              </p>
-              <p className="mt-1 text-sm text-mute">{displayName}&rsquo;s vault</p>
+              <h1 className="font-display text-[2.5rem] leading-none text-ink">
+                my vault
+              </h1>
+              <p className="mt-1 text-sm text-mute">{displayName}&rsquo;s fits</p>
             </div>
 
             <div className="flex items-center gap-2">

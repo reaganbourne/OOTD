@@ -29,7 +29,7 @@ export function StoryCardSheet({ outfitId, onClose }: StoryCardSheetProps) {
 
   async function handleNativeShare() {
     if (!navigator.share) return;
-    await navigator.share({ title: "My OOTD", url: shareLink });
+    await navigator.share({ title: "my checkd fit", url: shareLink });
   }
 
   const canNativeShare = typeof navigator !== "undefined" && "share" in navigator;

@@ -183,7 +183,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
       <main className="px-4 pb-28 pt-6 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl text-pink-deep">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-3xl text-ink">Board expired</h1>
             <p className="mt-3 text-sm leading-6 text-ink-soft">This board has passed its event date and is no longer active.</p>
             <Link href="/boards" className="mt-6 inline-block rounded-[1.2rem] border border-rose/15 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/25">
@@ -191,7 +191,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
             </Link>
           </div>
         </div>
-        <MobileNav active="boards" />
+        <MobileNav active="none" />
       </main>
     );
   }
@@ -201,7 +201,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
       <main className="px-4 pb-28 pt-6 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl text-pink-deep">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-3xl text-ink">Board not found</h1>
             <p className="mt-3 text-sm leading-6 text-ink-soft">{errorMessage ?? "This board doesn't exist or you're not a member."}</p>
             <Link href="/boards" className="mt-6 inline-block rounded-[1.2rem] border border-rose/15 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/25">
@@ -209,7 +209,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
             </Link>
           </div>
         </div>
-        <MobileNav active="boards" />
+        <MobileNav active="none" />
       </main>
     );
   }
@@ -231,7 +231,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
               </svg>
               Boards
             </Link>
-            <p className="mt-2 font-display text-[3.4rem] leading-none text-pink-deep">OOTD</p>
+            <p className="mt-2 font-display text-[2.2rem] leading-none text-pink-deep">checkd</p>
           </div>
         </header>
 
@@ -359,7 +359,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
           ) : null}
         </section>
       </div>
-      <MobileNav active="boards" />
+      <MobileNav active="none" />
     </main>
   );
 }

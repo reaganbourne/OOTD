@@ -18,8 +18,8 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "OOTD",
-  description: "a soft place for outfits — your daily fit, kept close, shared with the girls."
+  title: "checkd",
+  description: "your daily fit, kept close, shared with the girls."
 };
 
 export default function RootLayout({

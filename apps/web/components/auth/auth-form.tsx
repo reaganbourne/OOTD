@@ -98,7 +98,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <div className="soft-panel px-6 py-7 sm:px-7 sm:py-8">
+    <div>
       <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
         {mode === "signup" ? (
           <Field
@@ -164,6 +164,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     </div>
   );
 }
+
 
 type FieldProps = {
   label: string;
