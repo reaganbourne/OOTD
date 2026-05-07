@@ -114,15 +114,7 @@ export function MobileNav({ active }: MobileNavProps) {
     <nav className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
       <div className="mobile-dock">
         <NavItem href="/feed" label="Home" active={active === "home"} icon={<HomeIcon active={active === "home"} />} />
-        <button
-          type="button"
-          aria-disabled="true"
-          className="flex min-w-[72px] cursor-default flex-col items-center gap-1 rounded-full px-4 py-2 text-[0.72rem] font-medium text-plum/42"
-        >
-          <BoardsIcon active={active === "boards"} />
-          <span>Boards</span>
-          <span className="text-[0.62rem] uppercase tracking-[0.18em] text-plum/36">Soon</span>
-        </button>
+        <NavItem href="/boards" label="Boards" active={active === "boards"} icon={<BoardsIcon active={active === "boards"} />} />
         <NavItem href="/vault" label="Vault" active={active === "vault"} icon={<VaultIcon active={active === "vault"} />} />
         <NavItem href="/profile" label="Profile" active={active === "profile"} icon={<ProfileIcon active={active === "profile"} />} />
       </div>
