@@ -1,23 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient, type FeedOutfitResponse } from "@/lib/api-client";
+import {
+  apiClient,
+  type Board,
+  type FeedOutfitResponse,
+  type OutfitResponse,
+} from "@/lib/api-client";
 import { MobileNav } from "@/components/chrome/mobile-nav";
-import { SearchBar } from "@/components/chrome/search-bar";
 import { useAuth } from "@/lib/auth-context";
 import {
   OutfitCard,
   OutfitCardSkeleton,
-  type OutfitCardData
+  type OutfitCardData,
 } from "@/components/outfits/outfit-card";
 
-const INITIAL_PAGE_SIZE = 12;
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-type FeedStatus = "idle" | "loading" | "ready" | "error";
+type Tab = "vault" | "boards";
+type Status = "idle" | "loading" | "ready" | "error";
 
-function toOutfitCardData(outfit: FeedOutfitResponse): OutfitCardData {
+type BoardSection = {
+  board: Board;
+  outfits: OutfitResponse[];
+  cursor: string | null;
+  status: Status;
+  loadingMore: boolean;
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function toVaultCardData(outfit: FeedOutfitResponse): OutfitCardData {
   return {
     id: outfit.id,
     imageUrl: outfit.image_url,
@@ -28,86 +43,401 @@ function toOutfitCardData(outfit: FeedOutfitResponse): OutfitCardData {
     vibeTone: outfit.vibe_check_tone,
     author: {
       username: outfit.author.username,
-      profileImageUrl: outfit.author.profile_image_url
-    }
+      profileImageUrl: outfit.author.profile_image_url,
+    },
   };
 }
+
+function toBoardCardData(outfit: OutfitResponse): OutfitCardData {
+  return {
+    id: outfit.id,
+    imageUrl: outfit.image_url,
+    caption: outfit.caption,
+    eventName: outfit.event_name,
+    wornOn: outfit.worn_on,
+    createdAt: outfit.created_at,
+    vibeTone: outfit.vibe_check_tone,
+    // TODO: OutfitOut from GET /boards/{id}/outfits does not include author.
+    // Need backend to add `author: { id, username, profile_image_url }` to
+    // OutfitOut (matching the FeedAuthor shape) so "who uploaded" can be shown
+    // on each board activity card. Until then, author is omitted here.
+    author: null,
+  };
+}
+
+function formatEventDate(dateStr: string | null): string | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(d);
+}
+
+// ── Infinite scroll hook ──────────────────────────────────────────────────────
+
+function useSentinel(onIntersect: () => void) {
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const callbackRef = useRef(onIntersect);
+  callbackRef.current = onIntersect;
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) callbackRef.current(); },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return sentinelRef;
+}
+
+// ── Tab switcher ──────────────────────────────────────────────────────────────
+
+function TabSwitcher({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+  return (
+    <div className="inline-flex rounded-full border border-rose/12 bg-white/80 p-1 shadow-[0_4px_14px_rgba(244,106,147,0.08)]">
+      {(["vault", "boards"] as Tab[]).map((tab) => (
+        <button
+          key={tab}
+          type="button"
+          onClick={() => onChange(tab)}
+          className={`rounded-full px-5 py-2 text-[0.78rem] font-semibold transition ${
+            active === tab
+              ? "bg-gradient-to-r from-[#ef6c96] to-[#f493b0] text-white shadow-[0_4px_10px_rgba(244,106,147,0.3)]"
+              : "text-plum/60 hover:text-plum"
+          }`}
+        >
+          {tab === "vault" ? "Vault Feed" : "Boards"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Board activity card ───────────────────────────────────────────────────────
+
+function BoardActivityCard({
+  outfit,
+  boardName,
+}: {
+  outfit: OutfitResponse;
+  boardName: string;
+}) {
+  return (
+    <div className="relative">
+      <OutfitCard outfit={toBoardCardData(outfit)} showAuthor={false} />
+      {/* Board name badge */}
+      <div className="pointer-events-none absolute left-3 bottom-[4.5rem] right-3">
+        <span className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-plum/10 bg-white/88 px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-plum/70 backdrop-blur">
+          <svg viewBox="0 0 24 24" className="h-3 w-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
+            <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
+            <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4" />
+            <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
+          </svg>
+          <span className="truncate">{boardName}</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── Vault feed tab ────────────────────────────────────────────────────────────
+
+const VAULT_PAGE_SIZE = 12;
+
+function VaultFeedTab({ displayName }: { displayName: string }) {
+  const [outfits, setOutfits] = useState<FeedOutfitResponse[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>("idle");
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setStatus("loading");
+    setError(null);
+
+    apiClient.outfits.getFeed({ limit: VAULT_PAGE_SIZE }).then((result) => {
+      if (!active) return;
+      if (!result.ok) {
+        setStatus("error");
+        setError(result.message);
+        return;
+      }
+      setOutfits(result.data.outfits);
+      setCursor(result.data.next_cursor ?? null);
+      setStatus("ready");
+    });
+
+    return () => { active = false; };
+  }, []);
+
+  const loadMore = useCallback(async () => {
+    if (!cursor || loadingMore || status !== "ready") return;
+    setLoadingMore(true);
+
+    const result = await apiClient.outfits.getFeed({ cursor, limit: VAULT_PAGE_SIZE });
+    if (result.ok) {
+      setOutfits((prev) => [...prev, ...result.data.outfits]);
+      setCursor(result.data.next_cursor ?? null);
+    }
+    setLoadingMore(false);
+  }, [cursor, loadingMore, status]);
+
+  const sentinelRef = useSentinel(() => { void loadMore(); });
+
+  if (status === "loading") {
+    return (
+      <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => <OutfitCardSkeleton key={i} />)}
+      </section>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="soft-panel px-6 py-8 text-center">
+        <p className="text-sm text-[#c04b72]">{error}</p>
+      </div>
+    );
+  }
+
+  if (status === "ready" && outfits.length === 0) {
+    return (
+      <section className="soft-panel p-6 sm:p-8">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/58">Empty feed</p>
+        <h2 className="mt-4 max-w-2xl text-4xl leading-tight text-ink sm:text-5xl">
+          Your feed is ready. It just needs people.
+        </h2>
+        <p className="mt-4 max-w-2xl text-sm leading-7 text-plum/70 sm:text-base">
+          Once you follow people, their outfits will land here newest first. Until then, keep building your own archive.
+        </p>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <Link href="/upload" className="rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-5 py-4 text-center text-sm font-semibold text-white transition hover:brightness-[0.98]">
+            Upload your next outfit
+          </Link>
+          <Link href="/vault" className="rounded-[1.2rem] border border-rose/12 bg-white px-5 py-4 text-center text-sm font-semibold text-plum transition hover:border-rose/22">
+            Browse your vault
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <>
+      <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+        {outfits.map((outfit) => (
+          <OutfitCard key={outfit.id} outfit={toVaultCardData(outfit)} showAccentMarker />
+        ))}
+        {loadingMore
+          ? Array.from({ length: 3 }).map((_, i) => <OutfitCardSkeleton key={`skel-${i}`} />)
+          : null}
+      </section>
+      {cursor ? <div ref={sentinelRef} className="h-px" /> : null}
+    </>
+  );
+}
+
+// ── Boards activity tab ───────────────────────────────────────────────────────
+
+const BOARD_PAGE_SIZE = 6;
+
+function BoardSectionSentinel({ onIntersect }: { onIntersect: () => void }) {
+  const ref = useSentinel(onIntersect);
+  return <div ref={ref} className="h-px" />;
+}
+
+function BoardsActivityTab() {
+  const [sections, setSections] = useState<BoardSection[]>([]);
+  const [boardsStatus, setBoardsStatus] = useState<Status>("idle");
+  const [boardsError, setBoardsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setBoardsStatus("loading");
+
+    apiClient.boards.list().then(async (boardsResult) => {
+      if (!active) return;
+
+      if (!boardsResult.ok) {
+        setBoardsStatus("error");
+        setBoardsError(boardsResult.message);
+        return;
+      }
+
+      const boards = boardsResult.data;
+
+      if (boards.length === 0) {
+        setSections([]);
+        setBoardsStatus("ready");
+        return;
+      }
+
+      // Fetch first page of outfits for each board in parallel
+      const results = await Promise.all(
+        boards.map((board) =>
+          apiClient.boards.getOutfits(board.id, { limit: BOARD_PAGE_SIZE })
+        )
+      );
+
+      if (!active) return;
+
+      setSections(
+        boards.map((board, i) => {
+          const result = results[i];
+          return {
+            board,
+            outfits: result.ok ? result.data.outfits : [],
+            cursor: result.ok ? (result.data.next_cursor ?? null) : null,
+            status: "ready",
+            loadingMore: false,
+          };
+        })
+      );
+
+      setBoardsStatus("ready");
+    });
+
+    return () => { active = false; };
+  }, []);
+
+  const loadMoreForBoard = useCallback(async (boardId: string) => {
+    setSections((prev) =>
+      prev.map((s) =>
+        s.board.id === boardId ? { ...s, loadingMore: true } : s
+      )
+    );
+
+    const section = sections.find((s) => s.board.id === boardId);
+    if (!section?.cursor) return;
+
+    const result = await apiClient.boards.getOutfits(boardId, {
+      cursor: section.cursor,
+      limit: BOARD_PAGE_SIZE,
+    });
+
+    setSections((prev) =>
+      prev.map((s) => {
+        if (s.board.id !== boardId) return s;
+        return {
+          ...s,
+          outfits: result.ok ? [...s.outfits, ...result.data.outfits] : s.outfits,
+          cursor: result.ok ? (result.data.next_cursor ?? null) : s.cursor,
+          loadingMore: false,
+        };
+      })
+    );
+  }, [sections]);
+
+  if (boardsStatus === "loading") {
+    return (
+      <div className="space-y-8">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i}>
+            <div className="mb-4 h-5 w-36 animate-pulse rounded-full bg-[#ffe8ef]" />
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+              {Array.from({ length: 4 }).map((_, j) => <OutfitCardSkeleton key={j} showAuthor={false} />)}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (boardsStatus === "error") {
+    return (
+      <div className="soft-panel px-6 py-8 text-center">
+        <p className="text-sm text-[#c04b72]">{boardsError}</p>
+      </div>
+    );
+  }
+
+  if (boardsStatus === "ready" && sections.length === 0) {
+    return (
+      <section className="soft-panel p-6 sm:p-8">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/58">No boards yet</p>
+        <h2 className="mt-4 text-4xl leading-tight text-ink">Join a board to see activity here</h2>
+        <p className="mt-4 text-sm leading-7 text-plum/70">
+          Boards are where you coordinate looks with friends for events. Get an invite link from someone to join.
+        </p>
+        <Link href="/boards" className="mt-6 inline-block rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-5 py-4 text-sm font-semibold text-white transition hover:brightness-[0.98]">
+          Go to boards
+        </Link>
+      </section>
+    );
+  }
+
+  return (
+    <div className="space-y-10">
+      {sections.map((section) => (
+        <section key={section.board.id}>
+          {/* Board header */}
+          <div className="mb-4 flex items-baseline justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="font-display truncate text-xl tracking-[-0.02em] text-ink">
+                {section.board.name}
+              </h2>
+              {section.board.event_date ? (
+                <p className="mt-0.5 text-[0.68rem] uppercase tracking-[0.18em] text-plum/50">
+                  {formatEventDate(section.board.event_date)}
+                </p>
+              ) : null}
+            </div>
+            <Link
+              href={`/boards/${section.board.id}`}
+              className="shrink-0 text-[0.72rem] font-semibold text-[#ef5f8a] hover:underline"
+            >
+              View board →
+            </Link>
+          </div>
+
+          {section.outfits.length === 0 ? (
+            <p className="rounded-2xl border border-rose/10 bg-white/70 px-4 py-5 text-sm text-plum/54">
+              No outfits posted yet.
+            </p>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+                {section.outfits.map((outfit) => (
+                  <BoardActivityCard
+                    key={outfit.id}
+                    outfit={outfit}
+                    boardName={section.board.name}
+                  />
+                ))}
+                {section.loadingMore
+                  ? Array.from({ length: 2 }).map((_, i) => <OutfitCardSkeleton key={`skel-${i}`} showAuthor={false} />)
+                  : null}
+              </div>
+
+              {section.cursor && !section.loadingMore ? (
+                <BoardSectionSentinel onIntersect={() => void loadMoreForBoard(section.board.id)} />
+              ) : null}
+            </>
+          )}
+        </section>
+      ))}
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function FeedPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading, user } = useAuth();
-  const [feedStatus, setFeedStatus] = useState<FeedStatus>("idle");
-  const [outfits, setOutfits] = useState<FeedOutfitResponse[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("vault");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.replace("/login");
     }
   }, [isAuthenticated, isLoading, router]);
-
-  useEffect(() => {
-    if (isLoading || !isAuthenticated) {
-      return;
-    }
-
-    let isActive = true;
-
-    async function loadInitialFeed() {
-      setFeedStatus("loading");
-      setErrorMessage(null);
-
-      const result = await apiClient.outfits.getFeed({ limit: INITIAL_PAGE_SIZE });
-
-      if (!isActive) {
-        return;
-      }
-
-      if (!result.ok) {
-        setFeedStatus("error");
-        setErrorMessage(result.message);
-        setOutfits([]);
-        setNextCursor(null);
-        return;
-      }
-
-      setOutfits(result.data.outfits);
-      setNextCursor(result.data.next_cursor ?? null);
-      setFeedStatus("ready");
-    }
-
-    void loadInitialFeed();
-
-    return () => {
-      isActive = false;
-    };
-  }, [isAuthenticated, isLoading]);
-
-  async function handleLoadMore() {
-    if (!nextCursor || isLoadingMore) {
-      return;
-    }
-
-    setIsLoadingMore(true);
-    setErrorMessage(null);
-
-    const result = await apiClient.outfits.getFeed({
-      cursor: nextCursor,
-      limit: INITIAL_PAGE_SIZE
-    });
-
-    if (!result.ok) {
-      setErrorMessage(result.message);
-      setIsLoadingMore(false);
-      return;
-    }
-
-    setOutfits((current) => [...current, ...result.data.outfits]);
-    setNextCursor(result.data.next_cursor ?? null);
-    setIsLoadingMore(false);
-  }
 
   const displayName = user?.display_name ?? user?.username ?? "you";
 
@@ -118,9 +448,6 @@ export default function FeedPage() {
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
             <p className="font-display text-5xl tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
             <h1 className="mt-4 text-4xl text-ink">Opening your feed</h1>
-            <p className="mt-4 text-sm leading-6 text-plum/82">
-              We&apos;re checking your session before loading the latest looks.
-            </p>
           </section>
         </div>
       </main>
@@ -130,8 +457,10 @@ export default function FeedPage() {
   return (
     <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-7xl">
-        <header className="mb-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
+
+        {/* ── Header ───────────────────────────────────────────────────── */}
+        <header className="mb-6">
+          <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <p className="font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">
                 OOTD
@@ -141,31 +470,13 @@ export default function FeedPage() {
 
             <div className="flex items-center gap-2">
               <Link href="/upload" className="icon-button" aria-label="Add outfit">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 5v14" />
                   <path d="M5 12h14" />
                 </svg>
               </Link>
               <button type="button" className="icon-button" aria-label="Notifications">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6.5 10a5.5 5.5 0 1 1 11 0c0 5 2 6 2 6h-15s2-1 2-6" />
                   <path d="M10 19a2 2 0 0 0 4 0" />
                 </svg>
@@ -173,121 +484,17 @@ export default function FeedPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <SearchBar placeholder="Search outfits, people, vibes" />
-            <button type="button" className="icon-button" aria-label="Feed filters">
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M4 7h16" />
-                <path d="M7 12h10" />
-                <path d="M10 17h4" />
-              </svg>
-            </button>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="filter-chip filter-chip-active">Following</span>
-            <span className="filter-chip">Recent</span>
-            <Link href="/vault" className="filter-chip">
-              Vault
-            </Link>
-          </div>
+          <TabSwitcher active={activeTab} onChange={setActiveTab} />
         </header>
 
-        {errorMessage && feedStatus !== "loading" ? (
-          <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-[#fff3f7] px-4 py-3 text-sm text-[#c04b72]">
-            {errorMessage}
-          </div>
-        ) : null}
-
-        {feedStatus === "loading" ? (
-          <section className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <OutfitCardSkeleton key={index} />
-            ))}
-          </section>
-        ) : null}
-
-        {feedStatus === "ready" && outfits.length === 0 ? (
-          <section className="soft-panel p-6 sm:p-8">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/58">
-              Empty feed
-            </p>
-            <h2 className="mt-4 max-w-2xl text-4xl leading-tight text-ink sm:text-5xl">
-              Your feed is ready. It just needs people.
-            </h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-plum/70 sm:text-base">
-              Once you follow people, their outfits will land here newest first. Until
-              then, keep building your own archive and use the vault as your personal
-              style reference.
-            </p>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <Link
-                href="/upload"
-                className="rounded-[1.2rem] bg-gradient-to-r from-[#ef6c96] to-[#f493b0] px-5 py-4 text-center text-sm font-semibold text-white transition hover:brightness-[0.98]"
-              >
-                Upload your next outfit
-              </Link>
-              <Link
-                href="/vault"
-                className="rounded-[1.2rem] border border-rose/12 bg-white px-5 py-4 text-center text-sm font-semibold text-plum transition hover:border-rose/22"
-              >
-                Browse your vault
-              </Link>
-            </div>
-          </section>
-        ) : null}
-
-        {feedStatus === "ready" && outfits.length > 0 ? (
-          <>
-            <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-              {outfits.map((outfit) => (
-                <OutfitCard
-                  key={outfit.id}
-                  outfit={toOutfitCardData(outfit)}
-                  showAccentMarker
-                />
-              ))}
-            </section>
-
-            {nextCursor ? (
-              <div className="mt-8 flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    void handleLoadMore();
-                  }}
-                  disabled={isLoadingMore}
-                  className="rounded-full border border-rose/12 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/22 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isLoadingMore ? "Loading more looks..." : "Load more looks"}
-                </button>
-              </div>
-            ) : null}
-          </>
-        ) : null}
-
-        {feedStatus === "error" ? (
-          <div className="mt-4 flex justify-center">
-            <button
-              type="button"
-              onClick={() => router.refresh()}
-              className="rounded-full border border-rose/12 bg-white px-4 py-3 text-sm font-semibold text-plum transition hover:border-rose/22"
-            >
-              Refresh the page
-            </button>
-          </div>
-        ) : null}
+        {/* ── Tab content ──────────────────────────────────────────────── */}
+        {activeTab === "vault" ? (
+          <VaultFeedTab displayName={displayName} />
+        ) : (
+          <BoardsActivityTab />
+        )}
       </div>
+
       <MobileNav active="home" />
     </main>
   );
