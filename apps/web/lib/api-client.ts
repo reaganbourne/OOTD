@@ -203,8 +203,13 @@ export type BoardMember = {
   joined_at: string;
 };
 
+/** Board outfit — same as OutfitResponse but includes the uploader's author info */
+export type BoardOutfitResponse = OutfitResponse & {
+  author: FeedAuthor;
+};
+
 export type BoardOutfitPage = {
-  outfits: OutfitResponse[];
+  outfits: BoardOutfitResponse[];
   next_cursor: string | null;
 };
 
@@ -521,6 +526,19 @@ export const outfitApiClient = {
     return sendRequest<FeedPageResponse>(`/outfits/feed${query ? `?${query}` : ""}`, {
       requiresAuth: true,
       successMessage: "Loaded feed."
+    });
+  },
+
+  async getExplore(input?: {
+    cursor?: string;
+    limit?: number;
+  }): Promise<ApiResult<FeedPageResponse>> {
+    const params = new URLSearchParams();
+    if (input?.cursor) params.set("cursor", input.cursor);
+    if (input?.limit) params.set("limit", String(input.limit));
+    const query = params.toString();
+    return sendRequest<FeedPageResponse>(`/outfits/explore${query ? `?${query}` : ""}`, {
+      successMessage: "Loaded explore."
     });
   },
 
