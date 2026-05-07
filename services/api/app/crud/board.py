@@ -10,6 +10,8 @@ import string
 import uuid
 from datetime import datetime, timedelta, timezone
 
+from fastapi import HTTPException, status as http_status
+
 from sqlalchemy.orm import Session
 
 from app.models.board import Board, BoardMember, BoardOutfit
@@ -173,12 +175,18 @@ def add_outfit(
     return bo
 
 
-def remove_outfit(db: Session, board_id: uuid.UUID, outfit_id: uuid.UUID) -> None:
-    row = (
+def get_board_outfit(
+    db: Session, board_id: uuid.UUID, outfit_id: uuid.UUID
+) -> "BoardOutfit | None":
+    return (
         db.query(BoardOutfit)
         .filter(BoardOutfit.board_id == board_id, BoardOutfit.outfit_id == outfit_id)
         .first()
     )
+
+
+def remove_outfit(db: Session, board_id: uuid.UUID, outfit_id: uuid.UUID) -> None:
+    row = get_board_outfit(db, board_id, outfit_id)
     if row:
         db.delete(row)
         db.commit()
@@ -237,7 +245,10 @@ def get_board_outfits(
     )
 
     if cursor:
-        cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        try:
+            cursor_dt = datetime.fromisoformat(cursor.replace(" ", "+"))
+        except ValueError:
+            raise HTTPException(status_code=http_status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid cursor.")
         query = query.filter(BoardOutfit.added_at < cursor_dt)
 
     outfits = (
