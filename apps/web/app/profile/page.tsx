@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient, type OutfitResponse, type PublicProfile } from "@/lib/api-client";
 import { MobileNav } from "@/components/chrome/mobile-nav";
+import { SearchBar } from "@/components/chrome/search-bar";
 import { OutfitCard, OutfitCardSkeleton, type OutfitCardData } from "@/components/outfits/outfit-card";
 import { useAuth } from "@/lib/auth-context";
 
@@ -85,6 +86,12 @@ export default function ProfilePage() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<OutfitResponse[]>([]);
+  const [searchStatus, setSearchStatus] = useState<"idle" | "searching" | "done">("idle");
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSearching = searchQuery.trim().length > 0;
+
   // Redirect if not authed
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -133,6 +140,21 @@ export default function ProfilePage() {
       active = false;
     };
   }, [authLoading, isAuthenticated, user]);
+
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    const q = searchQuery.trim();
+    if (!q) { setSearchResults([]); setSearchStatus("idle"); return; }
+
+    setSearchStatus("searching");
+    searchTimerRef.current = setTimeout(async () => {
+      const result = await apiClient.outfits.searchVault(q, 24);
+      if (result.ok) setSearchResults(result.data);
+      setSearchStatus("done");
+    }, 350);
+
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
+  }, [searchQuery]);
 
   async function handleLoadMore() {
     if (!nextCursor || isLoadingMore) return;
@@ -272,16 +294,7 @@ export default function ProfilePage() {
               href="/upload"
               className="inline-flex items-center gap-1.5 rounded-full border border-rose/15 bg-white px-4 py-2 text-[0.78rem] font-semibold text-[#ef5f8a] shadow-[0_8px_20px_rgba(244,106,147,0.07)] transition hover:border-rose/28"
             >
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 24 24"
-                className="h-3.5 w-3.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14" />
                 <path d="M5 12h14" />
               </svg>
@@ -289,7 +302,37 @@ export default function ProfilePage() {
             </Link>
           </div>
 
-          {status === "loading" ? (
+          <div className="mb-4">
+            <SearchBar
+              placeholder="Search your looks"
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
+          </div>
+
+          {/* Search results */}
+          {isSearching ? (
+            <>
+              {searchStatus === "searching" ? (
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => <OutfitCardSkeleton key={i} showAuthor={false} />)}
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className="soft-panel px-5 py-8 text-center">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/52">No results</p>
+                  <p className="mt-2 text-sm text-plum/65">Nothing matched &ldquo;{searchQuery}&rdquo;.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {searchResults.map((outfit) => (
+                    <OutfitCard key={outfit.id} outfit={toCardData(outfit)} showAuthor={false} showCaption={false} showAccentMarker />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : null}
+
+          {status === "loading" && !isSearching ? (
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <OutfitCardSkeleton key={i} showAuthor={false} />
@@ -297,7 +340,7 @@ export default function ProfilePage() {
             </div>
           ) : null}
 
-          {status === "ready" && outfits.length === 0 ? (
+          {status === "ready" && outfits.length === 0 && !isSearching ? (
             <div className="soft-panel px-6 py-10 text-center">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-plum/52">
                 Nothing yet
@@ -315,7 +358,7 @@ export default function ProfilePage() {
             </div>
           ) : null}
 
-          {status === "ready" && outfits.length > 0 ? (
+          {status === "ready" && outfits.length > 0 && !isSearching ? (
             <>
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {outfits.map((outfit) => (

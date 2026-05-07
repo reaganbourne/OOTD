@@ -24,6 +24,9 @@ type OutfitCardProps = {
   showAuthor?: boolean;
   showCaption?: boolean;
   showAccentMarker?: boolean;
+  liked?: boolean;
+  likeCount?: number;
+  onLike?: (e: React.MouseEvent) => void;
 };
 
 type ToneClasses = {
@@ -156,7 +159,10 @@ export function OutfitCard({
   href = `/outfits/${outfit.id}`,
   showAuthor = Boolean(outfit.author?.username || outfit.author?.profileImageUrl),
   showCaption = true,
-  showAccentMarker = false
+  showAccentMarker = false,
+  liked = false,
+  likeCount,
+  onLike,
 }: OutfitCardProps) {
   const toneClasses = getToneClasses(outfit.vibeTone);
   const toneLabel = formatToneLabel(outfit.vibeTone);
@@ -202,6 +208,32 @@ export function OutfitCard({
               {toneLabel}
             </span>
           </div>
+        ) : null}
+
+        {onLike ? (
+          <button
+            type="button"
+            onClick={onLike}
+            aria-label={liked ? "Unlike" : "Like"}
+            className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full border border-white/40 bg-white/80 px-2.5 py-1.5 backdrop-blur transition hover:bg-white/95"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className={`h-3.5 w-3.5 transition ${liked ? "text-[#ef5f8a]" : "text-plum/50"}`}
+              fill={liked ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            {likeCount !== undefined && likeCount > 0 ? (
+              <span className={`text-[0.64rem] font-semibold tabular-nums ${liked ? "text-[#ef5f8a]" : "text-plum/60"}`}>
+                {likeCount.toLocaleString()}
+              </span>
+            ) : null}
+          </button>
         ) : null}
       </div>
 

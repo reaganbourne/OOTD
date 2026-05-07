@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { apiClient, type OutfitDetailResponse } from "@/lib/api-client";
 import { MobileNav } from "@/components/chrome/mobile-nav";
 import { StoryCardSheet } from "@/components/outfits/story-card-sheet";
+import { CommentsSheet } from "@/components/outfits/comments-sheet";
 import { useAuth } from "@/lib/auth-context";
 
 type PageStatus = "loading" | "ready" | "not-found" | "error";
@@ -38,6 +39,7 @@ export function OutfitDetailView({ id }: { id: string }) {
   const [likeCount, setLikeCount] = useState(0);
   const [likeLoading, setLikeLoading] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -274,7 +276,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                 </div>
               ) : null}
 
-              {/* Like + share actions */}
+              {/* Like + comments + share actions */}
               <div className="flex gap-3">
                 <button
                   type="button"
@@ -294,8 +296,20 @@ export function OutfitDetailView({ id }: { id: string }) {
 
                 <button
                   type="button"
-                  onClick={() => setShowShare(true)}
+                  onClick={() => setShowComments(true)}
                   className="flex flex-1 items-center justify-center gap-2 rounded-[1.2rem] border border-rose/15 bg-white py-3.5 text-sm font-semibold text-plum transition hover:border-rose/28"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  Comments
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowShare(true)}
+                  className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-rose/15 bg-white p-3.5 text-plum/60 transition hover:border-rose/28 hover:text-plum"
+                  aria-label="Share"
                 >
                   <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="18" cy="5" r="3" />
@@ -304,7 +318,6 @@ export function OutfitDetailView({ id }: { id: string }) {
                     <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
                     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                   </svg>
-                  Share
                 </button>
 
                 {isOwn ? (
@@ -328,6 +341,10 @@ export function OutfitDetailView({ id }: { id: string }) {
 
       {showShare ? (
         <StoryCardSheet outfitId={id} onClose={() => setShowShare(false)} />
+      ) : null}
+
+      {showComments ? (
+        <CommentsSheet outfitId={id} onClose={() => setShowComments(false)} />
       ) : null}
 
       <MobileNav active="home" />
