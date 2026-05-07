@@ -231,16 +231,24 @@ export default function BoardsPage() {
               <p className="font-display text-[3.4rem] leading-none tracking-[-0.08em] text-[#f09ab4]">OOTD</p>
               <p className="mt-1 text-sm text-plum/54">Your outfit boards</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowCreate(true)}
-              className="icon-button mt-1"
-              aria-label="Create new board"
-            >
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-2 mt-1">
+              <Link href="/search" className="icon-button" aria-label="Search people">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShowCreate(true)}
+                className="icon-button"
+                aria-label="Create new board"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </button>
+            </div>
           </header>
 
           {errorMessage ? (

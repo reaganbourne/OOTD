@@ -204,6 +204,22 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex items-center gap-2 pt-1">
+            <Link href="/search" className="icon-button" aria-label="Search people">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-4.5 w-4.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </Link>
+
             <Link href="/profile/edit" className="icon-button" aria-label="Edit profile">
               <svg
                 aria-hidden="true"
