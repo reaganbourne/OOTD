@@ -236,7 +236,7 @@ export default function ExplorePage() {
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-2xl items-center justify-center">
           <section className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl text-pink-deep">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-3xl text-ink">Loading</h1>
           </section>
         </div>
@@ -252,8 +252,8 @@ export default function ExplorePage() {
         <header className="mb-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="font-display text-[3.4rem] leading-none text-pink-deep">
-                OOTD
+              <p className="font-display text-[2.2rem] leading-none text-pink-deep">
+            checkd
               </p>
               <p className="mt-1 text-sm text-mute">Explore</p>
             </div>

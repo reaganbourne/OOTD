@@ -124,12 +124,14 @@ test.describe("public routes", () => {
 
   test("login and signup pages render their forms", async ({ page }) => {
     await page.goto("/login");
+    // heading is now "log in"; "welcome back." is an eyebrow subtitle
     await expect(page.getByRole("heading", { name: /^log in$/i })).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(page.getByLabel(/password/i)).toBeVisible();
 
     await page.goto("/signup");
-    await expect(page.getByRole("heading", { name: /^create account$/i })).toBeVisible();
+    // heading is now "create account"
+    await expect(page.getByRole("heading", { name: /create account/i })).toBeVisible();
     await expect(page.getByLabel(/username/i)).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(page.getByLabel(/^password$/i)).toBeVisible();
@@ -142,6 +144,7 @@ test.describe("protected routes", () => {
     await page.goto("/upload");
 
     await expect(page).toHaveURL(/\/login\?next=%2Fupload$/);
+    // heading on login page is now "log in"
     await expect(page.getByRole("heading", { name: /^log in$/i })).toBeVisible();
   });
 
@@ -150,14 +153,15 @@ test.describe("protected routes", () => {
     await setActiveSession(page);
 
     await page.goto("/upload");
-    await expect(page.getByRole("heading", { name: /build the look/i })).toBeVisible();
+    // step 1 heading is now "add your photo" (font-display, no h-role — use text match)
+    await expect(page.getByText(/add your photo/i)).toBeVisible();
 
-    await page.getByRole("button", { name: /continue to items/i }).click();
+    // continue button now just says "continue"
+    await page.getByRole("button", { name: /^continue$/i }).click();
 
-    await expect(page.getByText(/a photo is required to create an outfit post/i)).toBeVisible();
-    await expect(
-      page.getByText(/choose a fit photo before you move to the next step/i)
-    ).toBeVisible();
+    // updated error copy from the new upload-flow
+    await expect(page.getByText(/a photo is required/i)).toBeVisible();
+    await expect(page.getByText(/choose a photo before continuing/i)).toBeVisible();
   });
 
   test("submits a valid mocked outfit upload", async ({ page }) => {
@@ -165,7 +169,8 @@ test.describe("protected routes", () => {
     await setActiveSession(page);
 
     await page.goto("/upload");
-    await expect(page.getByRole("heading", { name: /build the look/i })).toBeVisible();
+    // step 1 heading
+    await expect(page.getByText(/add your photo/i)).toBeVisible();
 
     await page.setInputFiles("input[type='file']", {
       name: "fit.jpg",
@@ -173,12 +178,16 @@ test.describe("protected routes", () => {
       buffer: Buffer.from("fake image bytes")
     });
 
-    await page.getByRole("button", { name: /continue to items/i }).click();
-    await page.getByLabel(/category/i).fill("Dress");
-    await page.getByRole("button", { name: /continue to context/i }).click();
-    await page.getByLabel(/caption/i).fill("Smoke test fit");
-    await page.getByRole("button", { name: /continue to review/i }).click();
-    await page.getByRole("button", { name: /submit outfit/i }).click();
+    // all navigation now uses a single "continue" button
+    await page.getByRole("button", { name: /^continue$/i }).click();
+    // step 2 — fill category
+    await page.getByPlaceholder(/top, trousers, shoes/i).fill("Dress");
+    await page.getByRole("button", { name: /^continue$/i }).click();
+    // step 3 — fill caption
+    await page.getByPlaceholder(/what was the vibe/i).fill("Smoke test fit");
+    await page.getByRole("button", { name: /^continue$/i }).click();
+    // step 4 — submit; button now says "post outfit"
+    await page.getByRole("button", { name: /post outfit/i }).click();
 
     await expect(page.getByText(/outfit uploaded/i)).toBeVisible();
   });

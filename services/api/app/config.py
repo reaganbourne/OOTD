@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     aws_secret_access_key: str = ""
     aws_region: str = "us-east-1"
 
+    # Base URL for local-storage uploads (dev only, S3 is used in prod).
+    # Change this if your API runs on a different port locally.
+    api_local_base_url: str = "http://localhost:8000"
+
     # Claude AI (vibe check)
     anthropic_api_key: str = ""
 

@@ -98,50 +98,75 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <div className="soft-panel px-6 py-7 sm:px-7 sm:py-8">
-      <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
+    <div>
+      <form className="grid gap-[14px]" onSubmit={handleSubmit} noValidate>
+        {/* Signup: email → username → password (→ confirm) per design */}
         {mode === "signup" ? (
-          <Field
-            label="username"
-            name="username"
-            placeholder="@closetmaincharacter"
-            value={values.username}
-            error={errors.username}
-            onChange={(value) => setValue("username", value)}
-          />
-        ) : null}
-
-        <Field
-          label="email"
-          name="email"
-          type="email"
-          placeholder="you@example.com"
-          value={values.email}
-          error={errors.email}
-          onChange={(value) => setValue("email", value)}
-        />
-
-        <Field
-          label="password"
-          name="password"
-          type="password"
-          placeholder="at least 8 characters"
-          value={values.password}
-          error={errors.password}
-          onChange={(value) => setValue("password", value)}
-        />
-
-        {mode === "signup" ? (
-          <Field
-            label="confirm password"
-            name="confirmPassword"
-            type="password"
-            placeholder="repeat your password"
-            value={values.confirmPassword}
-            error={errors.confirmPassword}
-            onChange={(value) => setValue("confirmPassword", value)}
-          />
-        ) : null}
+          <>
+            <Field
+              label="username"
+              name="username"
+              placeholder="@closetmaincharacter"
+              value={values.username}
+              error={errors.username}
+              onChange={(value) => setValue("username", value)}
+            />
+            <Field
+              label="email"
+              name="email"
+              type="email"
+              placeholder="you@email.com"
+              value={values.email}
+              error={errors.email}
+              onChange={(value) => setValue("email", value)}
+            />
+            <Field
+              label="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={values.password}
+              error={errors.password}
+              onChange={(value) => setValue("password", value)}
+            />
+            <Field
+              label="confirm password"
+              name="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              value={values.confirmPassword}
+              error={errors.confirmPassword}
+              onChange={(value) => setValue("confirmPassword", value)}
+            />
+          </>
+        ) : (
+          <>
+            {/* Login: email or username → password */}
+            <Field
+              label="email"
+              name="email"
+              type="email"
+              placeholder="ava@email.com"
+              value={values.email}
+              error={errors.email}
+              onChange={(value) => setValue("email", value)}
+            />
+            <Field
+              label="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={values.password}
+              error={errors.password}
+              onChange={(value) => setValue("password", value)}
+            />
+            <div style={{ textAlign: "right" }}>
+              <a href="/forgot-password" style={{ fontSize: 12, color: "var(--ink-soft)", textDecoration: "underline" }}>
+                forgot password?
+              </a>
+            </div>
+          </>
+        )}
 
         {submitState.status === "error" ? (
           <StatusBanner tone="error" message={submitState.message} />
@@ -165,6 +190,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   );
 }
 
+
 type FieldProps = {
   label: string;
   name: string;
@@ -185,34 +211,48 @@ function Field({
   type = "text"
 }: FieldProps) {
   return (
-    <div>
-      <label className="field-label" htmlFor={name}>{label}</label>
-      <div className={`field-shell ${error ? "border-error/60 bg-error/5" : ""}`}>
-        <input
-          id={name}
-          className="field-input"
-          name={name}
-          type={type}
-          value={value}
-          placeholder={placeholder}
-          autoComplete={
-            name === "email"
-              ? "email"
-              : name === "password"
-                ? "current-password"
-                : name === "confirmPassword"
-                  ? "new-password"
-                  : name === "username"
-                    ? "username"
-                    : undefined
-          }
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? `${name}-error` : undefined}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      </div>
+    <div className="flex flex-col" style={{ gap: 6 }}>
+      <label
+        htmlFor={name}
+        style={{ fontSize: 11, textTransform: "lowercase", letterSpacing: "0.04em", color: "var(--mute)" }}
+      >
+        {label}
+      </label>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        autoComplete={
+          name === "email"
+            ? "email"
+            : name === "password"
+              ? "current-password"
+              : name === "confirmPassword"
+                ? "new-password"
+                : name === "username"
+                  ? "username"
+                  : undefined
+        }
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? `${name}-error` : undefined}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          height: 48,
+          border: `1px solid ${error ? "rgba(196,69,47,0.6)" : "var(--line)"}`,
+          borderRadius: 12,
+          padding: "0 14px",
+          fontSize: 15,
+          fontFamily: "var(--font-sans), Inter, sans-serif",
+          background: error ? "rgba(196,69,47,0.05)" : "#fff",
+          color: "var(--ink)",
+          outline: "none",
+          width: "100%",
+        }}
+      />
       {error ? (
-        <span id={`${name}-error`} className="mt-1.5 block text-xs text-error">
+        <span id={`${name}-error`} className="text-xs text-error">
           {error}
         </span>
       ) : null}

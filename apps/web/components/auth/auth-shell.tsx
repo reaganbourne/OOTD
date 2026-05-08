@@ -10,15 +10,19 @@ type AuthShellProps = {
 const shellCopy = {
   login: {
     heading: "log in",
+    headingSize: 40,
+    headingMarginTop: 8,
     eyebrow: "welcome back.",
-    alternateLabel: "need an account?",
+    alternateLabel: "new here?",
     alternateHref: "/signup",
-    alternateCta: "sign up"
+    alternateCta: "create account"
   },
   signup: {
     heading: "create account",
-    eyebrow: "start saving your fits.",
-    alternateLabel: "already have an account?",
+    headingSize: 40,
+    headingMarginTop: 8,
+    eyebrow: "welcome — let's set you up.",
+    alternateLabel: "have an account?",
     alternateHref: "/login",
     alternateCta: "log in"
   }
@@ -28,31 +32,48 @@ export function AuthShell({ mode, children }: AuthShellProps) {
   const copy = shellCopy[mode];
 
   return (
-    <main className="min-h-screen px-4 py-12 sm:px-6">
-      <div className="mx-auto flex min-h-[calc(100vh-6rem)] max-w-sm flex-col items-center justify-center">
-        {/* Wordmark */}
-        <p className="pb-8 text-center font-display text-7xl text-pink-deep sm:text-8xl">
-          OOTD
+    <main className="flex min-h-screen flex-col bg-paper" style={{ padding: "20px 28px 0" }}>
+      {/* ‹ back — plain text link, exactly as in design */}
+      <div style={{ marginBottom: 20 }}>
+        <Link
+          href="/"
+          className="text-ink-soft transition hover:text-ink"
+          style={{ fontSize: 13 }}
+        >
+          ‹ back
+        </Link>
+      </div>
+
+      <div className="flex flex-1 flex-col" style={{ paddingBottom: 32 }}>
+        {/* Heading — serif italic per design */}
+        <h1
+          className="font-display text-ink"
+          style={{
+            fontSize: copy.headingSize,
+            margin: `${copy.headingMarginTop}px 0 0`,
+            letterSpacing: "-0.01em",
+            lineHeight: 1.1
+          }}
+        >
+          {copy.heading}
+        </h1>
+        <p className="text-mute" style={{ fontSize: 13, marginTop: 8 }}>
+          {copy.eyebrow}
         </p>
 
-        <div className="w-full">
-          <h1 className="mb-1 text-center font-display text-3xl tracking-[-0.02em] text-ink">
-            {copy.heading}
-          </h1>
-          <p className="mb-6 text-center text-sm text-mute">{copy.eyebrow}</p>
-
+        <div style={{ marginTop: 28 }}>
           {children}
-
-          <p className="mt-5 text-center text-sm text-mute">
-            {copy.alternateLabel}{" "}
-            <Link
-              href={copy.alternateHref}
-              className="font-medium text-ink-soft underline-offset-2 transition hover:text-ink hover:underline"
-            >
-              {copy.alternateCta}
-            </Link>
-          </p>
         </div>
+
+        <p className="mt-5 text-center text-sm text-mute">
+          {copy.alternateLabel}{" "}
+          <Link
+            href={copy.alternateHref}
+            className="text-ink underline-offset-2 transition hover:underline"
+          >
+            {copy.alternateCta}
+          </Link>
+        </p>
       </div>
     </main>
   );

@@ -74,7 +74,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">OOTD</p>
+          <p className="font-display text-5xl text-pink-deep">checkd</p>
           <h1 className="mt-4 text-2xl text-ink">Loading invite…</h1>
         </div>
       </main>
@@ -86,7 +86,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">OOTD</p>
+          <p className="font-display text-5xl text-pink-deep">checkd</p>
           <h1 className="mt-4 text-2xl text-ink">Invite not found</h1>
           <p className="mt-3 text-sm leading-6 text-ink-soft">
             This invite link is invalid or the board no longer exists.
@@ -111,7 +111,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
       <div className="w-full max-w-sm">
 
         {/* Logo */}
-        <p className="mb-8 text-center font-display text-5xl text-pink-deep">OOTD</p>
+        <p className="mb-8 text-center font-display text-5xl text-pink-deep">checkd</p>
 
         {/* Board preview card */}
         <div className="soft-panel overflow-hidden">

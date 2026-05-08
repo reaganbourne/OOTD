@@ -97,7 +97,7 @@ export function OutfitDetailView({ id }: { id: string }) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">OOTD</p>
+          <p className="font-display text-5xl text-pink-deep">checkd</p>
           <h1 className="mt-4 text-3xl text-ink">Outfit not found</h1>
           <p className="mt-3 text-sm leading-6 text-ink-soft">This look may have been removed.</p>
           <Link href="/feed" className="mt-6 inline-block rounded-[1.2rem] border border-rose/15 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/25">
@@ -347,7 +347,7 @@ export function OutfitDetailView({ id }: { id: string }) {
         <CommentsSheet outfitId={id} onClose={() => setShowComments(false)} />
       ) : null}
 
-      <MobileNav active="home" />
+      <MobileNav active="feed" />
     </>
   );
 }

@@ -41,10 +41,10 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
   return (
     <div className="flex flex-col items-center text-center">
       <p className="font-display text-[4.5rem] leading-none text-pink-deep">
-        OOTD
+        checkd
       </p>
       <h1 className="mt-8 text-3xl leading-tight text-ink sm:text-4xl">
-        Your outfit archive<br />starts here.
+        your fit diary<br />starts here.
       </h1>
       <p className="mt-4 max-w-xs text-sm leading-6 text-plum/64">
         Log every look, revisit your style history, and see how your taste evolves — one outfit at a time.
@@ -266,7 +266,7 @@ export default function OnboardingPage() {
   if (!ready) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-paper px-4">
-        <p className="font-display text-5xl text-pink-deep">OOTD</p>
+        <p className="font-display text-5xl text-pink-deep">checkd</p>
       </main>
     );
   }

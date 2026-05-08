@@ -165,7 +165,7 @@ export default function PublicProfilePage({
       <main className="px-4 pb-28 pt-6 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl text-pink-deep">OOTD</p>
+            <p className="font-display text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-3xl text-ink">Profile not found</h1>
             <p className="mt-3 text-sm leading-6 text-ink-soft">
               @{username} doesn&apos;t exist or may have changed their username.
@@ -178,7 +178,7 @@ export default function PublicProfilePage({
             </Link>
           </div>
         </div>
-        <MobileNav active="home" />
+        <MobileNav active="feed" />
       </main>
     );
   }
@@ -213,8 +213,8 @@ export default function PublicProfilePage({
               </svg>
               Back
             </button>
-            <p className="mt-2 font-display text-[3.4rem] leading-none text-pink-deep">
-              OOTD
+            <p className="mt-2 font-display text-[2.2rem] leading-none text-pink-deep">
+            checkd
             </p>
           </div>
         </header>
@@ -337,7 +337,7 @@ export default function PublicProfilePage({
         </section>
       </div>
 
-      <MobileNav active="home" />
+      <MobileNav active="feed" />
     </main>
   );
 }
