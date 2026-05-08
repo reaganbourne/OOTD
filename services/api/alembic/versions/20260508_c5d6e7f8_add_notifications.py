@@ -8,6 +8,7 @@ Create Date: 2026-05-08
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import ENUM as PgENUM
 
 revision = "c5d6e7f8"
 down_revision = "b3c4d5e6"
@@ -16,16 +17,14 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Guard against the type already existing (e.g. from a failed partial run or
-    # a test DB that was only partially rolled back).
-    op.execute(
-        "DO $$ BEGIN "
-        "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationtype') THEN "
-        "CREATE TYPE notificationtype AS ENUM "
-        "('follow', 'like', 'comment', 'board_join', 'board_outfit'); "
-        "END IF; "
-        "END $$;"
+    # `create_type=False` is only honoured by postgresql.ENUM, not sa.Enum.
+    # Use PgENUM.create(checkfirst=True) so this is idempotent on any DB state.
+    notif_enum = PgENUM(
+        "follow", "like", "comment", "board_join", "board_outfit",
+        name="notificationtype",
+        create_type=False,
     )
+    notif_enum.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "notifications",
@@ -49,8 +48,11 @@ def upgrade() -> None:
         ),
         sa.Column(
             "type",
-            sa.Enum("follow", "like", "comment", "board_join", "board_outfit",
-                    name="notificationtype", create_type=False),
+            PgENUM(
+                "follow", "like", "comment", "board_join", "board_outfit",
+                name="notificationtype",
+                create_type=False,
+            ),
             nullable=False,
         ),
         sa.Column(
@@ -90,4 +92,4 @@ def downgrade() -> None:
     op.drop_index("ix_notifications_recipient_seen", table_name="notifications")
     op.drop_index("ix_notifications_recipient_id", table_name="notifications")
     op.drop_table("notifications")
-    op.execute("DROP TYPE IF EXISTS notificationtype")
+    PgENUM(name="notificationtype", create_type=False).drop(op.get_bind(), checkfirst=True)
