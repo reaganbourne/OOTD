@@ -4,7 +4,7 @@ import io
 from starlette.testclient import TestClient
 
 REGISTER_URL = "/auth/register"
-FOLLOW_URL = "/users/{user_id}/follow"
+FOLLOW_URL = "/users/{username}/follow"
 FEED_URL = "/outfits/feed"
 MY_VAULT_URL = "/outfits/me"
 USER_VAULT_URL = "/outfits/user/{username}"
@@ -48,7 +48,7 @@ class TestFeed:
         monkeypatch.setattr("app.routers.outfits.upload_image", lambda **kw: "https://s3.example.com/test.jpg")
         a = _register(client, USER_A)
         b = _register(client, USER_B)
-        client.post(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=_auth(a["access_token"]))
+        client.post(FOLLOW_URL.format(username=b["user"]["username"]), headers=_auth(a["access_token"]))
         _post_outfit(client, b["access_token"], "b's outfit")
         res = client.get(FEED_URL, headers=_auth(a["access_token"]))
         assert res.status_code == 200
@@ -71,7 +71,7 @@ class TestFeed:
         monkeypatch.setattr("app.routers.outfits.upload_image", lambda **kw: "https://s3.example.com/test.jpg")
         a = _register(client, USER_A)
         b = _register(client, USER_B)
-        client.post(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=_auth(a["access_token"]))
+        client.post(FOLLOW_URL.format(username=b["user"]["username"]), headers=_auth(a["access_token"]))
         for i in range(3):
             _post_outfit(client, b["access_token"], f"outfit {i}")
         res = client.get(FEED_URL + "?limit=2", headers=_auth(a["access_token"]))

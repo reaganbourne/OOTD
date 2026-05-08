@@ -4,9 +4,11 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, 
 from sqlalchemy.orm import Session
 
 from app.crud import follow as follow_crud
+from app.crud import notification as notif_crud
 from app.crud import user as user_crud
 from app.crud import wrapped as wrapped_crud
 from app.dependencies import get_current_user, get_db
+from app.models.notification import NotificationType
 from app.models.user import User
 from app.schemas.outfit import OutfitOut
 from app.schemas.user import FollowResponse, PublicProfile, SearchResult, UpdateProfileRequest
@@ -192,6 +194,15 @@ def follow_user(
     if target.id == current_user.id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot follow yourself.")
     follow_crud.follow(db, follower_id=current_user.id, following_id=target.id)
+    # Notify the person who was followed
+    actor_name = current_user.display_name or current_user.username or "Someone"
+    notif_crud.create_notification(
+        db,
+        recipient_id=target.id,
+        actor_id=current_user.id,
+        type=NotificationType.follow,
+        body=f"{actor_name} started following you.",
+    )
     return FollowResponse(following=True, follower_count=follow_crud.follower_count(db, target.id))
 
 

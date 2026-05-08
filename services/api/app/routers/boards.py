@@ -13,9 +13,11 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.crud import board as board_crud
+from app.crud import notification as notif_crud
 from app.crud import outfit as outfit_crud
 from app.crud import user as user_crud
 from app.dependencies import get_current_user, get_db
+from app.models.notification import NotificationType
 from app.models.user import User
 from app.schemas.board import (
     BoardMemberOut,
@@ -142,7 +144,19 @@ def join_board(
     board = board_crud.get_by_invite_code(db, invite_code)
     if not board:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invite link not found.")
+    was_member = board_crud.is_member(db, board.id, current_user.id)
     board_crud.join_board(db, board.id, current_user.id)
+    # Notify the board creator when a new member joins (not on idempotent re-join)
+    if not was_member and board.creator_id != current_user.id:
+        actor_name = current_user.display_name or current_user.username or "Someone"
+        notif_crud.create_notification(
+            db,
+            recipient_id=board.creator_id,
+            actor_id=current_user.id,
+            type=NotificationType.board_join,
+            body=f"{actor_name} joined your board \"{board.name}\".",
+            board_id=board.id,
+        )
     return _board_out(db, board)
 
 
@@ -215,12 +229,27 @@ def add_outfit(
     db: Session = Depends(get_db),
 ) -> OutfitOut:
     """Add an outfit to a board. Members only. The outfit must exist."""
-    _board_or_404(db, board_id)
+    board = _board_or_404(db, board_id)
     _require_member(db, board_id, current_user.id)
     outfit = outfit_crud.get_outfit_with_items(db, outfit_id)
     if not outfit:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
     board_crud.add_outfit(db, board_id, outfit_id, current_user.id)
+    # Notify all other board members that a new outfit was added
+    members = board_crud.get_members(db, board_id)
+    actor_name = current_user.display_name or current_user.username or "Someone"
+    for m in members:
+        if m.user_id == current_user.id:
+            continue
+        notif_crud.create_notification(
+            db,
+            recipient_id=m.user_id,
+            actor_id=current_user.id,
+            type=NotificationType.board_outfit,
+            body=f"{actor_name} posted to \"{board.name}\".",
+            board_id=board_id,
+            outfit_id=outfit_id,
+        )
     return OutfitOut.model_validate(outfit)
 
 

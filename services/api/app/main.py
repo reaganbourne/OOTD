@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import auth, boards, health, outfits, users
+from app.routers import auth, boards, health, notifications, outfits, users
 from app.services.storage import LOCAL_UPLOADS_DIR
 
 
@@ -33,6 +33,7 @@ app.include_router(auth.router)
 app.include_router(outfits.router)
 app.include_router(users.router)
 app.include_router(boards.router)
+app.include_router(notifications.router)
 
 # Dev-mode local file storage — only mounted when S3 is not configured.
 # In production S3_BUCKET is set so this block is skipped.
