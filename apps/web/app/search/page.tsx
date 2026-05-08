@@ -36,10 +36,10 @@ function UserRow({
         <img
           src={user.profile_image_url}
           alt={user.display_name ?? user.username ?? ""}
-          className="h-11 w-11 shrink-0 rounded-full border border-plum/10 object-cover"
+          className="h-11 w-11 shrink-0 rounded-full border border-line object-cover"
         />
       ) : (
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-plum/12 bg-pink-soft text-sm font-semibold text-ink-soft">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line bg-pink-soft text-sm font-semibold text-ink-soft">
           {getInitial(user.display_name, user.username)}
         </div>
       )}
@@ -205,7 +205,7 @@ export default function SearchPage() {
   const displayList = isSearching ? searchResults : suggested;
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6">
+    <main className="px-4 pb-28 pt-6 sm:px-6 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-lg">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -233,7 +233,7 @@ export default function SearchPage() {
         ) : null}
 
         {/* ── Results ────────────────────────────────────────────────────── */}
-        <section className="soft-panel divide-y divide-rose/6 px-5">
+        <section className="soft-panel divide-y divide-line/40 px-5">
           {/* Searching skeleton */}
           {isSearching && searchStatus === "searching" ? (
             <>

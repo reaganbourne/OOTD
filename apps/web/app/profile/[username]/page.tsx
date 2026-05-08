@@ -166,13 +166,13 @@ export default function PublicProfilePage({
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
             <p className="font-display text-5xl text-pink-deep">checkd</p>
-            <h1 className="mt-4 text-3xl text-ink">Profile not found</h1>
+            <h1 className="mt-4 text-3xl text-ink">profile not found</h1>
             <p className="mt-3 text-sm leading-6 text-ink-soft">
               @{username} doesn&apos;t exist or may have changed their username.
             </p>
             <Link
               href="/feed"
-              className="mt-6 inline-block rounded-[1.2rem] border border-rose/15 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/25"
+              className="mt-6 inline-flex items-center justify-center rounded-[1.2rem] border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25"
             >
               Back to feed
             </Link>
@@ -188,7 +188,7 @@ export default function PublicProfilePage({
   const avatarSrc = profile?.profile_image_url;
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
+    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-3xl">
 
         {/* ── Top bar ────────────────────────────────────────────────────── */}
@@ -197,7 +197,7 @@ export default function PublicProfilePage({
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-sm text-mute transition hover:text-plum"
+              className="flex items-center gap-2 text-sm text-mute transition hover:text-ink"
             >
               <svg
                 aria-hidden="true"
@@ -265,7 +265,7 @@ export default function PublicProfilePage({
                 ) : (
                   <Link
                     href="/login"
-                    className="mt-4 inline-block rounded-full bg-ink px-5 py-2 text-sm font-medium lowercase text-paper transition hover:opacity-90"
+                    className="mt-4 inline-flex items-center justify-center rounded-full bg-ink px-5 py-2 text-sm font-medium lowercase text-paper transition hover:opacity-90"
                   >
                     follow
                   </Link>
@@ -274,11 +274,11 @@ export default function PublicProfilePage({
             </div>
 
             {/* Stats row */}
-            <div className="mt-6 flex items-center justify-around border-t border-rose/8 pt-5">
+            <div className="mt-6 flex items-center justify-around border-t border-line/50 pt-5">
               <StatPill value={outfits.length} label="Outfits" />
-              <div className="h-8 w-px bg-rose/10" />
+              <div className="h-8 w-px bg-line/50" />
               <StatPill value={followerCount} label="Followers" />
-              <div className="h-8 w-px bg-rose/10" />
+              <div className="h-8 w-px bg-line/50" />
               <StatPill value={profile?.following_count ?? 0} label="Following" />
             </div>
           </section>
@@ -300,7 +300,7 @@ export default function PublicProfilePage({
 
           {status === "ready" && outfits.length === 0 ? (
             <div className="soft-panel px-6 py-10 text-center">
-              <h2 className="text-2xl text-ink">No looks yet</h2>
+              <h2 className="text-2xl text-ink">no looks yet</h2>
               <p className="mt-3 text-sm leading-6 text-ink-soft">
                 @{username} hasn&apos;t uploaded any outfits yet.
               </p>
@@ -326,7 +326,7 @@ export default function PublicProfilePage({
                     type="button"
                     onClick={() => void handleLoadMore()}
                     disabled={isLoadingMore}
-                    className="rounded-full border border-rose/12 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/22 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-full border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isLoadingMore ? "Loading more..." : "Load more looks"}
                   </button>

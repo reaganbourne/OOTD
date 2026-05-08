@@ -48,7 +48,7 @@ function InviteCopy({ code }: { code: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2 rounded-[1.2rem] border border-rose/12 bg-white px-4 py-3">
+    <div className="flex items-center gap-2 rounded-[1.2rem] border border-line bg-white px-4 py-3">
       <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -184,9 +184,9 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
             <p className="font-display text-5xl text-pink-deep">checkd</p>
-            <h1 className="mt-4 text-3xl text-ink">Board expired</h1>
+            <h1 className="mt-4 text-3xl text-ink">board expired</h1>
             <p className="mt-3 text-sm leading-6 text-ink-soft">This board has passed its event date and is no longer active.</p>
-            <Link href="/boards" className="mt-6 inline-block rounded-[1.2rem] border border-rose/15 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/25">
+            <Link href="/boards" className="mt-6 inline-flex items-center justify-center rounded-[1.2rem] border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25">
               Back to boards
             </Link>
           </div>
@@ -202,9 +202,9 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
             <p className="font-display text-5xl text-pink-deep">checkd</p>
-            <h1 className="mt-4 text-3xl text-ink">Board not found</h1>
+            <h1 className="mt-4 text-3xl text-ink">board not found</h1>
             <p className="mt-3 text-sm leading-6 text-ink-soft">{errorMessage ?? "This board doesn't exist or you're not a member."}</p>
-            <Link href="/boards" className="mt-6 inline-block rounded-[1.2rem] border border-rose/15 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/25">
+            <Link href="/boards" className="mt-6 inline-flex items-center justify-center rounded-[1.2rem] border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25">
               Back to boards
             </Link>
           </div>
@@ -219,13 +219,13 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
   const expiryLabel = board ? formatExpiry(board.expires_at) : "";
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
+    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-3xl">
 
         {/* Top bar */}
         <header className="mb-6 flex items-start justify-between gap-3">
           <div>
-            <Link href="/boards" className="flex items-center gap-1.5 text-sm text-mute transition hover:text-plum">
+            <Link href="/boards" className="flex items-center gap-1.5 text-sm text-mute transition hover:text-ink">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m15 18-6-6 6-6" />
               </svg>
@@ -252,14 +252,14 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
                   <p className="mt-1 text-sm text-mute">{eventLabel}</p>
                 ) : null}
               </div>
-              <span className="shrink-0 rounded-full border border-rose/15 bg-pink-soft px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-pink-deep">
+              <span className="shrink-0 rounded-full border border-line bg-pink-soft px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-pink-deep">
                 {expiryLabel}
               </span>
             </div>
 
             {/* Members */}
             {members.length > 0 ? (
-              <div className="mt-4 flex items-center gap-3 border-t border-rose/8 pt-4">
+              <div className="mt-4 flex items-center gap-3 border-t border-line/60 pt-4">
                 <MemberStrip members={members} />
                 <span className="text-[0.72rem] text-mute">
                   {members.length} {members.length === 1 ? "member" : "members"}
@@ -276,7 +276,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
             ) : null}
 
             {/* Leave / delete */}
-            <div className="mt-4 flex gap-2 border-t border-rose/8 pt-4">
+            <div className="mt-4 flex gap-2 border-t border-line/60 pt-4">
               {isCreator ? (
                 <Link
                   href="/boards"
@@ -307,10 +307,10 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
         {/* Outfits section */}
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-xl tracking-[-0.02em] text-ink">Looks</h2>
+            <h2 className="font-display text-xl tracking-[-0.02em] text-ink">looks</h2>
             <Link
-              href={`/upload?board=${id}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-rose/15 bg-white px-4 py-2 text-[0.78rem] font-semibold text-pink-deep transition hover:border-rose/28"
+              href={`/boards/${id}/upload`}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2 text-[0.78rem] font-semibold text-ink transition hover:border-pink-deep"
             >
               <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 5v14M5 12h14" />
@@ -327,11 +327,11 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
 
           {status === "ready" && outfits.length === 0 ? (
             <div className="soft-panel px-6 py-10 text-center">
-              <h2 className="text-2xl text-ink">No looks yet</h2>
+              <h2 className="text-2xl text-ink">no looks yet</h2>
               <p className="mt-3 text-sm leading-6 text-ink-soft">Be the first to post an outfit to this board.</p>
               <Link
-                href={`/upload?board=${id}`}
-                className="mt-5 inline-block btn-primary"
+                href={`/boards/${id}/upload`}
+                className="mt-5 btn-primary"
               >
                 Add the first look
               </Link>
@@ -349,7 +349,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
                     type="button"
                     onClick={() => void handleLoadMore()}
                     disabled={isLoadingMore}
-                    className="rounded-full border border-rose/12 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/22 disabled:opacity-50"
+                    className="rounded-full border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25 disabled:opacity-50"
                   >
                     {isLoadingMore ? "Loading…" : "Load more"}
                   </button>

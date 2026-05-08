@@ -75,7 +75,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
           <p className="font-display text-5xl text-pink-deep">checkd</p>
-          <h1 className="mt-4 text-2xl text-ink">Loading invite…</h1>
+          <h1 className="mt-4 text-2xl text-ink">loading invite…</h1>
         </div>
       </main>
     );
@@ -87,13 +87,13 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
           <p className="font-display text-5xl text-pink-deep">checkd</p>
-          <h1 className="mt-4 text-2xl text-ink">Invite not found</h1>
+          <h1 className="mt-4 text-2xl text-ink">invite not found</h1>
           <p className="mt-3 text-sm leading-6 text-ink-soft">
             This invite link is invalid or the board no longer exists.
           </p>
           <Link
             href="/feed"
-            className="mt-6 inline-block rounded-[1.2rem] border border-rose/15 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/25"
+            className="mt-6 inline-flex items-center justify-center rounded-[1.2rem] border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25"
           >
             Go to feed
           </Link>
@@ -117,7 +117,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
         <div className="soft-panel overflow-hidden">
           {/* Coloured header */}
           <div className="bg-pink-soft px-6 pt-6 pb-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-rose/15 bg-white/80 text-pink-deep">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-line bg-white/80 text-pink-deep">
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
                 <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
@@ -140,7 +140,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
             ) : null}
 
             <div className="mt-4 flex items-center gap-3">
-              <span className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] ${expired ? "bg-rose/8 text-mute" : "bg-pink-soft text-pink-deep"}`}>
+              <span className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] ${expired ? "bg-line/40 text-mute" : "bg-pink-soft text-pink-deep"}`}>
                 {expiryLabel}
               </span>
               <span className="text-[0.72rem] text-mute">
@@ -149,13 +149,13 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
             </div>
 
             {joinError ? (
-              <p className="mt-4 rounded-[1rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">{joinError}</p>
+              <p className="mt-4 rounded-[1rem] border border-pink-deep/25 bg-pink-soft px-4 py-3 text-sm text-error">{joinError}</p>
             ) : null}
 
             {/* CTA */}
             <div className="mt-6 space-y-3">
               {expired ? (
-                <p className="rounded-[1.2rem] border border-rose/12 bg-pink-soft px-5 py-3.5 text-center text-sm font-semibold text-error">
+                <p className="rounded-[1.2rem] border border-line bg-pink-soft px-5 py-3.5 text-center text-sm font-semibold text-error">
                   This board has expired
                 </p>
               ) : (
@@ -165,15 +165,15 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
                   disabled={joining}
                   className="btn-primary w-full"
                 >
-                  {joining ? "Joining…" : isAuthenticated ? "Join board" : "Sign in to join"}
+                  {joining ? "joining…" : isAuthenticated ? "join board" : "sign in to join"}
                 </button>
               )}
 
               <Link
                 href="/feed"
-                className="block rounded-[1.2rem] border border-rose/12 bg-white py-3.5 text-center text-sm font-semibold text-plum transition hover:border-rose/22"
+                className="block rounded-[1.2rem] border border-line bg-white py-3.5 text-center text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25"
               >
-                Maybe later
+                maybe later
               </Link>
             </div>
           </div>

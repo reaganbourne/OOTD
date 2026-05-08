@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Instrument_Serif, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth-context";
+import { DesktopNav } from "@/components/chrome/desktop-nav";
 import "./globals.css";
 
 const display = Instrument_Serif({
@@ -30,7 +31,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <DesktopNav />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
