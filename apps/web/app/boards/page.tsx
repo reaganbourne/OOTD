@@ -72,31 +72,35 @@ function CreateBoardModal({ onClose, onCreate }: {
         </div>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-          <div className="field-shell">
+          <div>
             <label className="field-label" htmlFor="board-name">Board name</label>
-            <input
-              ref={inputRef}
-              id="board-name"
-              type="text"
-              placeholder="e.g. Met Gala 2026, Summer wedding"
-              maxLength={120}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="field-input"
-            />
+            <div className="field-shell">
+              <input
+                ref={inputRef}
+                id="board-name"
+                type="text"
+                placeholder="e.g. Met Gala 2026, Summer wedding"
+                maxLength={120}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="field-input"
+              />
+            </div>
           </div>
 
-          <div className="field-shell">
-            <label className="block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-mute mb-1" htmlFor="event-date">
+          <div>
+            <label className="field-label" htmlFor="event-date">
               Event date <span className="font-normal normal-case tracking-normal text-mute">(optional)</span>
             </label>
-            <input
-              id="event-date"
-              type="date"
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              className="field-input text-sm"
-            />
+            <div className="field-shell">
+              <input
+                id="event-date"
+                type="date"
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
+                className="field-input text-sm"
+              />
+            </div>
           </div>
 
           {error ? (
