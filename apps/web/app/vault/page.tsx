@@ -187,26 +187,16 @@ export default function VaultPage() {
             checkd
           </p>
           <div className="flex items-center" style={{ gap: 6 }}>
-            <button
-              type="button"
+            <Link
+              href="/search"
               aria-label="Search"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink"
               style={{ width: 36, height: 36 }}
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
                 <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
               </svg>
-            </button>
-            <button
-              type="button"
-              aria-label="Filter"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
-              style={{ width: 36, height: 36 }}
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                <path d="M3 6h18M6 12h12M10 18h4" />
-              </svg>
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -220,26 +210,6 @@ export default function VaultPage() {
           </p>
         </header>
 
-        {/* filter chips */}
-        <div
-          className="flex overflow-x-auto"
-          style={{ padding: "4px 20px 12px", gap: 8 }}
-        >
-          {["all", "brown", "formal", "streetwear"].map((chip, i) => (
-            <span
-              key={chip}
-              className="flex-shrink-0 inline-flex items-center rounded-full border text-[11px]"
-              style={{
-                padding: "5px 11px",
-                background: i === 0 ? "var(--ink)" : "#fff",
-                borderColor: i === 0 ? "var(--ink)" : "var(--line)",
-                color: i === 0 ? "var(--paper)" : "var(--ink-soft)",
-              }}
-            >
-              {chip}
-            </span>
-          ))}
-        </div>
 
         {/* ── Vault grid — 3-col, 2px gap, per design vault-grid ─────── */}
         <section>

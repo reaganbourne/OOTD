@@ -486,38 +486,27 @@ export default function FeedPage() {
 
           <div className="flex items-center" style={{ gap: 6 }}>
             {/* Explore */}
-            <button
-              type="button"
+            <Link
+              href="/explore"
               aria-label="Explore"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink"
               style={{ width: 36, height: 36 }}
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
                 <circle cx="12" cy="12" r="9" /><path d="m14.5 9.5-5 2-2 5 5-2 2-5z" />
               </svg>
-            </button>
+            </Link>
             {/* Search */}
-            <button
-              type="button"
+            <Link
+              href="/search"
               aria-label="Search"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink"
               style={{ width: 36, height: 36 }}
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
                 <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
               </svg>
-            </button>
-            {/* Bell */}
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
-              style={{ width: 36, height: 36 }}
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                <path d="M6.5 10a5.5 5.5 0 1 1 11 0c0 5 2 6 2 6h-15s2-1 2-6" /><path d="M10 19a2 2 0 0 0 4 0" />
-              </svg>
-            </button>
+            </Link>
           </div>
         </div>
 

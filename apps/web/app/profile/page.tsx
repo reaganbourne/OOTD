@@ -33,6 +33,8 @@ function getInitial(displayName?: string | null, username?: string | null) {
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const [showMenu, setShowMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState<"fits" | "tagged" | "saved" | "about">("fits");
 
   const [status, setStatus] = useState<PageStatus>("idle");
   const [profile, setProfile] = useState<PublicProfile | null>(null);
@@ -133,18 +135,43 @@ export default function ProfilePage() {
           <p className="font-display text-[22px] leading-none text-ink" style={{ letterSpacing: "-0.005em" }}>
             @{username}
           </p>
-          <button
-            type="button"
-            onClick={() => void logout()}
-            className="text-mute transition hover:text-ink"
-            aria-label="More options / sign out"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
-              <circle cx="5" cy="12" r="1.3" />
-              <circle cx="12" cy="12" r="1.3" />
-              <circle cx="19" cy="12" r="1.3" />
-            </svg>
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowMenu((v) => !v)}
+              className="text-mute transition hover:text-ink"
+              aria-label="More options"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+                <circle cx="5" cy="12" r="1.3" />
+                <circle cx="12" cy="12" r="1.3" />
+                <circle cx="19" cy="12" r="1.3" />
+              </svg>
+            </button>
+            {showMenu ? (
+              <>
+                {/* Backdrop to close menu */}
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowMenu(false)}
+                />
+                <div className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-2xl border border-rose/12 bg-white shadow-lift">
+                  <button
+                    type="button"
+                    onClick={() => { setShowMenu(false); void logout(); }}
+                    className="flex w-full items-center gap-2.5 px-4 py-3.5 text-left text-sm text-error transition hover:bg-pink-soft"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Sign out
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
         </header>
 
         {/* ── Profile head — centered, matches design exactly ─────────────── */}
@@ -209,7 +236,7 @@ export default function ProfilePage() {
           <div className="mx-auto flex justify-center" style={{ gap: 24, marginTop: 14 }}>
             <div className="text-center">
               <div className="font-medium text-ink" style={{ fontSize: 18 }}>
-                {outfits.length + (nextCursor ? 1 : 0)}
+                {nextCursor ? `${outfits.length}+` : outfits.length}
               </div>
               <div className="text-mute" style={{ fontSize: 10 }}>fits</div>
             </div>
@@ -227,7 +254,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Action buttons — edit profile + share + wrapped ✦ */}
+          {/* Action buttons — edit profile + share */}
           <div className="mt-4 flex w-full gap-2">
             <Link
               href="/profile/edit"
@@ -238,29 +265,30 @@ export default function ProfilePage() {
             </Link>
             <button
               type="button"
+              onClick={() => {
+                if (navigator.share) {
+                  void navigator.share({ title: `@${username} on checkd`, url: window.location.href });
+                } else {
+                  void navigator.clipboard.writeText(window.location.href);
+                }
+              }}
               className="flex flex-1 items-center justify-center rounded-full border border-line text-ink transition hover:border-ink"
               style={{ height: 36, fontSize: 12 }}
             >
               share
-            </button>
-            <button
-              type="button"
-              className="flex flex-1 items-center justify-center rounded-full border border-line text-ink transition hover:border-ink"
-              style={{ height: 36, fontSize: 12 }}
-            >
-              wrapped ✦
             </button>
           </div>
         </section>
 
         {/* ── Profile tabs ─────────────────────────────────────────────── */}
         <div className="flex border-b border-line">
-          {["fits", "tagged", "saved", "about"].map((tab, i) => (
+          {(["fits", "tagged", "saved", "about"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
-              className={`flex-1 py-[11px] text-center text-[12px] font-medium transition ${i === 0 ? "border-b-[1.5px] border-ink text-ink" : "text-mute hover:text-ink"}`}
-              style={{ marginBottom: i === 0 ? -1 : 0 }}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-[11px] text-center text-[12px] font-medium transition ${activeTab === tab ? "border-b-[1.5px] border-ink text-ink" : "text-mute hover:text-ink"}`}
+              style={{ marginBottom: activeTab === tab ? -1 : 0 }}
             >
               {tab}
             </button>
@@ -274,7 +302,19 @@ export default function ProfilePage() {
           </div>
         ) : null}
 
+        {/* ── Non-fits tabs ─────────────────────────────────────────────── */}
+        {activeTab !== "fits" ? (
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm text-mute">
+              {activeTab === "tagged" && "Outfits you've been tagged in will appear here."}
+              {activeTab === "saved" && "Outfits you've saved will appear here."}
+              {activeTab === "about" && (profile?.bio ? profile.bio : "No bio yet.")}
+            </p>
+          </div>
+        ) : null}
+
         {/* ── Outfit grid — 3-col, 2px gap, matches design vault-grid ─────── */}
+        {activeTab === "fits" ? (
         <section>
           {status === "loading" ? (
             <div className="grid grid-cols-3 gap-0.5 pt-0.5">
@@ -325,6 +365,7 @@ export default function ProfilePage() {
             </>
           ) : null}
         </section>
+        ) : null}
       </div>
 
       <MobileNav active="me" />

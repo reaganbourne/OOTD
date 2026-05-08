@@ -158,9 +158,9 @@ function StepFollow({
               <UserSuggestionRow
                 key={user.id}
                 user={user}
-                following={follows[user.id]?.following ?? false}
-                onFollow={() => void onFollow(user.id)}
-                onUnfollow={() => void onUnfollow(user.id)}
+                following={follows[user.username ?? user.id]?.following ?? false}
+                onFollow={() => void onFollow(user.username ?? user.id)}
+                onUnfollow={() => void onUnfollow(user.username ?? user.id)}
               />
             ))}
       </div>
@@ -247,19 +247,19 @@ export default function OnboardingPage() {
     finish();
   }
 
-  async function handleFollow(userId: string) {
-    setFollows((prev) => ({ ...prev, [userId]: { following: true } }));
-    const result = await apiClient.users.follow(userId);
+  async function handleFollow(username: string) {
+    setFollows((prev) => ({ ...prev, [username]: { following: true } }));
+    const result = await apiClient.users.follow(username);
     if (!result.ok) {
-      setFollows((prev) => ({ ...prev, [userId]: { following: false } }));
+      setFollows((prev) => ({ ...prev, [username]: { following: false } }));
     }
   }
 
-  async function handleUnfollow(userId: string) {
-    setFollows((prev) => ({ ...prev, [userId]: { following: false } }));
-    const result = await apiClient.users.unfollow(userId);
+  async function handleUnfollow(username: string) {
+    setFollows((prev) => ({ ...prev, [username]: { following: false } }));
+    const result = await apiClient.users.unfollow(username);
     if (!result.ok) {
-      setFollows((prev) => ({ ...prev, [userId]: { following: true } }));
+      setFollows((prev) => ({ ...prev, [username]: { following: true } }));
     }
   }
 
