@@ -7,10 +7,12 @@ from sqlalchemy.orm import Session
 import uuid
 
 from app.crud import follow as follow_crud
+from app.crud import notification as notif_crud
 from app.crud import outfit as outfit_crud
 from app.crud import social as social_crud
 from app.crud import user as user_crud
 from app.dependencies import get_current_user, get_db, get_optional_user
+from app.models.notification import NotificationType
 from app.models.user import User
 from app.schemas.outfit import (
     CaptionSuggestionsOut,
@@ -395,7 +397,19 @@ def like_outfit(
 ) -> LikeStatus:
     """Like an outfit. Idempotent — safe to call multiple times."""
     outfit = _outfit_or_404(db, outfit_id)
+    already_liked = social_crud.is_liked_by(db, outfit.id, current_user.id)
     social_crud.like_outfit(db, current_user.id, outfit.id)
+    # Only send notification on first like (not on idempotent re-like)
+    if not already_liked and outfit.user_id != current_user.id:
+        actor_name = current_user.display_name or current_user.username or "Someone"
+        notif_crud.create_notification(
+            db,
+            recipient_id=outfit.user_id,
+            actor_id=current_user.id,
+            type=NotificationType.like,
+            body=f"{actor_name} liked your outfit.",
+            outfit_id=outfit.id,
+        )
     return LikeStatus(
         like_count=social_crud.get_like_count(db, outfit.id),
         liked=True,
@@ -445,6 +459,18 @@ def create_comment(
     """Post a comment on an outfit. Auth required."""
     outfit = _outfit_or_404(db, outfit_id)
     comment = social_crud.create_comment(db, outfit.id, current_user.id, body.body)
+    # Notify the outfit owner (skip if commenter is the owner)
+    if outfit.user_id != current_user.id:
+        actor_name = current_user.display_name or current_user.username or "Someone"
+        notif_crud.create_notification(
+            db,
+            recipient_id=outfit.user_id,
+            actor_id=current_user.id,
+            type=NotificationType.comment,
+            body=f"{actor_name} commented on your outfit.",
+            outfit_id=outfit.id,
+            comment_id=comment.id,
+        )
     return _comment_out(db, comment)
 
 

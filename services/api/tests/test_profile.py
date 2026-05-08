@@ -7,7 +7,7 @@ UPDATE_PROFILE_URL = "/users/me"
 UPLOAD_AVATAR_URL = "/users/me/avatar"
 SEARCH_URL = "/users/search"
 SUGGESTED_URL = "/users/suggested"
-FOLLOW_URL = "/users/{user_id}/follow"
+FOLLOW_URL = "/users/{username}/follow"
 
 USER_A = {"username": "usera", "email": "a@example.com", "password": "password123"}
 USER_B = {"username": "userb", "email": "b@example.com", "password": "password123"}
@@ -156,7 +156,7 @@ class TestSuggestedUsers:
     def test_excludes_already_followed(self, client):
         a = _register(client, USER_A)
         b = _register(client, USER_B)
-        client.post(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=_auth(a["access_token"]))
+        client.post(FOLLOW_URL.format(username=b["user"]["username"]), headers=_auth(a["access_token"]))
         res = client.get(SUGGESTED_URL, headers=_auth(a["access_token"]))
         assert not any(u["username"] == "userb" for u in res.json())
 
@@ -173,7 +173,7 @@ class TestSuggestedUsers:
         a = _register(client, USER_A)
         b = _register(client, USER_B)
         c = _register(client, USER_C)
-        client.post(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=_auth(a["access_token"]))
-        client.post(FOLLOW_URL.format(user_id=c["user"]["id"]), headers=_auth(b["access_token"]))
+        client.post(FOLLOW_URL.format(username=b["user"]["username"]), headers=_auth(a["access_token"]))
+        client.post(FOLLOW_URL.format(username=c["user"]["username"]), headers=_auth(b["access_token"]))
         res = client.get(SUGGESTED_URL, headers=_auth(a["access_token"]))
         assert any(u["username"] == "userc" for u in res.json())

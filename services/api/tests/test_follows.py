@@ -3,7 +3,7 @@
 from starlette.testclient import TestClient
 
 REGISTER_URL = "/auth/register"
-FOLLOW_URL = "/users/{user_id}/follow"
+FOLLOW_URL = "/users/{username}/follow"
 PROFILE_URL = "/users/{username}"
 
 USER_A = {"username": "usera", "email": "a@example.com", "password": "password123"}
@@ -44,7 +44,7 @@ class TestFollow:
     def test_follow_returns_200_with_counts(self, client):
         a = _register(client, USER_A)
         b = _register(client, USER_B)
-        res = client.post(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=_auth(a["access_token"]))
+        res = client.post(FOLLOW_URL.format(username=b["user"]["username"]), headers=_auth(a["access_token"]))
         assert res.status_code == 200
         assert res.json()["following"] is True
         assert res.json()["follower_count"] == 1
@@ -53,34 +53,34 @@ class TestFollow:
         a = _register(client, USER_A)
         b = _register(client, USER_B)
         headers = _auth(a["access_token"])
-        client.post(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=headers)
-        res = client.post(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=headers)
+        client.post(FOLLOW_URL.format(username=b["user"]["username"]), headers=headers)
+        res = client.post(FOLLOW_URL.format(username=b["user"]["username"]), headers=headers)
         assert res.status_code == 200
         assert res.json()["follower_count"] == 1
 
     def test_follow_updates_profile_counts(self, client):
         a = _register(client, USER_A)
         b = _register(client, USER_B)
-        client.post(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=_auth(a["access_token"]))
+        client.post(FOLLOW_URL.format(username=b["user"]["username"]), headers=_auth(a["access_token"]))
         assert client.get(PROFILE_URL.format(username="userb")).json()["follower_count"] == 1
         assert client.get(PROFILE_URL.format(username="usera")).json()["following_count"] == 1
 
     def test_self_follow_returns_400(self, client):
         a = _register(client, USER_A)
-        res = client.post(FOLLOW_URL.format(user_id=a["user"]["id"]), headers=_auth(a["access_token"]))
+        res = client.post(FOLLOW_URL.format(username=a["user"]["username"]), headers=_auth(a["access_token"]))
         assert res.status_code == 400
 
     def test_follow_unknown_user_returns_404(self, client):
         a = _register(client, USER_A)
         res = client.post(
-            FOLLOW_URL.format(user_id="00000000-0000-0000-0000-000000000000"),
+            FOLLOW_URL.format(username="nobody_exists"),
             headers=_auth(a["access_token"]),
         )
         assert res.status_code == 404
 
     def test_follow_requires_auth(self, client):
         b = _register(client, USER_B)
-        assert client.post(FOLLOW_URL.format(user_id=b["user"]["id"])).status_code == 401
+        assert client.post(FOLLOW_URL.format(username=b["user"]["username"])).status_code == 401
 
 
 class TestUnfollow:
@@ -88,8 +88,8 @@ class TestUnfollow:
         a = _register(client, USER_A)
         b = _register(client, USER_B)
         headers = _auth(a["access_token"])
-        client.post(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=headers)
-        res = client.delete(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=headers)
+        client.post(FOLLOW_URL.format(username=b["user"]["username"]), headers=headers)
+        res = client.delete(FOLLOW_URL.format(username=b["user"]["username"]), headers=headers)
         assert res.status_code == 200
         assert res.json()["following"] is False
         assert res.json()["follower_count"] == 0
@@ -97,14 +97,14 @@ class TestUnfollow:
     def test_unfollow_is_idempotent(self, client):
         a = _register(client, USER_A)
         b = _register(client, USER_B)
-        res = client.delete(FOLLOW_URL.format(user_id=b["user"]["id"]), headers=_auth(a["access_token"]))
+        res = client.delete(FOLLOW_URL.format(username=b["user"]["username"]), headers=_auth(a["access_token"]))
         assert res.status_code == 200
 
     def test_self_unfollow_returns_400(self, client):
         a = _register(client, USER_A)
-        res = client.delete(FOLLOW_URL.format(user_id=a["user"]["id"]), headers=_auth(a["access_token"]))
+        res = client.delete(FOLLOW_URL.format(username=a["user"]["username"]), headers=_auth(a["access_token"]))
         assert res.status_code == 400
 
     def test_unfollow_requires_auth(self, client):
         b = _register(client, USER_B)
-        assert client.delete(FOLLOW_URL.format(user_id=b["user"]["id"])).status_code == 401
+        assert client.delete(FOLLOW_URL.format(username=b["user"]["username"])).status_code == 401
