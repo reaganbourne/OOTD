@@ -16,6 +16,28 @@ const INITIAL_PAGE_SIZE = 12;
 
 type VaultStatus = "idle" | "loading" | "ready" | "error";
 type LikeMap = Record<string, { liked: boolean; count: number }>;
+type FilterChip = "all" | "brown" | "formal" | "streetwear";
+
+function matchesFilter(outfit: OutfitResponse, filter: FilterChip): boolean {
+  if (filter === "all") return true;
+  const items = outfit.clothing_items ?? [];
+  if (filter === "brown") {
+    return items.some((i) => i.color?.toLowerCase().includes("brown"));
+  }
+  if (filter === "formal") {
+    return (
+      items.some((i) => i.category?.toLowerCase().includes("formal")) ||
+      outfit.vibe_check_tone?.toLowerCase().includes("formal") === true
+    );
+  }
+  if (filter === "streetwear") {
+    return (
+      items.some((i) => i.category?.toLowerCase().includes("streetwear")) ||
+      outfit.vibe_check_tone?.toLowerCase().includes("streetwear") === true
+    );
+  }
+  return true;
+}
 
 function toCardData(outfit: OutfitResponse): OutfitCardData {
   return {
@@ -55,6 +77,7 @@ export default function VaultPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterChip>("all");
 
   // Like state
   const [likes, setLikes] = useState<LikeMap>({});
@@ -173,7 +196,7 @@ export default function VaultPage() {
   const displayName = user?.display_name ?? user?.username ?? "you";
 
   return (
-    <main className="pb-28">
+    <main className="pb-28 lg:pb-0 lg:pt-16">
       <div className="mx-auto max-w-7xl">
         {/* vault topbar — checkd wordmark (ink 30px) + search + filter */}
         <div
@@ -210,6 +233,31 @@ export default function VaultPage() {
           </p>
         </header>
 
+        {/* filter chips */}
+        <div
+          className="flex overflow-x-auto"
+          style={{ padding: "4px 20px 12px", gap: 8 }}
+        >
+          {(["all", "brown", "formal", "streetwear"] as FilterChip[]).map((chip) => {
+            const isActive = activeFilter === chip;
+            return (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => setActiveFilter(chip)}
+                className="flex-shrink-0 inline-flex items-center rounded-full border text-[11px] transition"
+                style={{
+                  padding: "5px 11px",
+                  background: isActive ? "var(--ink)" : "#fff",
+                  borderColor: isActive ? "var(--ink)" : "var(--line)",
+                  color: isActive ? "var(--paper)" : "var(--ink-soft)",
+                }}
+              >
+                {chip}
+              </button>
+            );
+          })}
+        </div>
 
         {/* ── Vault grid — 3-col, 2px gap, per design vault-grid ─────── */}
         <section>
@@ -220,10 +268,32 @@ export default function VaultPage() {
           ) : null}
 
           {vaultStatus === "loading" ? (
-            <div className="grid grid-cols-3 gap-0.5 pt-0.5">
+            <div className="grid grid-cols-3 gap-0.5 pt-0.5 lg:gap-1">
               {Array.from({ length: 9 }).map((_, i) => <OutfitCardSkeleton key={i} showAuthor={false} />)}
             </div>
           ) : null}
+
+          {(() => {
+            const filtered = outfits.filter((o) => matchesFilter(o, activeFilter));
+            if (vaultStatus === "ready" && outfits.length > 0 && filtered.length === 0) {
+              return (
+                <div className="px-5 py-10 text-center">
+                  <p className="font-display text-2xl text-ink">no {activeFilter} looks yet.</p>
+                  <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
+                    tag clothing items when you upload to use filters.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilter("all")}
+                    className="mt-5 text-sm text-pink-deep hover:underline"
+                  >
+                    show all
+                  </button>
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {vaultStatus === "ready" && outfits.length === 0 ? (
             <div className="px-5 py-10 text-center">
@@ -231,7 +301,7 @@ export default function VaultPage() {
               <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
                 it just needs your first look.
               </p>
-              <Link href="/upload" className="mt-6 inline-block btn-primary">
+              <Link href="/upload" className="mt-6 btn-primary">
                 upload your first look
               </Link>
             </div>
@@ -239,8 +309,8 @@ export default function VaultPage() {
 
           {vaultStatus === "ready" && outfits.length > 0 ? (
             <>
-              <div className="grid grid-cols-3 gap-0.5 pt-0.5">
-                {outfits.map((outfit) => (
+              <div className="grid grid-cols-3 gap-0.5 pt-0.5 lg:gap-1">
+                {outfits.filter((o) => matchesFilter(o, activeFilter)).map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     outfit={toCardData(outfit)}

@@ -9,6 +9,7 @@ import { OutfitCard, OutfitCardSkeleton, type OutfitCardData } from "@/component
 import { useAuth } from "@/lib/auth-context";
 
 type PageStatus = "idle" | "loading" | "ready" | "error";
+type ProfileTab = "fits" | "tagged" | "saved" | "about";
 
 function toCardData(outfit: OutfitResponse): OutfitCardData {
   return {
@@ -34,7 +35,6 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
-  const [activeTab, setActiveTab] = useState<"fits" | "tagged" | "saved" | "about">("fits");
 
   const [status, setStatus] = useState<PageStatus>("idle");
   const [profile, setProfile] = useState<PublicProfile | null>(null);
@@ -42,6 +42,8 @@ export default function ProfilePage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<ProfileTab>("fits");
+  const [shareCopied, setShareCopied] = useState(false);
 
   // Redirect if not authed
   useEffect(() => {
@@ -126,8 +128,15 @@ export default function ProfilePage() {
   const followerCount = profile?.follower_count ?? 0;
   const followingCount = profile?.following_count ?? 0;
 
+  async function handleShare() {
+    const url = `${window.location.origin}/profile/${username}`;
+    await navigator.clipboard.writeText(url);
+    setShareCopied(true);
+    setTimeout(() => setShareCopied(false), 2000);
+  }
+
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
+    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-3xl">
 
         {/* ── Top bar — @username + ⋯ per design ─────────────────────────── */}
@@ -265,106 +274,180 @@ export default function ProfilePage() {
             </Link>
             <button
               type="button"
-              onClick={() => {
-                if (navigator.share) {
-                  void navigator.share({ title: `@${username} on checkd`, url: window.location.href });
-                } else {
-                  void navigator.clipboard.writeText(window.location.href);
-                }
-              }}
+              onClick={() => void handleShare()}
               className="flex flex-1 items-center justify-center rounded-full border border-line text-ink transition hover:border-ink"
               style={{ height: 36, fontSize: 12 }}
             >
-              share
+              {shareCopied ? "copied!" : "share"}
             </button>
+            <Link
+              href="/wrapped"
+              className="flex flex-1 items-center justify-center rounded-full border border-line text-ink transition hover:border-ink"
+              style={{ height: 36, fontSize: 12 }}
+            >
+              wrapped ✦
+            </Link>
           </div>
         </section>
 
         {/* ── Profile tabs ─────────────────────────────────────────────── */}
         <div className="flex border-b border-line">
-          {(["fits", "tagged", "saved", "about"] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-[11px] text-center text-[12px] font-medium transition ${activeTab === tab ? "border-b-[1.5px] border-ink text-ink" : "text-mute hover:text-ink"}`}
-              style={{ marginBottom: activeTab === tab ? -1 : 0 }}
-            >
-              {tab}
-            </button>
-          ))}
+          {(["fits", "tagged", "saved", "about"] as ProfileTab[]).map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-[11px] text-center text-[12px] font-medium transition ${isActive ? "border-b-[1.5px] border-ink text-ink" : "text-mute hover:text-ink"}`}
+                style={{ marginBottom: isActive ? -1 : 0 }}
+              >
+                {tab}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── Error state ─────────────────────────────────────────────────── */}
         {errorMessage ? (
-          <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">
+          <div className="mb-5 rounded-[1.25rem] border border-pink-deep/30 bg-pink-soft px-4 py-3 text-sm text-error">
             {errorMessage}
           </div>
         ) : null}
 
-        {/* ── Non-fits tabs ─────────────────────────────────────────────── */}
-        {activeTab !== "fits" ? (
+        {/* ── Tab: fits ───────────────────────────────────────────────────── */}
+        {activeTab === "fits" ? (
+          <section>
+            {status === "loading" ? (
+              <div className="grid grid-cols-3 gap-0.5 pt-0.5">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <OutfitCardSkeleton key={i} showAuthor={false} />
+                ))}
+              </div>
+            ) : null}
+
+            {status === "ready" && outfits.length === 0 ? (
+              <div className="px-6 py-10 text-center">
+                <p className="font-display text-2xl text-ink">start your archive</p>
+                <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
+                  upload your first outfit and it will live here.
+                </p>
+                <Link href="/upload" className="mt-6 btn-primary">
+                  upload your first look
+                </Link>
+              </div>
+            ) : null}
+
+            {status === "ready" && outfits.length > 0 ? (
+              <>
+                <div className="grid grid-cols-3 gap-0.5 pt-0.5">
+                  {outfits.map((outfit) => (
+                    <OutfitCard
+                      key={outfit.id}
+                      outfit={toCardData(outfit)}
+                      showAuthor={false}
+                      showCaption={false}
+                      showAccentMarker
+                    />
+                  ))}
+                </div>
+
+                {nextCursor ? (
+                  <div className="mt-8 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => void handleLoadMore()}
+                      disabled={isLoadingMore}
+                      className="rounded-full border border-line bg-white px-5 py-3 text-sm font-medium text-ink-soft transition hover:border-pink-deep disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isLoadingMore ? "loading..." : "load more"}
+                    </button>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+          </section>
+        ) : null}
+
+        {/* ── Tab: tagged ─────────────────────────────────────────────────── */}
+        {activeTab === "tagged" ? (
           <div className="px-6 py-12 text-center">
-            <p className="text-sm text-mute">
-              {activeTab === "tagged" && "Outfits you've been tagged in will appear here."}
-              {activeTab === "saved" && "Outfits you've saved will appear here."}
-              {activeTab === "about" && (profile?.bio ? profile.bio : "No bio yet.")}
+            <div
+              className="mx-auto flex items-center justify-center rounded-2xl bg-pink-soft"
+              style={{ width: 56, height: 56 }}
+            >
+              <svg viewBox="0 0 24 24" className="h-6 w-6 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                <line x1="7" y1="7" x2="7.01" y2="7" />
+              </svg>
+            </div>
+            <p className="font-display mt-5 text-2xl text-ink">tagged looks</p>
+            <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
+              when friends tag you in their outfits, they&apos;ll show up here.
             </p>
           </div>
         ) : null}
 
-        {/* ── Outfit grid — 3-col, 2px gap, matches design vault-grid ─────── */}
-        {activeTab === "fits" ? (
-        <section>
-          {status === "loading" ? (
-            <div className="grid grid-cols-3 gap-0.5 pt-0.5">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <OutfitCardSkeleton key={i} showAuthor={false} />
-              ))}
+        {/* ── Tab: saved ──────────────────────────────────────────────────── */}
+        {activeTab === "saved" ? (
+          <div className="px-6 py-12 text-center">
+            <div
+              className="mx-auto flex items-center justify-center rounded-2xl bg-pink-soft"
+              style={{ width: 56, height: 56 }}
+            >
+              <svg viewBox="0 0 24 24" className="h-6 w-6 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+              </svg>
             </div>
-          ) : null}
+            <p className="font-display mt-5 text-2xl text-ink">saved looks</p>
+            <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
+              outfits you&apos;ve liked will live here for easy reference.
+            </p>
+          </div>
+        ) : null}
 
-          {status === "ready" && outfits.length === 0 ? (
-            <div className="px-6 py-10 text-center">
-              <p className="font-display text-2xl text-ink">start your archive</p>
-              <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
-                upload your first outfit and it will live here.
-              </p>
-              <Link href="/upload" className="mt-6 inline-block btn-primary">
-                upload your first look
-              </Link>
+        {/* ── Tab: about ──────────────────────────────────────────────────── */}
+        {activeTab === "about" ? (
+          <div className="px-5 py-6 space-y-4">
+            {/* Bio */}
+            <div className="rounded-2xl border border-line bg-white px-5 py-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-mute">bio</p>
+              {bio ? (
+                <p className="mt-2 text-sm leading-6 text-ink">{bio}</p>
+              ) : (
+                <Link href="/profile/edit" className="mt-2 inline-block text-sm text-pink-deep hover:underline">
+                  add a bio →
+                </Link>
+              )}
             </div>
-          ) : null}
 
-          {status === "ready" && outfits.length > 0 ? (
-            <>
-              <div className="grid grid-cols-3 gap-0.5 pt-0.5">
-                {outfits.map((outfit) => (
-                  <OutfitCard
-                    key={outfit.id}
-                    outfit={toCardData(outfit)}
-                    showAuthor={false}
-                    showCaption={false}
-                    showAccentMarker
-                  />
+            {/* Stats */}
+            <div className="rounded-2xl border border-line bg-white px-5 py-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-mute">stats</p>
+              <div className="mt-3 grid grid-cols-3 divide-x divide-line">
+                {[
+                  { label: "fits", value: outfits.length + (nextCursor ? "+" : "") },
+                  { label: "followers", value: followerCount },
+                  { label: "following", value: followingCount },
+                ].map(({ label, value }) => (
+                  <div key={label} className="px-3 text-center first:pl-0 last:pr-0">
+                    <div className="text-lg font-medium text-ink">{value}</div>
+                    <div className="text-[10px] uppercase tracking-[0.16em] text-mute">{label}</div>
+                  </div>
                 ))}
               </div>
+            </div>
 
-              {nextCursor ? (
-                <div className="mt-8 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => void handleLoadMore()}
-                    disabled={isLoadingMore}
-                    className="rounded-full border border-line bg-white px-5 py-3 text-sm font-medium text-ink-soft transition hover:border-pink-deep disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {isLoadingMore ? "loading..." : "load more"}
-                  </button>
-                </div>
-              ) : null}
-            </>
-          ) : null}
-        </section>
+            {/* Member since */}
+            {profile?.created_at ? (
+              <div className="rounded-2xl border border-line bg-white px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-mute">member since</p>
+                <p className="mt-2 text-sm text-ink">
+                  {new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(profile.created_at))}
+                </p>
+              </div>
+            ) : null}
+          </div>
         ) : null}
       </div>
 

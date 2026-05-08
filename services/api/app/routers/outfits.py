@@ -14,8 +14,18 @@ from app.crud import user as user_crud
 from app.dependencies import get_current_user, get_db, get_optional_user
 from app.models.notification import NotificationType
 from app.models.user import User
-from app.schemas.outfit import FeedAuthor, FeedOutfitOut, FeedPage, OutfitMetadata, OutfitOut, VaultPage
-from app.schemas.outfit import CaptionSuggestionsOut, OutfitDetailOut, OutfitMetadata, OutfitOGOut, OutfitOut, OutfitOwner, VaultPage
+from app.schemas.outfit import (
+    CaptionSuggestionsOut,
+    FeedAuthor,
+    FeedOutfitOut,
+    FeedPage,
+    OutfitDetailOut,
+    OutfitMetadata,
+    OutfitOGOut,
+    OutfitOut,
+    OutfitOwner,
+    VaultPage,
+)
 from app.schemas.social import (
     CommentOut,
     CommentPage,
@@ -111,6 +121,42 @@ def get_feed(
                 profile_image_url=author.profile_image_url if author else None,
             )
 
+        feed_items.append(
+            FeedOutfitOut(
+                **OutfitOut.model_validate(outfit).model_dump(),
+                author=author_cache[cache_key],
+            )
+        )
+
+    return FeedPage(outfits=feed_items, next_cursor=next_cursor)
+
+
+@router.get("/explore", response_model=FeedPage)
+def get_explore(
+    cursor: str | None = Query(default=None),
+    limit: int = Query(default=20, ge=1, le=50),
+    db: Session = Depends(get_db),
+) -> FeedPage:
+    """
+    All outfits on the platform, newest first. No auth required.
+
+    Returns the same FeedPage shape as /outfits/feed so the frontend
+    can swap the call without any schema changes.
+    """
+    outfits, next_cursor = outfit_crud.get_explore(db, cursor, limit)
+
+    author_cache: dict[str, FeedAuthor] = {}
+    feed_items: list[FeedOutfitOut] = []
+
+    for outfit in outfits:
+        cache_key = str(outfit.user_id)
+        if cache_key not in author_cache:
+            author = user_crud.get_by_id(db, outfit.user_id)
+            author_cache[cache_key] = FeedAuthor(
+                id=outfit.user_id,
+                username=author.username if author else None,
+                profile_image_url=author.profile_image_url if author else None,
+            )
         feed_items.append(
             FeedOutfitOut(
                 **OutfitOut.model_validate(outfit).model_dump(),

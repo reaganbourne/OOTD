@@ -117,6 +117,11 @@ export function UploadFlow() {
       event.target.value = "";
       return;
     }
+    if (nextFile.size > 20 * 1024 * 1024) {
+      setErrorState({ photo: "Photo is too large (max 20 MB).", form: "Choose a photo under 20 MB." });
+      event.target.value = "";
+      return;
+    }
     setPhoto(nextFile);
     setErrors(createEmptyErrors());
   }
@@ -272,7 +277,7 @@ export function UploadFlow() {
         {/* Error/success banners */}
         {errors.form ? (
           <div
-            className="border border-rose/25 bg-pink-soft text-error"
+            className="border border-pink-deep/25 bg-pink-soft text-error"
             style={{ borderRadius: "1rem", padding: "10px 14px", fontSize: 13, marginBottom: 16 }}
           >
             {errors.form}
@@ -280,7 +285,7 @@ export function UploadFlow() {
         ) : null}
         {submitState.status === "error" ? (
           <div
-            className="border border-rose/25 bg-pink-soft text-error"
+            className="border border-pink-deep/25 bg-pink-soft text-error"
             style={{ borderRadius: "1rem", padding: "10px 14px", fontSize: 13, marginBottom: 16 }}
           >
             {submitState.message}
@@ -560,7 +565,7 @@ export function UploadFlow() {
             className="flex flex-1 items-center justify-center bg-ink text-paper transition hover:opacity-90"
             style={{ borderRadius: "99px", height: 48, fontSize: 15, fontWeight: 600 }}
           >
-            continue
+            {currentStep === 1 ? "looks good" : currentStep === 2 ? "add context" : "review it"}
           </button>
         ) : (
           <button
@@ -603,7 +608,7 @@ function InputField({
         {label}
         {optional ? <span className="ml-1 font-normal normal-case tracking-normal text-mute">(optional)</span> : null}
       </p>
-      <div className={`field-shell ${error ? "border-rose/60 bg-rose/5" : ""}`}>
+      <div className={`field-shell ${error ? "border-error/60 bg-error/5" : ""}`}>
         <input
           type={type}
           className="field-input"

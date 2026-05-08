@@ -5,7 +5,7 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
-from app.schemas.outfit import OutfitOut
+from app.schemas.outfit import BoardOutfitPage, OutfitOut  # noqa: F401 (re-exported)
 
 
 class CreateBoardRequest(BaseModel):
@@ -37,9 +37,8 @@ class BoardMemberOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class BoardOutfitPage(BaseModel):
-    outfits: list[OutfitOut]
-    next_cursor: str | None
+# BoardOutfitPage is defined in schemas.outfit (re-exported above) so the
+# boards router can import it from either location.
 
 
 class PinRequest(BaseModel):

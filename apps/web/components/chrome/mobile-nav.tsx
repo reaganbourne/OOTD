@@ -115,8 +115,8 @@ function NavItem({
 export function MobileNav({ active }: MobileNavProps) {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-line bg-paper"
-      style={{ padding: "10px 16px 22px" }}
+      className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-line bg-paper lg:hidden"
+      style={{ padding: "10px 16px max(28px, env(safe-area-inset-bottom))" }}
     >
       <NavItem href="/feed" label="home" active={active === "feed"} icon={<FeedIcon active={active === "feed"} />} />
       <NavItem href="/boards" label="boards" active={active === "boards"} icon={<BoardsIcon active={active === "boards"} />} />
