@@ -180,29 +180,31 @@ def get_profile(username: str, db: Session = Depends(get_db)) -> PublicProfile:
     )
 
 
-@router.post("/{user_id}/follow", response_model=FollowResponse)
+@router.post("/{username}/follow", response_model=FollowResponse)
 def follow_user(
-    user_id: uuid.UUID,
+    username: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> FollowResponse:
-    if user_id == current_user.id:
+    target = user_crud.get_by_username(db, username)
+    if not target:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    if target.id == current_user.id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot follow yourself.")
-    if not user_crud.get_by_id(db, user_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
-    follow_crud.follow(db, follower_id=current_user.id, following_id=user_id)
-    return FollowResponse(following=True, follower_count=follow_crud.follower_count(db, user_id))
+    follow_crud.follow(db, follower_id=current_user.id, following_id=target.id)
+    return FollowResponse(following=True, follower_count=follow_crud.follower_count(db, target.id))
 
 
-@router.delete("/{user_id}/follow", response_model=FollowResponse)
+@router.delete("/{username}/follow", response_model=FollowResponse)
 def unfollow_user(
-    user_id: uuid.UUID,
+    username: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> FollowResponse:
-    if user_id == current_user.id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot unfollow yourself.")
-    if not user_crud.get_by_id(db, user_id):
+    target = user_crud.get_by_username(db, username)
+    if not target:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
-    follow_crud.unfollow(db, follower_id=current_user.id, following_id=user_id)
-    return FollowResponse(following=False, follower_count=follow_crud.follower_count(db, user_id))
+    if target.id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot unfollow yourself.")
+    follow_crud.unfollow(db, follower_id=current_user.id, following_id=target.id)
+    return FollowResponse(following=False, follower_count=follow_crud.follower_count(db, target.id))
