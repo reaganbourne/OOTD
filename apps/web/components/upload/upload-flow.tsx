@@ -34,32 +34,7 @@ type SubmitState =
 
 type Step = 1 | 2 | 3 | 4;
 
-const steps: Array<{ id: Step; label: string; title: string; hint: string }> = [
-  {
-    id: 1,
-    label: "Photo",
-    title: "Start with the fit photo",
-    hint: "Pick the image that will anchor the whole outfit record."
-  },
-  {
-    id: 2,
-    label: "Items",
-    title: "Tag what you wore",
-    hint: "Add one row per item so future search, AI, and feed cards have structure."
-  },
-  {
-    id: 3,
-    label: "Context",
-    title: "Add optional context",
-    hint: "Caption, event name, and date worn make the archive more useful later."
-  },
-  {
-    id: 4,
-    label: "Review",
-    title: "Review before you submit",
-    hint: "Confirm the image, order, and metadata before the upload gets staged."
-  }
-];
+const STEP_LABELS = ["photo", "items", "context", "review"];
 
 function createItem(): UploadItem {
   return {
@@ -71,9 +46,7 @@ function createItem(): UploadItem {
 }
 
 function createEmptyErrors(): ValidationErrors {
-  return {
-    itemCategories: {}
-  };
+  return { itemCategories: {} };
 }
 
 export function UploadFlow() {
@@ -92,76 +65,45 @@ export function UploadFlow() {
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
 
   useEffect(() => {
-    if (!photo) {
-      setPhotoPreviewUrl(null);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(photo);
-    setPhotoPreviewUrl(objectUrl);
-
-    return () => {
-      URL.revokeObjectURL(objectUrl);
-    };
+    if (!photo) { setPhotoPreviewUrl(null); return; }
+    const url = URL.createObjectURL(photo);
+    setPhotoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
   }, [photo]);
 
   function resetStatus() {
-    if (submitState.status !== "idle") {
-      setSubmitState({ status: "idle" });
-    }
+    if (submitState.status !== "idle") setSubmitState({ status: "idle" });
   }
 
   function setErrorState(next: Partial<ValidationErrors>) {
-    setErrors({
-      ...createEmptyErrors(),
-      ...next,
-      itemCategories: next.itemCategories ?? {}
-    });
+    setErrors({ ...createEmptyErrors(), ...next, itemCategories: next.itemCategories ?? {} });
   }
 
   function validateStep(step: Step): boolean {
     if (step === 1) {
       if (!photo) {
-        setErrorState({
-          photo: "Choose a fit photo before you move to the next step.",
-          form: "A photo is required to create an outfit post."
-        });
+        setErrorState({ photo: "Choose a photo before continuing.", form: "A photo is required." });
         return false;
       }
-
       setErrors(createEmptyErrors());
       return true;
     }
-
     if (step === 2) {
       if (items.length === 0) {
-        setErrorState({
-          items: "Add at least one clothing item before you continue.",
-          form: "Your outfit needs at least one tagged item."
-        });
+        setErrorState({ items: "Add at least one item.", form: "Your outfit needs at least one tagged item." });
         return false;
       }
-
-      const itemCategories = items.reduce<Record<string, string>>((accumulator, item) => {
-        if (!item.category.trim()) {
-          accumulator[item.id] = "Category is required.";
-        }
-        return accumulator;
+      const itemCategories = items.reduce<Record<string, string>>((acc, item) => {
+        if (!item.category.trim()) acc[item.id] = "Category is required.";
+        return acc;
       }, {});
-
       if (Object.keys(itemCategories).length > 0) {
-        setErrorState({
-          items: "Every item needs a category before you continue.",
-          form: "Fix the highlighted item rows before moving on.",
-          itemCategories
-        });
+        setErrorState({ items: "Every item needs a category.", form: "Fix the highlighted rows.", itemCategories });
         return false;
       }
-
       setErrors(createEmptyErrors());
       return true;
     }
-
     setErrors(createEmptyErrors());
     return true;
   }
@@ -169,79 +111,46 @@ export function UploadFlow() {
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     resetStatus();
     const nextFile = event.target.files?.[0] ?? null;
-
-    if (!nextFile) {
-      return;
-    }
-
+    if (!nextFile) return;
     if (!nextFile.type.startsWith("image/")) {
-      setErrorState({
-        photo: "Choose an image file so the preview and upload flow can continue.",
-        form: "Only image files are supported in this upload flow."
-      });
+      setErrorState({ photo: "Choose an image file.", form: "Only image files are supported." });
       event.target.value = "";
       return;
     }
-
     setPhoto(nextFile);
     setErrors(createEmptyErrors());
   }
 
   function updateItem(itemId: string, field: keyof Omit<UploadItem, "id">, value: string) {
     resetStatus();
-    setItems((current) =>
-      current.map((item) => (item.id === itemId ? { ...item, [field]: value } : item))
-    );
-
-    setErrors((current) => {
-      if (field !== "category") {
-        return current;
-      }
-
-      const nextItemCategories = { ...current.itemCategories };
-      delete nextItemCategories[itemId];
-
-      return {
-        ...current,
-        items: undefined,
-        form: undefined,
-        itemCategories: nextItemCategories
-      };
+    setItems((cur) => cur.map((item) => (item.id === itemId ? { ...item, [field]: value } : item)));
+    setErrors((cur) => {
+      if (field !== "category") return cur;
+      const next = { ...cur.itemCategories };
+      delete next[itemId];
+      return { ...cur, items: undefined, form: undefined, itemCategories: next };
     });
   }
 
   function addItem() {
     resetStatus();
-    setItems((current) => [...current, createItem()]);
-    setErrors((current) => ({
-      ...current,
-      items: undefined,
-      form: undefined
-    }));
+    setItems((cur) => [...cur, createItem()]);
+    setErrors((cur) => ({ ...cur, items: undefined, form: undefined }));
   }
 
   function removeItem(itemId: string) {
     resetStatus();
-    setItems((current) =>
-      current.length === 1 ? current : current.filter((item) => item.id !== itemId)
-    );
-    setErrors((current) => {
-      const nextItemCategories = { ...current.itemCategories };
-      delete nextItemCategories[itemId];
-
-      return {
-        ...current,
-        itemCategories: nextItemCategories
-      };
+    setItems((cur) => cur.length === 1 ? cur : cur.filter((i) => i.id !== itemId));
+    setErrors((cur) => {
+      const next = { ...cur.itemCategories };
+      delete next[itemId];
+      return { ...cur, itemCategories: next };
     });
   }
 
   function updateMetadata(field: keyof UploadMetadata, value: string) {
     resetStatus();
-    setMetadata((current) => ({
-      ...current,
-      [field]: value
-    }));
+    setMetadata((cur) => ({ ...cur, [field]: value }));
   }
 
   function goToStep(nextStep: Step) {
@@ -250,548 +159,462 @@ export function UploadFlow() {
   }
 
   function handleNext() {
-    if (!validateStep(currentStep)) {
-      return;
-    }
-
-    if (currentStep < 4) {
-      goToStep((currentStep + 1) as Step);
-    }
+    if (!validateStep(currentStep)) return;
+    if (currentStep < 4) goToStep((currentStep + 1) as Step);
   }
 
   function handleBack() {
-    if (currentStep > 1) {
-      goToStep((currentStep - 1) as Step);
-    }
+    if (currentStep > 1) goToStep((currentStep - 1) as Step);
   }
 
   async function handleSubmit() {
-    if (!validateStep(1) || !photo) {
-      setCurrentStep(1);
-      setSubmitState({
-        status: "error",
-        message: "Fix the required photo and item tags before you submit."
-      });
-      return;
-    }
-
-    if (!validateStep(2)) {
-      setCurrentStep(2);
-      setSubmitState({
-        status: "error",
-        message: "Fix the required photo and item tags before you submit."
-      });
-      return;
-    }
+    if (!validateStep(1) || !photo) { setCurrentStep(1); return; }
+    if (!validateStep(2)) { setCurrentStep(2); return; }
 
     setSubmitState({ status: "submitting" });
 
     try {
       const payload = {
         clothing_items: items.map((item, index) => {
-          const nextItem: {
-            brand?: string;
-            category: string;
-            color?: string;
-            display_order: number;
-          } = {
+          const nextItem: { brand?: string; category: string; color?: string; display_order: number } = {
             category: item.category.trim(),
             display_order: index
           };
-
-          if (item.brand.trim()) {
-            nextItem.brand = item.brand.trim();
-          }
-
-          if (item.color.trim()) {
-            nextItem.color = item.color.trim();
-          }
-
+          if (item.brand.trim()) nextItem.brand = item.brand.trim();
+          if (item.color.trim()) nextItem.color = item.color.trim();
           return nextItem;
         })
       } as {
         caption?: string;
         event_name?: string;
         worn_on?: string;
-        clothing_items: Array<{
-          brand?: string;
-          category: string;
-          color?: string;
-          display_order: number;
-        }>;
+        clothing_items: Array<{ brand?: string; category: string; color?: string; display_order: number }>;
       };
 
-      if (metadata.caption.trim()) {
-        payload.caption = metadata.caption.trim();
-      }
+      if (metadata.caption.trim()) payload.caption = metadata.caption.trim();
+      if (metadata.eventName.trim()) payload.event_name = metadata.eventName.trim();
+      if (metadata.wornOn) payload.worn_on = metadata.wornOn;
 
-      if (metadata.eventName.trim()) {
-        payload.event_name = metadata.eventName.trim();
-      }
+      const result = await apiClient.outfits.create({ image: photo, metadata: payload });
+      if (!result.ok) throw new Error(result.message);
 
-      if (metadata.wornOn) {
-        payload.worn_on = metadata.wornOn;
-      }
-
-      const result = await apiClient.outfits.create({
-        image: photo,
-        metadata: payload
-      });
-
-      if (!result.ok) {
-        throw new Error(result.message);
-      }
-
-      setSubmitState({
-        status: "success",
-        message: "Outfit uploaded. Your vault is ready for the new look."
-      });
-      window.setTimeout(() => {
-        router.push("/vault");
-      }, 900);
+      setSubmitState({ status: "success", message: "Outfit uploaded!" });
+      window.setTimeout(() => router.push("/vault"), 900);
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "We couldn't upload this outfit right now. Please try again.";
-
       setSubmitState({
         status: "error",
-        message
+        message: error instanceof Error ? error.message : "Upload failed. Please try again."
       });
     }
   }
 
-  const currentConfig = steps.find((step) => step.id === currentStep) ?? steps[0];
-
   return (
-    <section className="soft-panel overflow-hidden">
-      <div className="grid gap-8 lg:grid-cols-[0.32fr_0.68fr]">
-        <aside className="bg-brand-glow px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-10">
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-ink-soft">
-            Four-step flow
-          </p>
-          <h2 className="mt-3 text-4xl leading-tight text-ink">
-            Build the outfit once, then reuse it everywhere.
-          </h2>
-          <p className="mt-4 text-sm leading-6 text-ink-soft">
-            This upload flow posts the same structured payload the backend uses for the
-            vault, feed, event boards, and AI features.
-          </p>
+    <div className="flex flex-col" style={{ minHeight: "calc(100vh - 56px)" }}>
+      {/* ── Topbar ────────────────────────────────────────────────────────── */}
+      <div
+        className="flex items-center justify-between border-b border-line bg-paper"
+        style={{ padding: "0 20px", height: 56 }}
+      >
+        <Link
+          href="/vault"
+          className="text-mute transition hover:text-ink"
+          style={{ fontSize: 14 }}
+        >
+          cancel
+        </Link>
 
-          <div className="mt-8 grid gap-3">
-            {steps.map((step) => {
-              const isActive = step.id === currentStep;
-              const isComplete = step.id < currentStep;
+        {/* Step dots */}
+        <div className="flex items-center" style={{ gap: 6 }}>
+          {([1, 2, 3, 4] as Step[]).map((step) => (
+            <span
+              key={step}
+              style={{
+                width: step === currentStep ? 18 : 6,
+                height: 6,
+                borderRadius: 99,
+                background: step === currentStep
+                  ? "var(--pink-deep)"
+                  : step < currentStep
+                    ? "var(--ink)"
+                    : "var(--line)",
+                transition: "width 0.2s, background 0.2s",
+                display: "block"
+              }}
+            />
+          ))}
+        </div>
 
-              return (
-                <button
-                  key={step.id}
-                  type="button"
-                  onClick={() => {
-                    if (step.id < currentStep) {
-                      goToStep(step.id);
-                    }
-                  }}
-                  className={`rounded-[1.5rem] border px-4 py-4 text-left transition ${
-                    isActive
-                      ? "border-plum/30 bg-white/85 shadow-card"
-                      : isComplete
-                        ? "border-plum/12 bg-white/70"
-                        : "border-plum/10 bg-white/45"
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-[0.24em] text-ink-soft">
-                      Step {step.id}
-                    </span>
-                    <span
-                      className={`rounded-full px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.22em] ${
-                        isActive
-                          ? "bg-plum text-white"
-                          : isComplete
-                            ? "bg-emerald-50 text-emerald-900"
-                            : "bg-white/75 text-ink-soft"
-                      }`}
-                    >
-                      {isComplete ? "Done" : step.label}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-lg text-ink">{step.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-ink-soft">{step.hint}</p>
-                </button>
-              );
-            })}
+        <span className="text-mute" style={{ fontSize: 13 }}>
+          {currentStep}/4
+        </span>
+      </div>
+
+      {/* ── Body ──────────────────────────────────────────────────────────── */}
+      <div className="flex flex-1 flex-col" style={{ padding: "24px 20px 120px" }}>
+
+        {/* Step heading */}
+        <p
+          className="font-display text-ink"
+          style={{ fontSize: 28, lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 6 }}
+        >
+          {currentStep === 1 && "add your photo"}
+          {currentStep === 2 && "tag what you wore"}
+          {currentStep === 3 && "add context"}
+          {currentStep === 4 && "review & post"}
+        </p>
+        <p className="text-mute" style={{ fontSize: 13, marginBottom: 20 }}>
+          {currentStep === 1 && "pick the photo that best captures the look."}
+          {currentStep === 2 && "add one row per item — brand, category, color."}
+          {currentStep === 3 && "caption, event, and date are all optional."}
+          {currentStep === 4 && "everything look right? go ahead and post it."}
+        </p>
+
+        {/* Error/success banners */}
+        {errors.form ? (
+          <div
+            className="border border-rose/25 bg-pink-soft text-error"
+            style={{ borderRadius: "1rem", padding: "10px 14px", fontSize: 13, marginBottom: 16 }}
+          >
+            {errors.form}
           </div>
-        </aside>
+        ) : null}
+        {submitState.status === "error" ? (
+          <div
+            className="border border-rose/25 bg-pink-soft text-error"
+            style={{ borderRadius: "1rem", padding: "10px 14px", fontSize: 13, marginBottom: 16 }}
+          >
+            {submitState.message}
+          </div>
+        ) : null}
+        {submitState.status === "success" ? (
+          <div
+            className="border border-emerald-200 bg-emerald-50 text-emerald-900"
+            style={{ borderRadius: "1rem", padding: "10px 14px", fontSize: 13, marginBottom: 16 }}
+          >
+            {submitState.message}
+          </div>
+        ) : null}
 
-        <div className="px-5 py-6 sm:px-7 sm:py-8 lg:px-8 lg:py-10">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-ink-soft">
-                {currentConfig.label}
-              </p>
-              <h3 className="mt-2 text-4xl text-ink">{currentConfig.title}</h3>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-soft">
-                {currentConfig.hint}
-              </p>
+        {/* ── Step 1: Photo ────────────────────────────────────────────────── */}
+        {currentStep === 1 ? (
+          <div className="flex flex-col" style={{ gap: 12 }}>
+            {/* Photo preview */}
+            <div
+              className="overflow-hidden bg-pink-soft"
+              style={{ borderRadius: "1.5rem", border: "1.5px dashed var(--line)", aspectRatio: "4/5", width: "100%", position: "relative" }}
+            >
+              {photoPreviewUrl ? (
+                <img
+                  src={photoPreviewUrl}
+                  alt="Outfit preview"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                />
+              ) : (
+                <div className="flex h-full w-full flex-col items-center justify-center text-center" style={{ padding: 32 }}>
+                  <div
+                    className="flex items-center justify-center bg-white text-pink-deep"
+                    style={{ width: 52, height: 52, borderRadius: "1rem", border: "1px solid var(--line)", marginBottom: 12 }}
+                  >
+                    <svg viewBox="0 0 24 24" style={{ width: 22, height: 22 }} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                      <rect x="3" y="3" width="18" height="18" rx="3" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <path d="m21 15-5-5L5 21" />
+                    </svg>
+                  </div>
+                  <p className="text-ink" style={{ fontSize: 15, fontWeight: 500 }}>tap to choose a photo</p>
+                  <p className="text-mute" style={{ fontSize: 12, marginTop: 4 }}>JPG, PNG, WEBP or HEIC</p>
+                </div>
+              )}
+
+              {/* Overlay tap target on whole preview when empty */}
+              {!photoPreviewUrl ? (
+                <label
+                  htmlFor={inputId}
+                  style={{ position: "absolute", inset: 0, cursor: "pointer" }}
+                  aria-label="Choose photo"
+                />
+              ) : null}
             </div>
 
-            <div className="rounded-[1.25rem] border border-plum/12 bg-cream/70 px-4 py-3 text-xs leading-5 text-plum/78">
-              Mobile-first layout with real multipart upload wiring to the backend outfit
-              contract.
-            </div>
-          </div>
+            {/* Choose / replace button */}
+            <label
+              htmlFor={inputId}
+              className="flex items-center justify-center bg-ink text-paper transition hover:opacity-90"
+              style={{ borderRadius: "99px", height: 48, fontSize: 14, fontWeight: 600, cursor: "pointer" }}
+            >
+              {photo ? "replace photo" : "choose photo"}
+            </label>
+            <input
+              id={inputId}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleFileChange}
+            />
 
-          {errors.form ? <StatusBanner tone="error" message={errors.form} className="mt-6" /> : null}
-          {submitState.status === "success" ? (
-            <StatusBanner tone="success" message={submitState.message} className="mt-6" />
-          ) : null}
-          {submitState.status === "error" ? (
-            <StatusBanner tone="error" message={submitState.message} className="mt-6" />
-          ) : null}
-
-          <div className="mt-6">
-            {currentStep === 1 ? (
-              <div className="grid gap-5 lg:grid-cols-[0.7fr_0.3fr]">
-                <div className="rounded-[1.75rem] border border-dashed border-plum/20 bg-cream/55 p-4 sm:p-5">
-                  <div className="relative overflow-hidden rounded-[1.5rem] bg-white/80 shadow-card">
-                    {photoPreviewUrl ? (
-                      <img
-                        src={photoPreviewUrl}
-                        alt="Outfit preview"
-                        className="aspect-[4/5] w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex aspect-[4/5] items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(230,170,184,0.2),_transparent_45%),linear-gradient(180deg,_#fff8f5_0%,_#f8eef1_100%)] px-8 text-center">
-                        <div>
-                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-ink-soft">
-                            Step 1
-                          </p>
-                          <h4 className="mt-3 text-3xl text-ink">Choose the hero image</h4>
-                          <p className="mt-3 text-sm leading-6 text-ink-soft">
-                            Pick the photo that best captures the whole look. You can swap
-                            it later before submitting.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <label
-                      htmlFor={inputId}
-                      className="rounded-[1.25rem] bg-plum px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#5c3049]"
-                    >
-                      {photo ? "Replace photo" : "Choose photo"}
-                    </label>
-                    <input
-                      id={inputId}
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={handleFileChange}
-                    />
-                    <span className="text-xs leading-5 text-plum/74">
-                      JPG, PNG, or HEIC-style camera uploads work best.
-                    </span>
-                  </div>
-                </div>
-
-                <div className="rounded-[1.75rem] border border-plum/12 bg-white/75 p-5">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
-                    Photo note
-                  </p>
-                  <h4 className="mt-3 text-2xl text-ink">Use the version you would actually post</h4>
-                  <p className="mt-3 text-sm leading-6 text-ink-soft">
-                    The preview here drives the later review card, feed card, and story
-                    export surfaces.
-                  </p>
-
-                  {photo ? (
-                    <div className="mt-5 rounded-[1.25rem] border border-plum/12 bg-cream/70 px-4 py-4 text-sm leading-6 text-ink-soft">
-                      <p className="font-semibold text-ink">{photo.name}</p>
-                      <p>{(photo.size / 1024 / 1024).toFixed(2)} MB</p>
-                    </div>
-                  ) : null}
-
-                  {errors.photo ? (
-                    <p className="mt-4 text-sm leading-6 text-[#9c425d]">{errors.photo}</p>
-                  ) : null}
-                </div>
+            {photo ? (
+              <div
+                className="border border-line bg-white text-mute"
+                style={{ borderRadius: "1rem", padding: "10px 14px", fontSize: 12 }}
+              >
+                <span className="text-ink" style={{ fontWeight: 500 }}>{photo.name}</span>
+                {"  "}
+                <span>{(photo.size / 1024 / 1024).toFixed(2)} MB</span>
               </div>
             ) : null}
 
-            {currentStep === 2 ? (
-              <div className="grid gap-4">
-                {items.map((item, index) => (
-                  <article
-                    key={item.id}
-                    className="rounded-[1.75rem] border border-plum/12 bg-white/78 p-4 sm:p-5"
-                  >
-                    <div className="mb-4 flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
-                          Item {index + 1}
-                        </p>
-                        <p className="mt-1 text-sm text-plum/78">display_order: {index}</p>
-                      </div>
+            {errors.photo ? (
+              <p style={{ fontSize: 13, color: "var(--error)" }}>{errors.photo}</p>
+            ) : null}
+          </div>
+        ) : null}
 
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.id)}
-                        disabled={items.length === 1}
-                        className="rounded-[1rem] border border-plum/15 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-soft transition hover:bg-cream/65 disabled:cursor-not-allowed disabled:opacity-45"
-                      >
-                        Remove
-                      </button>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <label className="field-shell">
-                        <span className="field-label">Brand</span>
-                        <input
-                          className="field-input"
-                          value={item.brand}
-                          placeholder="Optional"
-                          onChange={(event) => updateItem(item.id, "brand", event.target.value)}
-                        />
-                      </label>
-
-                      <label
-                        className={`field-shell ${
-                          errors.itemCategories[item.id] ? "border-rose/80 bg-rose/10" : ""
-                        }`}
-                      >
-                        <span className="field-label">Category</span>
-                        <input
-                          className="field-input"
-                          value={item.category}
-                          placeholder="Required"
-                          onChange={(event) => updateItem(item.id, "category", event.target.value)}
-                        />
-                        {errors.itemCategories[item.id] ? (
-                          <span className="mt-2 block text-xs text-[#9c425d]">
-                            {errors.itemCategories[item.id]}
-                          </span>
-                        ) : null}
-                      </label>
-
-                      <label className="field-shell">
-                        <span className="field-label">Color</span>
-                        <input
-                          className="field-input"
-                          value={item.color}
-                          placeholder="Optional"
-                          onChange={(event) => updateItem(item.id, "color", event.target.value)}
-                        />
-                      </label>
-                    </div>
-                  </article>
-                ))}
-
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] border border-dashed border-plum/18 bg-cream/55 px-4 py-4">
-                  <div>
-                    <p className="text-sm font-semibold text-ink">Need another row?</p>
-                    <p className="text-sm leading-6 text-plum/78">
-                      Add one item per tag so the order stays clean for the final payload.
-                    </p>
-                  </div>
+        {/* ── Step 2: Items ────────────────────────────────────────────────── */}
+        {currentStep === 2 ? (
+          <div className="flex flex-col" style={{ gap: 10 }}>
+            {items.map((item, index) => (
+              <div
+                key={item.id}
+                className="border border-line bg-white"
+                style={{ borderRadius: "1.5rem", padding: "16px" }}
+              >
+                <div className="flex items-center justify-between" style={{ marginBottom: 12 }}>
+                  <p className="text-mute" style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.18em" }}>
+                    item {index + 1}
+                  </p>
                   <button
                     type="button"
-                    onClick={addItem}
-                    className="rounded-[1.25rem] bg-plum px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#5c3049]"
+                    onClick={() => removeItem(item.id)}
+                    disabled={items.length === 1}
+                    className="flex items-center justify-center border border-line text-mute transition hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                    style={{ borderRadius: "99px", height: 28, padding: "0 12px", fontSize: 12 }}
                   >
-                    Add item
+                    remove
                   </button>
                 </div>
 
-                {errors.items ? (
-                  <p className="text-sm leading-6 text-[#9c425d]">{errors.items}</p>
-                ) : null}
-              </div>
-            ) : null}
-
-            {currentStep === 3 ? (
-              <div className="grid gap-4">
-                <label className="field-shell">
-                  <span className="field-label">Caption</span>
-                  <textarea
-                    className="field-input min-h-32 resize-none"
-                    value={metadata.caption}
-                    placeholder="Optional caption for the post, memory, or story card."
-                    onChange={(event) => updateMetadata("caption", event.target.value)}
+                <div className="flex flex-col" style={{ gap: 10 }}>
+                  <InputField
+                    label="brand"
+                    optional
+                    value={item.brand}
+                    placeholder="e.g. Zara, vintage, thrift"
+                    onChange={(v) => updateItem(item.id, "brand", v)}
                   />
-                </label>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <label className="field-shell">
-                    <span className="field-label">Event name</span>
-                    <input
-                      className="field-input"
-                      value={metadata.eventName}
-                      placeholder="Birthday dinner, rooftop night, Sunday coffee..."
-                      onChange={(event) => updateMetadata("eventName", event.target.value)}
-                    />
-                  </label>
-
-                  <label className="field-shell">
-                    <span className="field-label">Date worn</span>
-                    <input
-                      type="date"
-                      className="field-input"
-                      value={metadata.wornOn}
-                      onChange={(event) => updateMetadata("wornOn", event.target.value)}
-                    />
-                  </label>
-                </div>
-
-                <div className="rounded-[1.5rem] border border-plum/12 bg-cream/55 px-4 py-4 text-sm leading-6 text-ink-soft">
-                  Context is optional now, but these fields make the vault, event boards,
-                  and AI features much more useful later.
+                  <InputField
+                    label="category"
+                    value={item.category}
+                    placeholder="top, trousers, shoes, bag…"
+                    error={errors.itemCategories[item.id]}
+                    onChange={(v) => updateItem(item.id, "category", v)}
+                  />
+                  <InputField
+                    label="color"
+                    optional
+                    value={item.color}
+                    placeholder="black, ivory, blush…"
+                    onChange={(v) => updateItem(item.id, "color", v)}
+                  />
                 </div>
               </div>
-            ) : null}
+            ))}
 
-            {currentStep === 4 ? (
-              <div className="grid gap-5 lg:grid-cols-[0.52fr_0.48fr]">
-                <div className="rounded-[1.75rem] border border-plum/12 bg-white/80 p-4 sm:p-5">
-                  <div className="overflow-hidden rounded-[1.5rem] bg-cream/55 shadow-card">
-                    {photoPreviewUrl ? (
-                      <img
-                        src={photoPreviewUrl}
-                        alt="Outfit review preview"
-                        className="aspect-[4/5] w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex aspect-[4/5] items-center justify-center px-8 text-center text-sm leading-6 text-plum/78">
-                        Add a photo in Step 1 to unlock the full review card.
-                      </div>
-                    )}
-                  </div>
-                </div>
+            <button
+              type="button"
+              onClick={addItem}
+              className="flex items-center justify-center border border-dashed border-line text-mute transition hover:border-ink hover:text-ink"
+              style={{ borderRadius: "1.5rem", height: 52, fontSize: 13, fontWeight: 500, gap: 6 }}
+            >
+              <svg viewBox="0 0 24 24" style={{ width: 16, height: 16 }} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              add another item
+            </button>
 
-                <div className="grid gap-4">
-                  <section className="rounded-[1.75rem] border border-plum/12 bg-white/78 p-5">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
-                      Tagged items
-                    </p>
-                    <div className="mt-4 grid gap-3">
-                      {items.map((item, index) => (
-                        <div
-                          key={item.id}
-                          className="rounded-[1.25rem] border border-plum/10 bg-cream/55 px-4 py-3"
-                        >
-                          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-ink-soft">
-                            Item {index + 1}
-                          </p>
-                          <p className="mt-2 text-sm text-ink">
-                            {[item.brand.trim(), item.category.trim(), item.color.trim()]
-                              .filter(Boolean)
-                              .join(" / ") || "Missing details"}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </section>
-
-                  <section className="rounded-[1.75rem] border border-plum/12 bg-white/78 p-5">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
-                      Metadata
-                    </p>
-                    <div className="mt-4 grid gap-3 text-sm leading-6 text-ink-soft">
-                      <p>
-                        <span className="font-semibold text-ink">Caption:</span>{" "}
-                        {metadata.caption.trim() || "None yet"}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-ink">Event:</span>{" "}
-                        {metadata.eventName.trim() || "None yet"}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-ink">Date worn:</span>{" "}
-                        {metadata.wornOn || "Not set"}
-                      </p>
-                    </div>
-                  </section>
-
-                  <section className="rounded-[1.75rem] border border-plum/12 bg-cream/65 p-5">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-ink-soft">
-                      Submit mode
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-ink-soft">
-                      Submitting sends your image plus structured metadata to the real
-                      create-outfit endpoint.
-                    </p>
-                  </section>
-                </div>
-              </div>
+            {errors.items ? (
+              <p style={{ fontSize: 13, color: "var(--error)" }}>{errors.items}</p>
             ) : null}
           </div>
+        ) : null}
 
-          <div className="mt-8 flex flex-col-reverse gap-3 border-t border-plum/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={handleBack}
-                disabled={currentStep === 1 || submitState.status === "submitting"}
-                className="rounded-[1.25rem] border border-plum/15 bg-white/80 px-4 py-3 text-sm font-semibold text-plum transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
-              >
-                Back
-              </button>
-
-              <Link
-                href="/vault"
-                className="rounded-[1.25rem] border border-transparent px-4 py-3 text-sm font-semibold text-plum/78 transition hover:bg-cream/60"
-              >
-                Cancel
-              </Link>
+        {/* ── Step 3: Context ──────────────────────────────────────────────── */}
+        {currentStep === 3 ? (
+          <div className="flex flex-col" style={{ gap: 10 }}>
+            <div>
+              <p className="field-label">caption <span className="font-normal normal-case tracking-normal text-mute">(optional)</span></p>
+              <textarea
+                className="w-full resize-none rounded-md border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-pink-deep focus:ring-2 focus:ring-pink/40"
+                style={{ minHeight: 96 }}
+                value={metadata.caption}
+                placeholder="What was the vibe? Where were you going?"
+                onChange={(e) => updateMetadata("caption", e.target.value)}
+              />
             </div>
 
-            {currentStep < 4 ? (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="rounded-[1.35rem] bg-plum px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#5c3049]"
-              >
-                Continue to {steps[currentStep].label}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  void handleSubmit();
-                }}
-                disabled={submitState.status === "submitting"}
-                className="rounded-[1.35rem] bg-plum px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#5c3049] disabled:cursor-not-allowed disabled:opacity-55"
-              >
-                {submitState.status === "submitting" ? "Uploading outfit..." : "Submit outfit"}
-              </button>
-            )}
+            <InputField
+              label="event"
+              optional
+              value={metadata.eventName}
+              placeholder="birthday dinner, rooftop, Sunday coffee…"
+              onChange={(v) => updateMetadata("eventName", v)}
+            />
+
+            <InputField
+              label="date worn"
+              optional
+              type="date"
+              value={metadata.wornOn}
+              onChange={(v) => updateMetadata("wornOn", v)}
+            />
           </div>
-        </div>
+        ) : null}
+
+        {/* ── Step 4: Review ───────────────────────────────────────────────── */}
+        {currentStep === 4 ? (
+          <div className="flex flex-col" style={{ gap: 12 }}>
+            {/* Photo thumbnail */}
+            <div
+              className="overflow-hidden bg-pink-soft"
+              style={{ borderRadius: "1.5rem", aspectRatio: "4/5", width: "100%", maxHeight: 320, objectFit: "cover" }}
+            >
+              {photoPreviewUrl ? (
+                <img
+                  src={photoPreviewUrl}
+                  alt="Outfit review"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", maxHeight: 320 }}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-mute" style={{ fontSize: 13 }}>
+                  No photo
+                </div>
+              )}
+            </div>
+
+            {/* Items summary */}
+            <div
+              className="border border-line bg-white"
+              style={{ borderRadius: "1.5rem", padding: "16px" }}
+            >
+              <p className="text-mute" style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.18em", marginBottom: 10 }}>
+                tagged items
+              </p>
+              <div className="flex flex-col" style={{ gap: 6 }}>
+                {items.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="border border-line bg-paper"
+                    style={{ borderRadius: "0.9rem", padding: "8px 12px" }}
+                  >
+                    <p style={{ fontSize: 11, color: "var(--mute)", marginBottom: 2 }}>item {index + 1}</p>
+                    <p style={{ fontSize: 13, color: "var(--ink)" }}>
+                      {[item.brand.trim(), item.category.trim(), item.color.trim()].filter(Boolean).join(" · ") || "missing details"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Metadata summary */}
+            {(metadata.caption || metadata.eventName || metadata.wornOn) ? (
+              <div
+                className="border border-line bg-white"
+                style={{ borderRadius: "1.5rem", padding: "16px" }}
+              >
+                <p className="text-mute" style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.18em", marginBottom: 10 }}>
+                  context
+                </p>
+                <div className="flex flex-col" style={{ gap: 4 }}>
+                  {metadata.caption ? <p style={{ fontSize: 13, color: "var(--ink)" }}>"{metadata.caption}"</p> : null}
+                  {metadata.eventName ? <p style={{ fontSize: 12, color: "var(--mute)" }}>{metadata.eventName}</p> : null}
+                  {metadata.wornOn ? <p style={{ fontSize: 12, color: "var(--mute)" }}>{metadata.wornOn}</p> : null}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </div>
-    </section>
+
+      {/* ── Bottom action bar ────────────────────────────────────────────── */}
+      <div
+        className="fixed bottom-0 left-0 right-0 border-t border-line bg-paper"
+        style={{ padding: "12px 20px 32px", display: "flex", gap: 10 }}
+      >
+        {currentStep > 1 ? (
+          <button
+            type="button"
+            onClick={handleBack}
+            disabled={submitState.status === "submitting"}
+            className="flex items-center justify-center border border-line bg-white text-ink transition hover:border-ink disabled:opacity-40"
+            style={{ borderRadius: "99px", height: 48, width: 48, flexShrink: 0 }}
+          >
+            <svg viewBox="0 0 24 24" style={{ width: 18, height: 18 }} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+        ) : null}
+
+        {currentStep < 4 ? (
+          <button
+            type="button"
+            onClick={handleNext}
+            className="flex flex-1 items-center justify-center bg-ink text-paper transition hover:opacity-90"
+            style={{ borderRadius: "99px", height: 48, fontSize: 15, fontWeight: 600 }}
+          >
+            continue
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void handleSubmit()}
+            disabled={submitState.status === "submitting"}
+            className="flex flex-1 items-center justify-center bg-ink text-paper transition hover:opacity-90 disabled:opacity-50"
+            style={{ borderRadius: "99px", height: 48, fontSize: 15, fontWeight: 600 }}
+          >
+            {submitState.status === "submitting" ? "uploading…" : "post outfit"}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
-function StatusBanner({
-  tone,
-  message,
-  className = ""
-}: {
-  tone: "success" | "error";
-  message: string;
-  className?: string;
-}) {
-  const toneClasses =
-    tone === "success"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-      : "border-rose/25 bg-rose/10 text-error";
+// ── Shared field helper ───────────────────────────────────────────────────────
 
+function InputField({
+  label,
+  optional,
+  value,
+  placeholder,
+  error,
+  type = "text",
+  onChange,
+}: {
+  label: string;
+  optional?: boolean;
+  value: string;
+  placeholder?: string;
+  error?: string;
+  type?: string;
+  onChange: (v: string) => void;
+}) {
   return (
-    <div className={`rounded-[1.25rem] border px-4 py-3 text-sm ${toneClasses} ${className}`}>
-      {message}
+    <div>
+      <p className="field-label">
+        {label}
+        {optional ? <span className="ml-1 font-normal normal-case tracking-normal text-mute">(optional)</span> : null}
+      </p>
+      <div className={`field-shell ${error ? "border-rose/60 bg-rose/5" : ""}`}>
+        <input
+          type={type}
+          className="field-input"
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </div>
+      {error ? (
+        <p style={{ fontSize: 12, color: "var(--error)", marginTop: 4 }}>{error}</p>
+      ) : null}
     </div>
   );
 }
