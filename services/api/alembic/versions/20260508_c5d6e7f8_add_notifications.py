@@ -16,9 +16,15 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # Guard against the type already existing (e.g. from a failed partial run or
+    # a test DB that was only partially rolled back).
     op.execute(
+        "DO $$ BEGIN "
+        "IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationtype') THEN "
         "CREATE TYPE notificationtype AS ENUM "
-        "('follow', 'like', 'comment', 'board_join', 'board_outfit')"
+        "('follow', 'like', 'comment', 'board_join', 'board_outfit'); "
+        "END IF; "
+        "END $$;"
     )
 
     op.create_table(
@@ -84,4 +90,4 @@ def downgrade() -> None:
     op.drop_index("ix_notifications_recipient_seen", table_name="notifications")
     op.drop_index("ix_notifications_recipient_id", table_name="notifications")
     op.drop_table("notifications")
-    op.execute("DROP TYPE notificationtype")
+    op.execute("DROP TYPE IF EXISTS notificationtype")
