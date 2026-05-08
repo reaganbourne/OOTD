@@ -156,8 +156,8 @@ test.describe("protected routes", () => {
     // step 1 heading is now "add your photo" (font-display, no h-role — use text match)
     await expect(page.getByText(/add your photo/i)).toBeVisible();
 
-    // continue button now just says "continue"
-    await page.getByRole("button", { name: /^continue$/i }).click();
+    // step 1 advance button says "looks good"
+    await page.getByRole("button", { name: /^looks good$/i }).click();
 
     // updated error copy from the new upload-flow
     await expect(page.getByText(/a photo is required/i)).toBeVisible();
@@ -178,14 +178,14 @@ test.describe("protected routes", () => {
       buffer: Buffer.from("fake image bytes")
     });
 
-    // all navigation now uses a single "continue" button
-    await page.getByRole("button", { name: /^continue$/i }).click();
+    // step 1 → "looks good", step 2 → "add context", step 3 → "review it"
+    await page.getByRole("button", { name: /^looks good$/i }).click();
     // step 2 — fill category
     await page.getByPlaceholder(/top, trousers, shoes/i).fill("Dress");
-    await page.getByRole("button", { name: /^continue$/i }).click();
+    await page.getByRole("button", { name: /^add context$/i }).click();
     // step 3 — fill caption
     await page.getByPlaceholder(/what was the vibe/i).fill("Smoke test fit");
-    await page.getByRole("button", { name: /^continue$/i }).click();
+    await page.getByRole("button", { name: /^review it$/i }).click();
     // step 4 — submit; button now says "post outfit"
     await page.getByRole("button", { name: /post outfit/i }).click();
 
