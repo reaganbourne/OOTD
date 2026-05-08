@@ -59,11 +59,11 @@ function CreateBoardModal({ onClose, onCreate }: {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(36,21,28,0.38)] px-4 pb-4 sm:items-center sm:pb-0 backdrop-blur-sm">
       <div className="soft-panel w-full max-w-md px-6 py-7">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display text-2xl tracking-[-0.03em] text-ink">New board</h2>
+          <h2 className="font-display text-2xl tracking-[-0.03em] text-ink">new board</h2>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-rose/12 text-mute transition hover:border-rose/22 hover:text-plum"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-mute transition hover:border-pink-deep/25 hover:text-ink"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18M6 6l12 12" />
@@ -104,14 +104,14 @@ function CreateBoardModal({ onClose, onCreate }: {
           </div>
 
           {error ? (
-            <p className="rounded-[1rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">{error}</p>
+            <p className="rounded-[1rem] border border-pink-deep/25 bg-pink-soft px-4 py-3 text-sm text-error">{error}</p>
           ) : null}
 
           <div className="flex gap-3 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-[1.2rem] border border-rose/12 bg-white py-3.5 text-sm font-semibold text-plum transition hover:border-rose/22"
+              className="flex-1 rounded-[1.2rem] border border-line bg-white py-3.5 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25"
             >
               Cancel
             </button>
@@ -139,11 +139,11 @@ function BoardCard({ board }: { board: Board }) {
   return (
     <Link
       href={`/boards/${board.id}`}
-      className={`group block overflow-hidden rounded-[1.75rem] border bg-white transition hover:-translate-y-0.5 hover:border-rose/22 ${expired ? "border-rose/8 opacity-60" : "border-rose/10"}`}
+      className={`group block overflow-hidden rounded-[1.75rem] border bg-white transition hover:-translate-y-0.5 hover:border-pink-deep/25 ${expired ? "border-line/40 opacity-60" : "border-line"}`}
     >
       <div className="bg-pink-soft px-5 pt-5 pb-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-rose/15 bg-white/80 text-pink-deep">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-line bg-white/80 text-pink-deep">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
               <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
@@ -151,7 +151,7 @@ function BoardCard({ board }: { board: Board }) {
               <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
             </svg>
           </div>
-          <span className={`rounded-full px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] ${expired ? "bg-rose/10 text-mute" : "bg-white/80 text-pink-deep"}`}>
+          <span className={`rounded-full px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] ${expired ? "bg-line/40 text-mute" : "bg-white/80 text-pink-deep"}`}>
             {expiryLabel}
           </span>
         </div>
@@ -226,7 +226,7 @@ export default function BoardsPage() {
 
   return (
     <>
-      <main className="pb-28">
+      <main className="pb-28 lg:pb-0 lg:pt-16">
         <div className="mx-auto max-w-3xl">
 
           {/* Topbar — matches design 03.01 */}
@@ -273,14 +273,14 @@ export default function BoardsPage() {
           <div className="px-4 sm:px-5">
 
           {errorMessage ? (
-            <div className="mb-5 rounded-[1.25rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">{errorMessage}</div>
+            <div className="mb-5 rounded-[1.25rem] border border-pink-deep/25 bg-pink-soft px-4 py-3 text-sm text-error">{errorMessage}</div>
           ) : null}
 
           {/* Loading skeletons */}
           {status === "loading" ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse overflow-hidden rounded-[1.75rem] border border-rose/10 bg-white">
+                <div key={i} className="animate-pulse overflow-hidden rounded-[1.75rem] border border-line bg-white">
                   <div className="h-20 bg-[linear-gradient(120deg,_rgba(255,236,242,0.8),_rgba(255,255,255,0.98))]" />
                   <div className="space-y-2 px-5 py-4">
                     <div className="h-4 w-2/3 rounded-full bg-pink-soft" />
@@ -294,7 +294,7 @@ export default function BoardsPage() {
           {/* Empty state */}
           {status === "ready" && boards.length === 0 ? (
             <section className="soft-panel px-6 py-10 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-rose/12 bg-pink-soft text-pink-deep">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-line bg-pink-soft text-pink-deep">
                 <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
                   <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
@@ -302,7 +302,7 @@ export default function BoardsPage() {
                   <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
                 </svg>
               </div>
-              <h2 className="mt-5 text-3xl text-ink">No boards yet</h2>
+              <h2 className="mt-5 text-3xl text-ink">no boards yet</h2>
               <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
                 Boards are private spaces for an event — create one and invite your crew to post their looks together.
               </p>

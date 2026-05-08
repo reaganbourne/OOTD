@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { apiClient, type UserSearchResult } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 
-const STORAGE_KEY = "ootd_onboarded";
+const STORAGE_KEY = "checkd_onboarded";
 type FollowMap = Record<string, { following: boolean }>;
 
 function getInitial(displayName?: string | null, username?: string | null) {
@@ -46,7 +46,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
       <h1 className="mt-8 text-3xl leading-tight text-ink sm:text-4xl">
         your fit diary<br />starts here.
       </h1>
-      <p className="mt-4 max-w-xs text-sm leading-6 text-plum/64">
+      <p className="mt-4 max-w-xs text-sm leading-6 text-ink-soft/70">
         Log every look, revisit your style history, and see how your taste evolves — one outfit at a time.
       </p>
       <button
@@ -79,7 +79,7 @@ function UserSuggestionRow({
         <img
           src={user.profile_image_url}
           alt={user.display_name ?? user.username ?? ""}
-          className="h-11 w-11 shrink-0 rounded-full border border-plum/10 object-cover"
+          className="h-11 w-11 shrink-0 rounded-full border border-line object-cover"
         />
       ) : (
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pink-soft text-sm font-semibold text-ink-soft">
@@ -137,12 +137,12 @@ function StepFollow({
 
   return (
     <div className="w-full">
-      <h2 className="text-2xl text-ink">Find people to follow</h2>
+      <h2 className="text-2xl text-ink">find people to follow</h2>
       <p className="mt-1.5 text-sm text-mute">
         See what the community is wearing. You can always find more later.
       </p>
 
-      <div className="mt-5 divide-y divide-rose/6">
+      <div className="mt-5 divide-y divide-line/40">
         {loading
           ? Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 py-3">
@@ -182,7 +182,7 @@ function StepUpload({ onDone }: { onDone: () => void }) {
   return (
     <div className="flex flex-col items-center text-center">
       {/* Decorative outfit frame */}
-      <div className="flex h-36 w-28 items-center justify-center rounded-[1.75rem] border-2 border-dashed border-rose/25 bg-pink-soft">
+      <div className="flex h-36 w-28 items-center justify-center rounded-[1.75rem] border-2 border-dashed border-pink-deep/25 bg-pink-soft">
         <svg viewBox="0 0 24 24" className="h-10 w-10 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="17 8 12 3 7 8" />
@@ -193,7 +193,7 @@ function StepUpload({ onDone }: { onDone: () => void }) {
       <h2 className="mt-7 text-2xl leading-tight text-ink sm:text-3xl">
         Upload your first fit
       </h2>
-      <p className="mt-3 max-w-xs text-sm leading-6 text-plum/64">
+      <p className="mt-3 max-w-xs text-sm leading-6 text-ink-soft/70">
         Drop your outfit photo and get an instant vibe check — our AI will tag your style and kick off your archive.
       </p>
 
@@ -207,7 +207,7 @@ function StepUpload({ onDone }: { onDone: () => void }) {
       <button
         type="button"
         onClick={onDone}
-        className="mt-3 text-sm text-mute transition hover:text-plum"
+        className="mt-3 text-sm text-mute transition hover:text-ink"
       >
         Maybe later
       </button>
@@ -279,7 +279,7 @@ export default function OnboardingPage() {
         <button
           type="button"
           onClick={skip}
-          className="text-[0.8rem] text-plum/46 transition hover:text-plum"
+          className="text-[0.8rem] text-mute/60 transition hover:text-ink"
         >
           Skip
         </button>

@@ -100,7 +100,7 @@ export function OutfitDetailView({ id }: { id: string }) {
           <p className="font-display text-5xl text-pink-deep">checkd</p>
           <h1 className="mt-4 text-3xl text-ink">Outfit not found</h1>
           <p className="mt-3 text-sm leading-6 text-ink-soft">This look may have been removed.</p>
-          <Link href="/feed" className="mt-6 inline-block rounded-[1.2rem] border border-rose/15 bg-white px-5 py-3 text-sm font-semibold text-plum transition hover:border-rose/25">
+          <Link href="/feed" className="mt-6 inline-flex items-center justify-center rounded-[1.2rem] border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25">
             Back to feed
           </Link>
         </div>
@@ -123,7 +123,7 @@ export function OutfitDetailView({ id }: { id: string }) {
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex items-center gap-1.5 text-sm text-mute transition hover:text-plum"
+              className="flex items-center gap-1.5 text-sm text-mute transition hover:text-ink"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m15 18-6-6 6-6" />
@@ -134,7 +134,7 @@ export function OutfitDetailView({ id }: { id: string }) {
             <button
               type="button"
               onClick={() => setShowShare(true)}
-              className="flex items-center gap-2 rounded-full border border-rose/15 bg-white px-4 py-2.5 text-[0.78rem] font-semibold text-plum transition hover:border-rose/28"
+              className="flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 text-[0.78rem] font-semibold text-ink-soft transition hover:border-pink-deep/30"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="18" cy="5" r="3" />
@@ -154,7 +154,7 @@ export function OutfitDetailView({ id }: { id: string }) {
               {status === "loading" ? (
                 <div className="aspect-[4/5] w-full animate-pulse rounded-[2rem] bg-[linear-gradient(120deg,_rgba(255,236,242,0.8),_rgba(255,255,255,0.98),_rgba(250,216,225,0.62))]" />
               ) : (
-                <div className="relative overflow-hidden rounded-[2rem] border border-rose/10 bg-white shadow-[0_24px_60px_rgba(244,106,147,0.12)]">
+                <div className="relative overflow-hidden rounded-[2rem] border border-line bg-white shadow-[0_24px_60px_rgba(244,106,147,0.12)]">
                   <img
                     src={outfit?.image_url}
                     alt={outfit?.caption ?? "Outfit photo"}
@@ -186,16 +186,16 @@ export function OutfitDetailView({ id }: { id: string }) {
               ) : outfit?.owner ? (
                 <Link
                   href={`/profile/${outfit.owner.username}`}
-                  className="soft-panel flex items-center gap-3 px-5 py-4 transition hover:border-rose/18"
+                  className="soft-panel flex items-center gap-3 px-5 py-4 transition hover:border-pink-deep/20"
                 >
                   {outfit.owner.profile_image_url ? (
                     <img
                       src={outfit.owner.profile_image_url}
                       alt={outfit.owner.username ?? ""}
-                      className="h-11 w-11 rounded-full border border-plum/10 object-cover"
+                      className="h-11 w-11 rounded-full border border-line object-cover"
                     />
                   ) : (
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-plum/14 bg-pink-soft text-sm font-semibold text-ink-soft">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-pink-soft text-sm font-semibold text-ink-soft">
                       {(outfit.owner.display_name ?? outfit.owner.username ?? "?").charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -207,7 +207,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                       <p className="text-[0.7rem] text-mute">@{outfit.owner.username}</p>
                     ) : null}
                   </div>
-                  <svg viewBox="0 0 24 24" className="ml-auto h-4 w-4 shrink-0 text-plum/30" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="ml-auto h-4 w-4 shrink-0 text-mute/40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m9 18 6-6-6-6" />
                   </svg>
                 </Link>
@@ -238,7 +238,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                     ) : null}
 
                     {outfit?.vibe_check_text ? (
-                      <div className="rounded-[1rem] border border-rose/10 bg-pink-soft px-4 py-3">
+                      <div className="rounded-[1rem] border border-line bg-pink-soft px-4 py-3">
                         <p className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-pink-deep">Vibe check</p>
                         <p className="text-sm leading-6 text-ink-soft">{outfit.vibe_check_text}</p>
                       </div>
@@ -265,7 +265,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                             href={item.link_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="shrink-0 rounded-full border border-rose/15 px-3 py-1 text-[0.68rem] font-semibold text-pink-deep transition hover:border-rose/28"
+                            className="shrink-0 rounded-full border border-line px-3 py-1 text-[0.68rem] font-semibold text-pink-deep transition hover:border-pink-deep/30"
                           >
                             Shop
                           </a>
@@ -285,7 +285,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                   className={`flex flex-1 items-center justify-center gap-2 rounded-[1.2rem] border py-3.5 text-sm font-semibold transition disabled:cursor-default ${
                     liked
                       ? "border-[#f6a9be] bg-pink-soft text-pink-deep"
-                      : "border-rose/15 bg-white text-plum hover:border-rose/28"
+                      : "border-line bg-white text-ink-soft hover:border-pink-deep/30"
                   }`}
                 >
                   <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -297,7 +297,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                 <button
                   type="button"
                   onClick={() => setShowComments(true)}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-[1.2rem] border border-rose/15 bg-white py-3.5 text-sm font-semibold text-plum transition hover:border-rose/28"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-[1.2rem] border border-line bg-white py-3.5 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/30"
                 >
                   <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -308,7 +308,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                 <button
                   type="button"
                   onClick={() => setShowShare(true)}
-                  className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-rose/15 bg-white p-3.5 text-mute transition hover:border-rose/28 hover:text-plum"
+                  className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-line bg-white p-3.5 text-mute transition hover:border-pink-deep/30 hover:text-ink"
                   aria-label="Share"
                 >
                   <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -323,7 +323,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                 {isOwn ? (
                   <Link
                     href="/vault"
-                    className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-rose/15 bg-white p-3.5 text-mute transition hover:border-rose/28 hover:text-plum"
+                    className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-line bg-white p-3.5 text-mute transition hover:border-pink-deep/30 hover:text-ink"
                     aria-label="View in vault"
                   >
                     <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">

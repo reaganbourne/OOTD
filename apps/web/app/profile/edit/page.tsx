@@ -249,7 +249,7 @@ export default function EditProfilePage() {
   const isSaving = saveStatus === "saving";
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
+    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-lg">
 
         {/* ── Top bar ─────────────────────────────────────────────────────── */}
@@ -272,7 +272,7 @@ export default function EditProfilePage() {
 
         {/* ── Title ───────────────────────────────────────────────────────── */}
         <div className="mb-6">
-          <h1 className="font-display text-3xl tracking-[-0.03em] text-ink">Edit profile</h1>
+          <h1 className="font-display text-3xl tracking-[-0.03em] text-ink">edit profile</h1>
           <p className="mt-1 text-sm text-mute">Changes are visible on your public profile</p>
         </div>
 
@@ -307,7 +307,7 @@ export default function EditProfilePage() {
                 placeholder="Your name"
                 maxLength={60}
                 disabled={isSaving}
-                className="mt-2 w-full rounded-2xl border border-rose/12 bg-white/70 px-4 py-3 text-sm text-ink placeholder-plum/35 outline-none transition focus:border-[#ef5f8a]/40 focus:ring-2 focus:ring-[#ef5f8a]/12 disabled:opacity-50"
+                className="mt-2 w-full rounded-2xl border border-line bg-white/70 px-4 py-3 text-sm text-ink placeholder:text-mute/40 outline-none transition focus:border-pink-deep/40 focus:ring-2 focus:ring-pink-deep/12 disabled:opacity-50"
               />
               {fieldErrors.display_name ? (
                 <p className="mt-1.5 text-xs text-error">{fieldErrors.display_name}</p>
@@ -334,10 +334,10 @@ export default function EditProfilePage() {
                   placeholder="yourhandle"
                   maxLength={30}
                   disabled={isSaving}
-                  className="w-full rounded-2xl border border-rose/12 bg-white/70 py-3 pl-8 pr-4 text-sm text-ink placeholder-plum/35 outline-none transition focus:border-[#ef5f8a]/40 focus:ring-2 focus:ring-[#ef5f8a]/12 disabled:opacity-50"
+                  className="w-full rounded-2xl border border-line bg-white/70 py-3 pl-8 pr-4 text-sm text-ink placeholder:text-mute/40 outline-none transition focus:border-pink-deep/40 focus:ring-2 focus:ring-pink-deep/12 disabled:opacity-50"
                 />
                 {usernameStatus === "checking" ? (
-                  <svg className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-plum/35" viewBox="0 0 24 24" fill="none">
+                  <svg className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-mute/40" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                   </svg>
@@ -370,7 +370,7 @@ export default function EditProfilePage() {
                 placeholder="A little about your style…"
                 rows={3}
                 disabled={isSaving}
-                className="mt-2 w-full resize-none rounded-2xl border border-rose/12 bg-white/70 px-4 py-3 text-sm text-ink placeholder-plum/35 outline-none transition focus:border-[#ef5f8a]/40 focus:ring-2 focus:ring-[#ef5f8a]/12 disabled:opacity-50"
+                className="mt-2 w-full resize-none rounded-2xl border border-line bg-white/70 px-4 py-3 text-sm text-ink placeholder:text-mute/40 outline-none transition focus:border-pink-deep/40 focus:ring-2 focus:ring-pink-deep/12 disabled:opacity-50"
               />
               {fieldErrors.bio ? (
                 <p className="mt-1.5 text-xs text-error">{fieldErrors.bio}</p>
@@ -380,7 +380,7 @@ export default function EditProfilePage() {
 
           {/* ── Error banner ──────────────────────────────────────────────── */}
           {saveError ? (
-            <div className="mb-4 rounded-[1.25rem] border border-rose/25 bg-pink-soft px-4 py-3 text-sm text-error">
+            <div className="mb-4 rounded-[1.25rem] border border-pink-deep/25 bg-pink-soft px-4 py-3 text-sm text-error">
               {saveError}
             </div>
           ) : null}
@@ -399,7 +399,7 @@ export default function EditProfilePage() {
               type="button"
               onClick={() => router.back()}
               disabled={isSaving}
-              className="w-full rounded-[1.5rem] border border-plum/12 bg-white/80 px-5 py-4 text-sm font-semibold text-plum transition hover:bg-white disabled:opacity-50"
+              className="w-full rounded-[1.5rem] border border-line bg-white/80 px-5 py-4 text-sm font-semibold text-ink-soft transition hover:bg-white disabled:opacity-50"
             >
               Cancel
             </button>

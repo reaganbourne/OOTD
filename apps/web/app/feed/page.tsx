@@ -140,7 +140,7 @@ function BoardActivityCard({
       <OutfitCard outfit={toBoardCardData(outfit)} showAuthor />
       {/* Board name badge */}
       <div className="pointer-events-none absolute left-3 bottom-[4.5rem] right-3">
-        <span className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-plum/10 bg-white/88 px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-ink-soft backdrop-blur">
+        <span className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-line bg-white/88 px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-ink-soft backdrop-blur">
           <svg viewBox="0 0 24 24" className="h-3 w-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
             <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
@@ -220,17 +220,17 @@ function VaultFeedTab({ displayName }: { displayName: string }) {
       <section className="soft-panel p-6 sm:p-8">
         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">Empty feed</p>
         <h2 className="mt-4 max-w-2xl text-4xl leading-tight text-ink sm:text-5xl">
-          Your feed is ready. It just needs people.
+          your feed is ready. it just needs people.
         </h2>
         <p className="mt-4 max-w-2xl text-sm leading-7 text-ink-soft sm:text-base">
           Once you follow people, their outfits will land here newest first. Until then, keep building your own archive.
         </p>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <Link href="/upload" className="btn-primary">
-            Upload your next outfit
+            upload your next outfit
           </Link>
-          <Link href="/vault" className="rounded-[1.2rem] border border-rose/12 bg-white px-5 py-4 text-center text-sm font-semibold text-plum transition hover:border-rose/22">
-            Browse your vault
+          <Link href="/vault" className="rounded-[1.2rem] border border-line bg-white px-5 py-4 text-center text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25">
+            browse your vault
           </Link>
         </div>
       </section>
@@ -370,11 +370,11 @@ function BoardsActivityTab() {
     return (
       <section className="soft-panel p-6 sm:p-8">
         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">No boards yet</p>
-        <h2 className="mt-4 text-4xl leading-tight text-ink">Join a board to see activity here</h2>
+        <h2 className="mt-4 text-4xl leading-tight text-ink">join a board to see activity here</h2>
         <p className="mt-4 text-sm leading-7 text-ink-soft">
           Boards are where you coordinate looks with friends for events. Get an invite link from someone to join.
         </p>
-        <Link href="/boards" className="mt-6 inline-block btn-primary">
+        <Link href="/boards" className="mt-6 btn-primary">
           Go to boards
         </Link>
       </section>
@@ -401,12 +401,12 @@ function BoardsActivityTab() {
               href={`/boards/${section.board.id}`}
               className="shrink-0 text-[0.72rem] font-semibold text-pink-deep hover:underline"
             >
-              View board →
+              view board →
             </Link>
           </div>
 
           {section.outfits.length === 0 ? (
-            <p className="rounded-2xl border border-rose/10 bg-white/70 px-4 py-5 text-sm text-mute">
+            <p className="rounded-2xl border border-line bg-white/70 px-4 py-5 text-sm text-mute">
               No outfits posted yet.
             </p>
           ) : (
@@ -464,7 +464,7 @@ export default function FeedPage() {
   }
 
   return (
-    <main className="pb-28">
+    <main className="pb-28 lg:pb-0 lg:pt-16">
       <div className="mx-auto max-w-7xl">
 
         {/* ── Topbar ─────────────────────────────────────────────────── */}
@@ -486,33 +486,35 @@ export default function FeedPage() {
 
           <div className="flex items-center" style={{ gap: 6 }}>
             {/* Explore */}
-            <button
-              type="button"
+            <Link
+              href="/explore"
               aria-label="Explore"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink"
               style={{ width: 36, height: 36 }}
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
                 <circle cx="12" cy="12" r="9" /><path d="m14.5 9.5-5 2-2 5 5-2 2-5z" />
               </svg>
-            </button>
+            </Link>
             {/* Search */}
-            <button
-              type="button"
+            <Link
+              href="/search"
               aria-label="Search"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink"
               style={{ width: 36, height: 36 }}
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
                 <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
               </svg>
-            </button>
-            {/* Bell */}
+            </Link>
+            {/* Bell — notification center coming soon */}
             <button
               type="button"
               aria-label="Notifications"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
+              title="Notifications coming soon"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute opacity-50"
               style={{ width: 36, height: 36 }}
+              disabled
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
                 <path d="M6.5 10a5.5 5.5 0 1 1 11 0c0 5 2 6 2 6h-15s2-1 2-6" /><path d="M10 19a2 2 0 0 0 4 0" />

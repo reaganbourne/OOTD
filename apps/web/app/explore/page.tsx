@@ -72,12 +72,12 @@ function UserChip({
   const initial = (user.display_name?.trim() || user.username?.trim() || "?").charAt(0).toUpperCase();
 
   return (
-    <div className="flex shrink-0 items-center gap-2 rounded-[1.25rem] border border-rose/10 bg-white px-3 py-2">
+    <div className="flex shrink-0 items-center gap-2 rounded-[1.25rem] border border-line bg-white px-3 py-2">
       {user.profile_image_url ? (
         <img
           src={user.profile_image_url}
           alt={user.username ?? ""}
-          className="h-8 w-8 shrink-0 rounded-full border border-plum/10 object-cover"
+          className="h-8 w-8 shrink-0 rounded-full border border-line object-cover"
         />
       ) : (
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pink-soft text-xs font-semibold text-ink-soft">
@@ -127,7 +127,7 @@ function WhoToFollowRail({
           ? Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="flex h-12 w-44 shrink-0 animate-pulse items-center gap-2 rounded-[1.25rem] border border-rose/10 bg-pink-soft px-3"
+                className="flex h-12 w-44 shrink-0 animate-pulse items-center gap-2 rounded-[1.25rem] border border-line bg-pink-soft px-3"
               />
             ))
           : users.map((user) => (
@@ -245,7 +245,7 @@ export default function ExplorePage() {
   }
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
+    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-3xl">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -253,7 +253,7 @@ export default function ExplorePage() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <p className="font-display text-[2.2rem] leading-none text-pink-deep">
-            checkd
+                checkd
               </p>
               <p className="mt-1 text-sm text-mute">Explore</p>
             </div>
@@ -303,10 +303,10 @@ export default function ExplorePage() {
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">
                 Nothing yet
               </p>
-              <h2 className="mt-3 text-2xl text-ink">Follow some people to see outfits here</h2>
+              <h2 className="mt-3 text-2xl text-ink">follow some people to see outfits here</h2>
               <Link
                 href="/search"
-                className="mt-5 inline-block btn-primary"
+                className="mt-5 btn-primary"
               >
                 Find people to follow
               </Link>
@@ -341,7 +341,7 @@ export default function ExplorePage() {
               <button
                 type="button"
                 onClick={() => router.refresh()}
-                className="mt-4 rounded-full border border-rose/12 bg-white px-4 py-2.5 text-sm font-semibold text-plum transition hover:border-rose/22"
+                className="mt-4 rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25"
               >
                 Refresh
               </button>

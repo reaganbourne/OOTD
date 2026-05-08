@@ -44,7 +44,20 @@ a {
   h3,
   h4 {
     font-family: var(--font-display), serif;
+    text-wrap: pretty;
   }
+}
+
+/* Focus rings — 1.5px pink-deep, 2px offset */
+:focus-visible {
+  outline: 1.5px solid var(--pink-deep);
+  outline-offset: 2px;
+}
+
+/* Instant press feedback on interactive elements */
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  opacity: 0.78;
 }
 
 @layer components {
@@ -95,6 +108,17 @@ a {
   /* Bottom nav dock */
   .mobile-dock {
     @apply flex w-full max-w-sm items-center justify-between rounded-xl border border-line bg-white px-3 py-2;
+  }
+
+  /* Skeleton stripe — 45° diagonal pink stripes over pink-soft */
+  .skeleton-stripe {
+    background: repeating-linear-gradient(
+      45deg,
+      var(--pink-soft) 0px,
+      var(--pink-soft) 12px,
+      #f3dde9 12px,
+      #f3dde9 24px
+    );
   }
 
   /* Primary CTA */

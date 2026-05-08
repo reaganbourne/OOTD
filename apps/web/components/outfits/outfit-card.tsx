@@ -147,9 +147,9 @@ function getToneClasses(tone?: string | null) {
 
   return (
     TONE_STYLES[normalizedTone] ?? {
-      border: "border-plum/16",
+      border: "border-ink-soft/16",
       background: "bg-white/88",
-      text: "text-plum"
+      text: "text-ink-soft"
     }
   );
 }
@@ -180,6 +180,7 @@ export function OutfitCard({
         <img
           src={outfit.imageUrl}
           alt={outfit.caption?.trim() || "Outfit card photo"}
+          loading="lazy"
           className="aspect-[4/5] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
         />
 
@@ -295,7 +296,7 @@ export function OutfitCardSkeleton({
 }) {
   return (
     <article className="overflow-hidden rounded-xl border border-line bg-white">
-      <div className="aspect-[4/5] w-full animate-pulse bg-pink-soft" />
+      <div className="skeleton-stripe aspect-[4/5] w-full animate-pulse" />
       <div className="space-y-3 px-3.5 py-3.5">
         {showAuthor ? (
           <div className="flex items-center gap-2.5">
