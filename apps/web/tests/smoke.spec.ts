@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const apiBase = "http://localhost:8000";
-const appOrigin = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+const appOrigin = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 const appHostname = new URL(appOrigin).hostname;
 const authUser = {
   id: "11111111-1111-4111-8111-111111111111",
