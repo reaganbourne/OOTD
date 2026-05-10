@@ -277,56 +277,53 @@ export function OutfitDetailView({ id }: { id: string }) {
               ) : null}
 
               {/* Like + comments + share actions */}
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => void handleLike()}
                   disabled={likeLoading || !isAuthenticated}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-[1.2rem] border py-3.5 text-sm font-semibold transition disabled:cursor-default ${
+                  className={`inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full border text-xs font-medium transition disabled:cursor-default ${
                     liked
-                      ? "border-[#f6a9be] bg-pink-soft text-pink-deep"
+                      ? "border-pink-deep/40 bg-pink-soft text-pink-deep"
                       : "border-line bg-white text-ink-soft hover:border-pink-deep/30"
                   }`}
                 >
-                  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
-                  {likeCount > 0 ? likeCount.toLocaleString() : "Like"}
+                  {likeCount > 0 ? likeCount.toLocaleString() : "like"}
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setShowComments(true)}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-[1.2rem] border border-line bg-white py-3.5 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/30"
+                  className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full border border-line bg-white text-xs font-medium text-ink-soft transition hover:border-pink-deep/30"
                 >
-                  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
-                  Comments
+                  comments
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setShowShare(true)}
-                  className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-line bg-white p-3.5 text-mute transition hover:border-pink-deep/30 hover:text-ink"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep/30 hover:text-ink"
                   aria-label="Share"
                 >
-                  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="18" cy="5" r="3" />
-                    <circle cx="6" cy="12" r="3" />
-                    <circle cx="18" cy="19" r="3" />
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                   </svg>
                 </button>
 
                 {isOwn ? (
                   <Link
                     href="/vault"
-                    className="flex aspect-square items-center justify-center rounded-[1.2rem] border border-line bg-white p-3.5 text-mute transition hover:border-pink-deep/30 hover:text-ink"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep/30 hover:text-ink"
                     aria-label="View in vault"
                   >
-                    <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M7 7.5A2.5 2.5 0 0 1 9.5 5h5A2.5 2.5 0 0 1 17 7.5V9H7V7.5Z" />
                       <path d="M6 9h12v9.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V9Z" />
                       <path d="M10 13h4" />
