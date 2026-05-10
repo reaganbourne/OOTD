@@ -25,10 +25,10 @@ export function DesktopNav() {
       <div className="flex items-center gap-8">
         <Link
           href="/feed"
-          className="font-logo leading-none text-ink"
-          style={{ fontSize: "1.9rem", fontWeight: 100, letterSpacing: "-0.02em" }}
+          className="font-display leading-none text-ink"
+          style={{ fontSize: "2rem", letterSpacing: "-0.01em" }}
         >
-          checkd.
+          checkd
         </Link>
         <div className="flex items-center gap-6">
           {NAV_LINKS.map(({ href, label }) => (
