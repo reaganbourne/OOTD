@@ -21,7 +21,7 @@ const sans = Inter({
 // Loaded for CSS usage (logo in nav, etc.)
 const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["100"],
+  weight: "variable",
   axes: ["SOFT", "opsz"],
   variable: "--font-logo"
 });
