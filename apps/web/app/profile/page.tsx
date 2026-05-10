@@ -9,7 +9,8 @@ import { OutfitCard, OutfitCardSkeleton, type OutfitCardData } from "@/component
 import { useAuth } from "@/lib/auth-context";
 
 type PageStatus = "idle" | "loading" | "ready" | "error";
-type ProfileTab = "fits" | "tagged" | "saved" | "about";
+type ProfileTab = "fits" | "about";
+type FollowSheet = "followers" | "following" | null;
 
 function toCardData(outfit: OutfitResponse): OutfitCardData {
   return {
@@ -44,6 +45,9 @@ export default function ProfilePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ProfileTab>("fits");
   const [shareCopied, setShareCopied] = useState(false);
+  const [followSheet, setFollowSheet] = useState<FollowSheet>(null);
+  const [followList, setFollowList] = useState<{ id: string; username: string; display_name: string | null; profile_image_url: string | null }[]>([]);
+  const [followListLoading, setFollowListLoading] = useState(false);
 
   // Redirect if not authed
   useEffect(() => {
@@ -133,6 +137,20 @@ export default function ProfilePage() {
     await navigator.clipboard.writeText(url);
     setShareCopied(true);
     setTimeout(() => setShareCopied(false), 2000);
+  }
+
+  async function openFollowSheet(type: "followers" | "following") {
+    setFollowSheet(type);
+    setFollowList([]);
+    setFollowListLoading(true);
+    try {
+      const result = type === "followers"
+        ? await apiClient.users.getFollowers(username)
+        : await apiClient.users.getFollowing(username);
+      if (result.ok) setFollowList(result.data);
+    } finally {
+      setFollowListLoading(false);
+    }
   }
 
   return (
@@ -249,18 +267,14 @@ export default function ProfilePage() {
               </div>
               <div className="text-mute" style={{ fontSize: 10 }}>fits</div>
             </div>
-            <div className="text-center">
-              <div className="font-medium text-ink" style={{ fontSize: 18 }}>
-                {followerCount}
-              </div>
+            <button type="button" onClick={() => void openFollowSheet("followers")} className="text-center transition hover:opacity-70">
+              <div className="font-medium text-ink" style={{ fontSize: 18 }}>{followerCount}</div>
               <div className="text-mute" style={{ fontSize: 10 }}>followers</div>
-            </div>
-            <div className="text-center">
-              <div className="font-medium text-ink" style={{ fontSize: 18 }}>
-                {followingCount}
-              </div>
+            </button>
+            <button type="button" onClick={() => void openFollowSheet("following")} className="text-center transition hover:opacity-70">
+              <div className="font-medium text-ink" style={{ fontSize: 18 }}>{followingCount}</div>
               <div className="text-mute" style={{ fontSize: 10 }}>following</div>
-            </div>
+            </button>
           </div>
 
           {/* Action buttons — edit profile + share */}
@@ -285,7 +299,7 @@ export default function ProfilePage() {
 
         {/* ── Profile tabs ─────────────────────────────────────────────── */}
         <div className="flex border-b border-line">
-          {(["fits", "tagged", "saved", "about"] as ProfileTab[]).map((tab) => {
+          {(["fits", "about"] as ProfileTab[]).map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
@@ -362,43 +376,6 @@ export default function ProfilePage() {
           </section>
         ) : null}
 
-        {/* ── Tab: tagged ─────────────────────────────────────────────────── */}
-        {activeTab === "tagged" ? (
-          <div className="px-6 py-12 text-center">
-            <div
-              className="mx-auto flex items-center justify-center rounded-2xl bg-pink-soft"
-              style={{ width: 56, height: 56 }}
-            >
-              <svg viewBox="0 0 24 24" className="h-6 w-6 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                <line x1="7" y1="7" x2="7.01" y2="7" />
-              </svg>
-            </div>
-            <p className="font-display mt-5 text-2xl text-ink">tagged looks</p>
-            <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
-              when friends tag you in their outfits, they&apos;ll show up here.
-            </p>
-          </div>
-        ) : null}
-
-        {/* ── Tab: saved ──────────────────────────────────────────────────── */}
-        {activeTab === "saved" ? (
-          <div className="px-6 py-12 text-center">
-            <div
-              className="mx-auto flex items-center justify-center rounded-2xl bg-pink-soft"
-              style={{ width: 56, height: 56 }}
-            >
-              <svg viewBox="0 0 24 24" className="h-6 w-6 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-              </svg>
-            </div>
-            <p className="font-display mt-5 text-2xl text-ink">saved looks</p>
-            <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
-              outfits you&apos;ve liked will live here for easy reference.
-            </p>
-          </div>
-        ) : null}
-
         {/* ── Tab: about ──────────────────────────────────────────────────── */}
         {activeTab === "about" ? (
           <div className="px-5 py-6 space-y-4">
@@ -445,6 +422,79 @@ export default function ProfilePage() {
       </div>
 
       <MobileNav active="me" />
+
+      {/* ── Follow list sheet ─────────────────────────────────────────── */}
+      {followSheet ? (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(26,20,22,0.55)] px-4 pb-4 backdrop-blur-sm sm:items-center sm:pb-0"
+          onClick={(e) => { if (e.target === e.currentTarget) setFollowSheet(null); }}
+        >
+          <div className="soft-panel w-full max-w-sm overflow-hidden">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-line">
+              <h2 className="font-display text-2xl tracking-[-0.03em] text-ink">
+                {followSheet === "followers" ? "followers" : "following"}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setFollowSheet(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-mute transition hover:text-ink"
+              >
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto">
+              {followListLoading ? (
+                <div className="flex flex-col gap-3 px-6 py-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 animate-pulse">
+                      <div className="h-10 w-10 rounded-full bg-pink-soft shrink-0" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 w-28 rounded-full bg-pink-soft" />
+                        <div className="h-2.5 w-20 rounded-full bg-line" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : followList.length === 0 ? (
+                <div className="px-6 py-10 text-center">
+                  <p className="text-sm text-mute">
+                    {followSheet === "followers" ? "no followers yet" : "not following anyone yet"}
+                  </p>
+                </div>
+              ) : (
+                <ul className="divide-y divide-line">
+                  {followList.map((person) => (
+                    <li key={person.id}>
+                      <Link
+                        href={`/profile/${person.username}`}
+                        onClick={() => setFollowSheet(null)}
+                        className="flex items-center gap-3 px-6 py-3.5 transition hover:bg-pink-soft/30"
+                      >
+                        {person.profile_image_url ? (
+                          <img src={person.profile_image_url} alt="" className="h-10 w-10 rounded-full object-cover border border-line shrink-0" />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-soft border border-line text-sm font-medium text-ink-soft shrink-0">
+                            {(person.display_name ?? person.username ?? "?").charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-ink">{person.display_name ?? person.username}</p>
+                          <p className="text-xs text-mute">@{person.username}</p>
+                        </div>
+                        <svg viewBox="0 0 24 24" className="ml-auto h-4 w-4 shrink-0 text-mute/40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="m9 18 6-6-6-6" />
+                        </svg>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
