@@ -3,11 +3,7 @@ import { ImageResponse } from "next/og";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default async function OGImage() {
-  const fraunces = await fetch(
-    "https://fonts.gstatic.com/s/fraunces/v31/6NUh8FyLNQOQZAnv9bYEvDiIdE9Ea92uemj--yRYibk.woff2"
-  ).then((res) => res.arrayBuffer());
-
+export default function OGImage() {
   return new ImageResponse(
     (
       <div
@@ -24,8 +20,8 @@ export default async function OGImage() {
       >
         <span
           style={{
-            fontFamily: "Fraunces",
-            fontWeight: 100,
+            fontFamily: "Georgia, serif",
+            fontWeight: 400,
             fontSize: 160,
             color: "#FAF9F5",
             letterSpacing: "-4px",
@@ -48,16 +44,6 @@ export default async function OGImage() {
         </span>
       </div>
     ),
-    {
-      ...size,
-      fonts: [
-        {
-          name: "Fraunces",
-          data: fraunces,
-          weight: 100,
-          style: "normal"
-        }
-      ]
-    }
+    { ...size }
   );
 }
