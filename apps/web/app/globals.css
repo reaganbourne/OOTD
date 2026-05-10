@@ -48,6 +48,12 @@ a {
   }
 }
 
+/* Logo wordmark — Fraunces Soft 100 */
+.font-logo {
+  font-family: var(--font-logo), Georgia, serif;
+  font-variation-settings: 'SOFT' 100, 'opsz' 144;
+}
+
 /* Focus rings — 1.5px pink-deep, 2px offset */
 :focus-visible {
   outline: 1.5px solid var(--pink-deep);
