@@ -507,19 +507,6 @@ export default function FeedPage() {
                 <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
               </svg>
             </Link>
-            {/* Bell — notification center coming soon */}
-            <button
-              type="button"
-              aria-label="Notifications"
-              title="Notifications coming soon"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute opacity-50"
-              style={{ width: 36, height: 36 }}
-              disabled
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                <path d="M6.5 10a5.5 5.5 0 1 1 11 0c0 5 2 6 2 6h-15s2-1 2-6" /><path d="M10 19a2 2 0 0 0 4 0" />
-              </svg>
-            </button>
           </div>
         </div>
 

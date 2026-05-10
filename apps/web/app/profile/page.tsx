@@ -280,13 +280,6 @@ export default function ProfilePage() {
             >
               {shareCopied ? "copied!" : "share"}
             </button>
-            <Link
-              href="/wrapped"
-              className="flex flex-1 items-center justify-center rounded-full border border-line text-ink transition hover:border-ink"
-              style={{ height: 36, fontSize: 12 }}
-            >
-              wrapped ✦
-            </Link>
           </div>
         </section>
 
