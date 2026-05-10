@@ -21,15 +21,15 @@ export default function Icon() {
         <span
           style={{
             fontFamily: "Georgia, serif",
-            fontWeight: 100,
-            fontSize: 148,
+            fontWeight: 400,
+            fontSize: 96,
             color: "#FAF9F5",
-            letterSpacing: "-4px",
+            letterSpacing: "-3px",
             lineHeight: 1,
             marginTop: 8
           }}
         >
-          c.
+          checkd.
         </span>
       </div>
     ),
