@@ -24,6 +24,7 @@ type OutfitCardProps = {
   showAuthor?: boolean;
   showCaption?: boolean;
   showAccentMarker?: boolean;
+  compact?: boolean;
   liked?: boolean;
   likeCount?: number;
   onLike?: (e: React.MouseEvent) => void;
@@ -160,6 +161,7 @@ export function OutfitCard({
   showAuthor = Boolean(outfit.author?.username || outfit.author?.profileImageUrl),
   showCaption = true,
   showAccentMarker = false,
+  compact = false,
   liked = false,
   likeCount,
   onLike,
@@ -170,6 +172,48 @@ export function OutfitCard({
   const caption =
     outfit.caption?.trim() || "A saved look ready to be revisited later.";
   const dateLabel = formatOutfitDate(outfit.wornOn ?? outfit.createdAt);
+
+  if (compact) {
+    return (
+      <Link href={href} className="group relative block overflow-hidden bg-pink-soft/30">
+        <img
+          src={outfit.imageUrl}
+          alt={outfit.caption?.trim() || "Outfit photo"}
+          loading="lazy"
+          className="aspect-[3/4] w-full object-cover transition duration-300 group-hover:brightness-95"
+        />
+        {toneClasses && toneLabel ? (
+          <div className="pointer-events-none absolute left-1.5 top-1.5">
+            <span
+              className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[0.55rem] font-medium lowercase backdrop-blur ${toneClasses.border} ${toneClasses.background} ${toneClasses.text}`}
+            >
+              {toneLabel}
+            </span>
+          </div>
+        ) : null}
+        {onLike ? (
+          <button
+            type="button"
+            onClick={onLike}
+            aria-label={liked ? "Unlike" : "Like"}
+            className="absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/30 backdrop-blur transition hover:bg-black/50"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className={`h-3.5 w-3.5 transition ${liked ? "text-pink-deep" : "text-white"}`}
+              fill={liked ? "currentColor" : "none"}
+              stroke={liked ? "currentColor" : "white"}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </button>
+        ) : null}
+      </Link>
+    );
+  }
 
   return (
     <Link
@@ -216,11 +260,11 @@ export function OutfitCard({
             type="button"
             onClick={onLike}
             aria-label={liked ? "Unlike" : "Like"}
-            className="absolute bottom-2.5 right-2.5 flex items-center gap-1 rounded-full border border-white/50 bg-white/85 px-2 py-1.5 backdrop-blur transition hover:bg-white"
+            className="absolute bottom-2.5 right-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 backdrop-blur transition hover:bg-white"
           >
             <svg
               viewBox="0 0 24 24"
-              className={`h-3.5 w-3.5 transition ${liked ? "text-pink-deep" : "text-mute"}`}
+              className={`h-4 w-4 transition ${liked ? "text-pink-deep" : "text-mute"}`}
               fill={liked ? "currentColor" : "none"}
               stroke="currentColor"
               strokeWidth="2"
@@ -229,11 +273,6 @@ export function OutfitCard({
             >
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
-            {likeCount !== undefined && likeCount > 0 ? (
-              <span className={`text-[0.6rem] font-medium tabular-nums ${liked ? "text-ink-soft" : "text-mute"}`}>
-                {likeCount.toLocaleString()}
-              </span>
-            ) : null}
           </button>
         ) : null}
       </div>

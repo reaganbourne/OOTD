@@ -303,51 +303,34 @@ export function UploadFlow() {
         {/* ── Step 1: Photo ────────────────────────────────────────────────── */}
         {currentStep === 1 ? (
           <div className="flex flex-col" style={{ gap: 12 }}>
-            {/* Photo preview */}
-            <div
-              className="overflow-hidden bg-pink-soft"
-              style={{ borderRadius: "1.5rem", border: "1.5px dashed var(--line)", aspectRatio: "4/5", width: "100%", position: "relative" }}
+            {/* Photo preview — compact height so it doesn't swamp the screen */}
+            <label
+              htmlFor={inputId}
+              className="relative block overflow-hidden bg-pink-soft"
+              style={{
+                borderRadius: "1.25rem",
+                border: "1.5px dashed var(--line)",
+                height: 240,
+                cursor: "pointer"
+              }}
             >
               {photoPreviewUrl ? (
                 <img
                   src={photoPreviewUrl}
                   alt="Outfit preview"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", background: "var(--pink-soft)" }}
                 />
               ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center text-center" style={{ padding: 32 }}>
-                  <div
-                    className="flex items-center justify-center bg-white text-pink-deep"
-                    style={{ width: 52, height: 52, borderRadius: "1rem", border: "1px solid var(--line)", marginBottom: 12 }}
-                  >
-                    <svg viewBox="0 0 24 24" style={{ width: 22, height: 22 }} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                      <rect x="3" y="3" width="18" height="18" rx="3" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <path d="m21 15-5-5L5 21" />
-                    </svg>
-                  </div>
-                  <p className="text-ink" style={{ fontSize: 15, fontWeight: 500 }}>tap to choose a photo</p>
-                  <p className="text-mute" style={{ fontSize: 12, marginTop: 4 }}>JPG, PNG, WEBP or HEIC</p>
+                <div className="flex h-full w-full flex-col items-center justify-center text-center gap-2">
+                  <svg viewBox="0 0 24 24" style={{ width: 32, height: 32 }} className="text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <p className="text-ink" style={{ fontSize: 14, fontWeight: 500 }}>tap to add your photo</p>
+                  <p className="text-mute" style={{ fontSize: 11 }}>JPG, PNG, WEBP or HEIC · max 20 MB</p>
                 </div>
               )}
-
-              {/* Overlay tap target on whole preview when empty */}
-              {!photoPreviewUrl ? (
-                <label
-                  htmlFor={inputId}
-                  style={{ position: "absolute", inset: 0, cursor: "pointer" }}
-                  aria-label="Choose photo"
-                />
-              ) : null}
-            </div>
-
-            {/* Choose / replace button */}
-            <label
-              htmlFor={inputId}
-              className="flex items-center justify-center bg-ink text-paper transition hover:opacity-90"
-              style={{ borderRadius: "99px", height: 48, fontSize: 14, fontWeight: 600, cursor: "pointer" }}
-            >
-              {photo ? "replace photo" : "choose photo"}
             </label>
             <input
               id={inputId}
@@ -356,6 +339,17 @@ export function UploadFlow() {
               className="sr-only"
               onChange={handleFileChange}
             />
+
+            {/* Replace / status row */}
+            {photo ? (
+              <label
+                htmlFor={inputId}
+                className="flex items-center justify-center border border-line bg-white text-ink-soft transition hover:border-ink hover:text-ink"
+                style={{ borderRadius: "99px", height: 44, fontSize: 13, fontWeight: 500, cursor: "pointer" }}
+              >
+                replace photo
+              </label>
+            ) : null}
 
             {photo ? (
               <div
@@ -464,13 +458,10 @@ export function UploadFlow() {
               onChange={(v) => updateMetadata("eventName", v)}
             />
 
-            <InputField
-              label="date worn"
-              optional
-              type="date"
-              value={metadata.wornOn}
-              onChange={(v) => updateMetadata("wornOn", v)}
-            />
+            <div>
+              <p className="field-label">date worn <span className="ml-1 font-normal normal-case tracking-normal text-mute">(optional)</span></p>
+              <DateSelect value={metadata.wornOn} onChange={(v) => updateMetadata("wornOn", v)} />
+            </div>
           </div>
         ) : null}
 
@@ -579,6 +570,64 @@ export function UploadFlow() {
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Date select — three dropdowns instead of native calendar ─────────────────
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: CURRENT_YEAR - 2019 }, (_, i) => CURRENT_YEAR - i);
+
+function DateSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const parts = value ? value.split("-") : ["", "", ""];
+  const [y, m, d] = parts;
+
+  function update(nextY: string, nextM: string, nextD: string) {
+    if (nextY && nextM && nextD) {
+      onChange(`${nextY}-${nextM.padStart(2, "0")}-${nextD.padStart(2, "0")}`);
+    } else if (!nextY && !nextM && !nextD) {
+      onChange("");
+    }
+  }
+
+  const selectClass = "flex-1 h-12 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition focus:border-pink-deep focus:ring-2 focus:ring-pink/40 appearance-none";
+
+  return (
+    <div className="flex gap-2">
+      <select
+        value={m}
+        onChange={(e) => update(y, e.target.value, d)}
+        className={selectClass}
+        style={{ flex: "2" }}
+      >
+        <option value="">month</option>
+        {MONTHS.map((label, i) => (
+          <option key={label} value={String(i + 1).padStart(2, "0")}>{label}</option>
+        ))}
+      </select>
+      <select
+        value={d}
+        onChange={(e) => update(y, m, e.target.value)}
+        className={selectClass}
+      >
+        <option value="">day</option>
+        {Array.from({ length: 31 }, (_, i) => i + 1).map((n) => (
+          <option key={n} value={String(n)}>{n}</option>
+        ))}
+      </select>
+      <select
+        value={y}
+        onChange={(e) => update(e.target.value, m, d)}
+        className={selectClass}
+        style={{ flex: "1.5" }}
+      >
+        <option value="">year</option>
+        {YEARS.map((yr) => (
+          <option key={yr} value={String(yr)}>{yr}</option>
+        ))}
+      </select>
     </div>
   );
 }
