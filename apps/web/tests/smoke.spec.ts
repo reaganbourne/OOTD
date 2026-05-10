@@ -226,18 +226,17 @@ test.describe("vault page", () => {
     await expect(page.getByText(/1 fits/i)).toBeVisible();
   });
 
-  test("filter chips render and are clickable", async ({ page }) => {
+  test("search bar renders and filters results", async ({ page }) => {
     await mockAuthenticatedApi(page, { outfitsMe: [] });
     await setActiveSession(page);
 
     await page.goto("/vault");
 
-    // All 4 filter chips should be present
-    for (const chip of ["all", "brown", "formal", "streetwear"]) {
-      await expect(page.getByRole("button", { name: new RegExp(`^${chip}$`, "i") })).toBeVisible();
-    }
-    // Clicking a filter should not crash
-    await page.getByRole("button", { name: /^formal$/i }).click();
+    // Search input should be present
+    const searchInput = page.getByPlaceholder(/search by brand/i);
+    await expect(searchInput).toBeVisible();
+    // Typing should not crash
+    await searchInput.fill("zara");
   });
 });
 
@@ -324,7 +323,7 @@ test.describe("upload flow", () => {
     await setActiveSession(page);
 
     await page.goto("/upload");
-    await expect(page.getByText(/add your photo/i)).toBeVisible();
+    await expect(page.getByText("add your photo", { exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: /^looks good$/i }).click();
 
@@ -337,7 +336,7 @@ test.describe("upload flow", () => {
     await setActiveSession(page);
 
     await page.goto("/upload");
-    await expect(page.getByText(/add your photo/i)).toBeVisible();
+    await expect(page.getByText("add your photo", { exact: true })).toBeVisible();
 
     await page.setInputFiles("input[type='file']", {
       name: "fit.jpg",

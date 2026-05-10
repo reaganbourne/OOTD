@@ -40,7 +40,8 @@ const config = {
       },
       fontFamily: {
         display: ["var(--font-display)"],
-        sans: ["var(--font-sans)"]
+        sans: ["var(--font-sans)"],
+        logo: ["var(--font-logo)", "Georgia", "serif"]
       }
     }
   },

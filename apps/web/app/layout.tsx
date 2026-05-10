@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, Inter } from "next/font/google";
+import { Fraunces, Instrument_Serif, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth-context";
 import { DesktopNav } from "@/components/chrome/desktop-nav";
@@ -18,9 +18,42 @@ const sans = Inter({
   variable: "--font-sans"
 });
 
+// Loaded for CSS usage (logo in nav, etc.)
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: "variable",
+  axes: ["SOFT", "opsz"],
+  variable: "--font-logo"
+});
+
 export const metadata: Metadata = {
-  title: "checkd",
-  description: "your daily fit, kept close, shared with the girls."
+  title: {
+    default: "checkd.",
+    template: "%s · checkd."
+  },
+  description: "your daily fit, kept close, shared with the girls.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_API_URL?.replace(":8000", ":3000") ??
+      "https://checkd.vercel.app"
+  ),
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon", type: "image/png", sizes: "512x512" }
+    ],
+    apple: { url: "/icon", type: "image/png", sizes: "512x512" }
+  },
+  openGraph: {
+    title: "checkd.",
+    description: "your daily fit, kept close, shared with the girls.",
+    type: "website",
+    siteName: "checkd."
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "checkd.",
+    description: "your daily fit, kept close, shared with the girls."
+  }
 };
 
 export default function RootLayout({
@@ -29,7 +62,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable}`}>
+    <html lang="en" className={`${display.variable} ${sans.variable} ${fraunces.variable}`}>
       <body>
         <AuthProvider>
           <DesktopNav />

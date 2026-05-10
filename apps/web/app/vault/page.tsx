@@ -16,27 +16,23 @@ const INITIAL_PAGE_SIZE = 12;
 
 type VaultStatus = "idle" | "loading" | "ready" | "error";
 type LikeMap = Record<string, { liked: boolean; count: number }>;
-type FilterChip = "all" | "brown" | "formal" | "streetwear";
 
-function matchesFilter(outfit: OutfitResponse, filter: FilterChip): boolean {
-  if (filter === "all") return true;
+function matchesSearch(outfit: OutfitResponse, query: string): boolean {
+  if (!query.trim()) return true;
+  const q = query.trim().toLowerCase();
   const items = outfit.clothing_items ?? [];
-  if (filter === "brown") {
-    return items.some((i) => i.color?.toLowerCase().includes("brown"));
-  }
-  if (filter === "formal") {
-    return (
-      items.some((i) => i.category?.toLowerCase().includes("formal")) ||
-      outfit.vibe_check_tone?.toLowerCase().includes("formal") === true
-    );
-  }
-  if (filter === "streetwear") {
-    return (
-      items.some((i) => i.category?.toLowerCase().includes("streetwear")) ||
-      outfit.vibe_check_tone?.toLowerCase().includes("streetwear") === true
-    );
-  }
-  return true;
+  return (
+    outfit.caption?.toLowerCase().includes(q) === true ||
+    outfit.event_name?.toLowerCase().includes(q) === true ||
+    outfit.vibe_check_tone?.toLowerCase().includes(q) === true ||
+    outfit.vibe_check_text?.toLowerCase().includes(q) === true ||
+    items.some(
+      (i) =>
+        i.brand?.toLowerCase().includes(q) ||
+        i.category?.toLowerCase().includes(q) ||
+        i.color?.toLowerCase().includes(q)
+    )
+  );
 }
 
 function toCardData(outfit: OutfitResponse): OutfitCardData {
@@ -77,7 +73,7 @@ export default function VaultPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<FilterChip>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Like state
   const [likes, setLikes] = useState<LikeMap>({});
@@ -198,65 +194,49 @@ export default function VaultPage() {
   return (
     <main className="pb-28 lg:pb-0 lg:pt-16">
       <div className="mx-auto max-w-7xl">
-        {/* vault topbar — checkd wordmark (ink 30px) + search + filter */}
-        <div
-          className="flex items-center justify-between bg-paper"
-          style={{ padding: "8px 20px 12px" }}
-        >
-          <p
-            className="font-display leading-none text-ink"
-            style={{ fontSize: 30, lineHeight: 0.95, letterSpacing: "-0.01em" }}
-          >
-            checkd
-          </p>
-          <div className="flex items-center" style={{ gap: 6 }}>
-            <Link
-              href="/search"
-              aria-label="Search"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink"
-              style={{ width: 36, height: 36 }}
-            >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
-              </svg>
-            </Link>
+        {/* vault header */}
+        <header className="flex items-end justify-between bg-paper" style={{ padding: "16px 20px 10px" }}>
+          <div>
+            <h1 className="font-logo text-ink" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em", fontWeight: 100 }}>
+              my vault.
+            </h1>
+            <p className="text-mute" style={{ fontSize: 11.5, marginTop: 3 }}>
+              {outfits.length} fits · {displayName}
+            </p>
           </div>
-        </div>
-
-        {/* vault-head */}
-        <header style={{ padding: "0 20px 10px" }}>
-          <h1 className="font-display text-ink" style={{ fontSize: 36, margin: 0, lineHeight: 1, letterSpacing: "-0.01em" }}>
-            my vault
-          </h1>
-          <p className="text-mute" style={{ fontSize: 11.5, marginTop: 4 }}>
-            {outfits.length} fits · {displayName}
-          </p>
+          <Link
+            href="/search"
+            aria-label="Search"
+            className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink"
+            style={{ width: 36, height: 36, flexShrink: 0 }}
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+              <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
+            </svg>
+          </Link>
         </header>
 
-        {/* filter chips */}
-        <div
-          className="flex overflow-x-auto"
-          style={{ padding: "4px 20px 12px", gap: 8 }}
-        >
-          {(["all", "brown", "formal", "streetwear"] as FilterChip[]).map((chip) => {
-            const isActive = activeFilter === chip;
-            return (
-              <button
-                key={chip}
-                type="button"
-                onClick={() => setActiveFilter(chip)}
-                className="flex-shrink-0 inline-flex items-center rounded-full border text-[11px] transition"
-                style={{
-                  padding: "5px 11px",
-                  background: isActive ? "var(--ink)" : "#fff",
-                  borderColor: isActive ? "var(--ink)" : "var(--line)",
-                  color: isActive ? "var(--paper)" : "var(--ink-soft)",
-                }}
-              >
-                {chip}
+        {/* search bar */}
+        <div style={{ padding: "0 20px 12px" }}>
+          <div className="flex items-center gap-2.5 rounded-full border border-line bg-white px-4" style={{ height: 40 }}>
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-mute" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+              <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="search by brand, event, color, vibe…"
+              className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-mute"
+            />
+            {searchQuery ? (
+              <button type="button" onClick={() => setSearchQuery("")} className="shrink-0 text-mute hover:text-ink">
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
               </button>
-            );
-          })}
+            ) : null}
+          </div>
         </div>
 
         {/* ── Vault grid — 3-col, 2px gap, per design vault-grid ─────── */}
@@ -268,26 +248,28 @@ export default function VaultPage() {
           ) : null}
 
           {vaultStatus === "loading" ? (
-            <div className="grid grid-cols-3 gap-0.5 pt-0.5 lg:gap-1">
-              {Array.from({ length: 9 }).map((_, i) => <OutfitCardSkeleton key={i} showAuthor={false} />)}
+            <div className="grid grid-cols-3 gap-px bg-line">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
+              ))}
             </div>
           ) : null}
 
           {(() => {
-            const filtered = outfits.filter((o) => matchesFilter(o, activeFilter));
+            const filtered = outfits.filter((o) => matchesSearch(o, searchQuery));
             if (vaultStatus === "ready" && outfits.length > 0 && filtered.length === 0) {
               return (
                 <div className="px-5 py-10 text-center">
-                  <p className="font-display text-2xl text-ink">no {activeFilter} looks yet.</p>
+                  <p className="font-display text-2xl text-ink">no matches.</p>
                   <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
-                    tag clothing items when you upload to use filters.
+                    try searching by brand, event, color, or vibe.
                   </p>
                   <button
                     type="button"
-                    onClick={() => setActiveFilter("all")}
+                    onClick={() => setSearchQuery("")}
                     className="mt-5 text-sm text-pink-deep hover:underline"
                   >
-                    show all
+                    clear search
                   </button>
                 </div>
               );
@@ -296,34 +278,35 @@ export default function VaultPage() {
           })()}
 
           {vaultStatus === "ready" && outfits.length === 0 ? (
-            <div className="px-5 py-10 text-center">
+            <div className="px-5 py-16 text-center">
               <p className="font-display text-2xl text-ink">your archive is ready.</p>
               <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
                 it just needs your first look.
               </p>
-              <Link href="/upload" className="mt-6 btn-primary">
-                upload your first look
-              </Link>
+              <div className="mt-6 flex justify-center">
+                <Link href="/upload" className="btn-primary">
+                  upload your first look
+                </Link>
+              </div>
             </div>
           ) : null}
 
           {vaultStatus === "ready" && outfits.length > 0 ? (
             <>
-              <div className="grid grid-cols-3 gap-0.5 pt-0.5 lg:gap-1">
-                {outfits.filter((o) => matchesFilter(o, activeFilter)).map((outfit) => (
+              <div className="grid grid-cols-3 gap-px bg-line">
+                {outfits.filter((o) => matchesSearch(o, searchQuery)).map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     outfit={toCardData(outfit)}
-                    showAuthor={false}
-                    showCaption={false}
-                    showAccentMarker
+                    compact
                     liked={likes[outfit.id]?.liked}
-                    likeCount={likes[outfit.id]?.count}
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />
                 ))}
                 {loadingMore
-                  ? Array.from({ length: 3 }).map((_, i) => <OutfitCardSkeleton key={`skel-${i}`} showAuthor={false} />)
+                  ? Array.from({ length: 3 }).map((_, i) => (
+                      <div key={`skel-${i}`} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
+                    ))
                   : null}
               </div>
               {nextCursor ? <div ref={sentinelRef} className="h-px" /> : null}
