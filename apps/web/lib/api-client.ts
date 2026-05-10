@@ -595,6 +595,14 @@ export const outfitApiClient = {
     return `${DEFAULT_API_BASE_URL}/outfits/${outfitId}/story-card`;
   },
 
+  async delete(outfitId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/outfits/${outfitId}`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Outfit deleted."
+    });
+  },
+
   async suggestCaptions(image: File): Promise<ApiResult<CaptionSuggestions>> {
     const formData = new FormData();
     formData.append("image", image);

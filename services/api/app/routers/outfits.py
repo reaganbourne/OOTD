@@ -341,6 +341,19 @@ def get_outfit(
     )
 
 
+@router.delete("/{outfit_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_outfit(
+    outfit_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Delete an outfit. Only the owner can delete their own outfit."""
+    outfit = _outfit_or_404(db, outfit_id)
+    if outfit.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot delete this outfit.")
+    outfit_crud.delete_outfit(db, outfit)
+
+
 # ── Likes ─────────────────────────────────────────────────────────────────────
 
 def _outfit_or_404(db: Session, outfit_id_str: str):

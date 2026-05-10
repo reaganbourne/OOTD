@@ -40,6 +40,7 @@ export function OutfitDetailView({ id }: { id: string }) {
   const [likeLoading, setLikeLoading] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -90,6 +91,17 @@ export function OutfitDetailView({ id }: { id: string }) {
       }
     }
     setLikeLoading(false);
+  }
+
+  async function handleDelete() {
+    if (!confirm("Delete this outfit? This can't be undone.")) return;
+    setDeleting(true);
+    const result = await apiClient.outfits.delete(id);
+    if (result.ok) {
+      router.push("/vault");
+    } else {
+      setDeleting(false);
+    }
   }
 
   // ── Not found ──
@@ -318,17 +330,20 @@ export function OutfitDetailView({ id }: { id: string }) {
                 </button>
 
                 {isOwn ? (
-                  <Link
-                    href="/vault"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep/30 hover:text-ink"
-                    aria-label="View in vault"
+                  <button
+                    type="button"
+                    onClick={() => void handleDelete()}
+                    disabled={deleting}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-error/40 hover:text-error disabled:opacity-40"
+                    aria-label="Delete outfit"
                   >
                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M7 7.5A2.5 2.5 0 0 1 9.5 5h5A2.5 2.5 0 0 1 17 7.5V9H7V7.5Z" />
-                      <path d="M6 9h12v9.5A2.5 2.5 0 0 1 15.5 21h-7A2.5 2.5 0 0 1 6 18.5V9Z" />
-                      <path d="M10 13h4" />
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                     </svg>
-                  </Link>
+                  </button>
                 ) : null}
               </div>
             </div>
@@ -337,7 +352,13 @@ export function OutfitDetailView({ id }: { id: string }) {
       </main>
 
       {showShare ? (
-        <StoryCardSheet outfitId={id} onClose={() => setShowShare(false)} />
+        <StoryCardSheet
+          outfitId={id}
+          imageUrl={outfit?.image_url ?? ""}
+          wornOn={outfit?.worn_on}
+          createdAt={outfit?.created_at}
+          onClose={() => setShowShare(false)}
+        />
       ) : null}
 
       {showComments ? (

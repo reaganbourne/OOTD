@@ -581,10 +581,14 @@ const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: CURRENT_YEAR - 2019 }, (_, i) => CURRENT_YEAR - i);
 
 function DateSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const parts = value ? value.split("-") : ["", "", ""];
-  const [y, m, d] = parts;
+  // Use local state so partial picks aren't wiped on re-render.
+  // Parent only receives a value when all three parts are filled.
+  const initial = value ? value.split("-") : ["", "", ""];
+  const [y, setY] = useState(initial[0] ?? "");
+  const [m, setM] = useState(initial[1] ?? "");
+  const [d, setD] = useState(initial[2] ?? "");
 
-  function update(nextY: string, nextM: string, nextD: string) {
+  function commit(nextY: string, nextM: string, nextD: string) {
     if (nextY && nextM && nextD) {
       onChange(`${nextY}-${nextM.padStart(2, "0")}-${nextD.padStart(2, "0")}`);
     } else if (!nextY && !nextM && !nextD) {
@@ -598,7 +602,7 @@ function DateSelect({ value, onChange }: { value: string; onChange: (v: string) 
     <div className="flex gap-2">
       <select
         value={m}
-        onChange={(e) => update(y, e.target.value, d)}
+        onChange={(e) => { setM(e.target.value); commit(y, e.target.value, d); }}
         className={selectClass}
         style={{ flex: "2" }}
       >
@@ -609,7 +613,7 @@ function DateSelect({ value, onChange }: { value: string; onChange: (v: string) 
       </select>
       <select
         value={d}
-        onChange={(e) => update(y, m, e.target.value)}
+        onChange={(e) => { setD(e.target.value); commit(y, m, e.target.value); }}
         className={selectClass}
       >
         <option value="">day</option>
@@ -619,7 +623,7 @@ function DateSelect({ value, onChange }: { value: string; onChange: (v: string) 
       </select>
       <select
         value={y}
-        onChange={(e) => update(e.target.value, m, d)}
+        onChange={(e) => { setY(e.target.value); commit(e.target.value, m, d); }}
         className={selectClass}
         style={{ flex: "1.5" }}
       >

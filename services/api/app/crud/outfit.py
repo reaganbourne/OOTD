@@ -198,3 +198,10 @@ def get_explore(
         next_cursor = outfits[-1].created_at.isoformat()
 
     return outfits, next_cursor
+
+
+
+def delete_outfit(db: Session, outfit: "Outfit") -> None:
+    """Permanently delete an outfit and all related rows (cascade handles children)."""
+    db.delete(outfit)
+    db.commit()
