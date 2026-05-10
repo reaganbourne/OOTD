@@ -721,16 +721,16 @@ export const userApiClient = {
     });
   },
 
-  async follow(userId: string): Promise<ApiResult<FollowStatus>> {
-    return sendRequest<FollowStatus>(`/users/${userId}/follow`, {
+  async follow(username: string): Promise<ApiResult<FollowStatus>> {
+    return sendRequest<FollowStatus>(`/users/${username}/follow`, {
       method: "POST",
       requiresAuth: true,
       successMessage: "Followed."
     });
   },
 
-  async unfollow(userId: string): Promise<ApiResult<FollowStatus>> {
-    return sendRequest<FollowStatus>(`/users/${userId}/follow`, {
+  async unfollow(username: string): Promise<ApiResult<FollowStatus>> {
+    return sendRequest<FollowStatus>(`/users/${username}/follow`, {
       method: "DELETE",
       requiresAuth: true,
       successMessage: "Unfollowed."

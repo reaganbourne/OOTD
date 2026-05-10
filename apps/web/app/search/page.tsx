@@ -145,48 +145,49 @@ export default function SearchPage() {
     return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
   }, [query]);
 
-  async function handleFollow(userId: string, currentFollowerCount: number) {
+  async function handleFollow(username: string, currentFollowerCount: number) {
     setFollows((prev) => ({
       ...prev,
-      [userId]: { following: true, followerCount: currentFollowerCount + 1 },
+      [username]: { following: true, followerCount: currentFollowerCount + 1 },
     }));
 
-    const result = await apiClient.users.follow(userId);
+    const result = await apiClient.users.follow(username);
     if (result.ok) {
       setFollows((prev) => ({
         ...prev,
-        [userId]: { following: result.data.following, followerCount: result.data.follower_count },
+        [username]: { following: result.data.following, followerCount: result.data.follower_count },
       }));
     } else {
       setFollows((prev) => ({
         ...prev,
-        [userId]: { following: false, followerCount: currentFollowerCount },
+        [username]: { following: false, followerCount: currentFollowerCount },
       }));
     }
   }
 
-  async function handleUnfollow(userId: string, currentFollowerCount: number) {
+  async function handleUnfollow(username: string, currentFollowerCount: number) {
     setFollows((prev) => ({
       ...prev,
-      [userId]: { following: false, followerCount: Math.max(0, currentFollowerCount - 1) },
+      [username]: { following: false, followerCount: Math.max(0, currentFollowerCount - 1) },
     }));
 
-    const result = await apiClient.users.unfollow(userId);
+    const result = await apiClient.users.unfollow(username);
     if (result.ok) {
       setFollows((prev) => ({
         ...prev,
-        [userId]: { following: result.data.following, followerCount: result.data.follower_count },
+        [username]: { following: result.data.following, followerCount: result.data.follower_count },
       }));
     } else {
       setFollows((prev) => ({
         ...prev,
-        [userId]: { following: true, followerCount: currentFollowerCount },
+        [username]: { following: true, followerCount: currentFollowerCount },
       }));
     }
   }
 
   function getFollowerCount(user: UserSearchResult) {
-    return follows[user.id]?.followerCount ?? user.follower_count;
+    const key = user.username ?? user.id;
+    return follows[key]?.followerCount ?? user.follower_count;
   }
 
   if (isLoading || !isAuthenticated) {
@@ -283,9 +284,9 @@ export default function SearchPage() {
                 <UserRow
                   key={user.id}
                   user={user}
-                  followState={follows[user.id]}
-                  onFollow={() => void handleFollow(user.id, getFollowerCount(user))}
-                  onUnfollow={() => void handleUnfollow(user.id, getFollowerCount(user))}
+                  followState={follows[user.username ?? user.id]}
+                  onFollow={() => void handleFollow(user.username ?? user.id, getFollowerCount(user))}
+                  onUnfollow={() => void handleUnfollow(user.username ?? user.id, getFollowerCount(user))}
                 />
               ))}
             </>

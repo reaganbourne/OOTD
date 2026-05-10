@@ -134,9 +134,9 @@ function WhoToFollowRail({
               <UserChip
                 key={user.id}
                 user={user}
-                followState={follows[user.id]}
-                onFollow={() => onFollow(user.id, user.follower_count)}
-                onUnfollow={() => onUnfollow(user.id, user.follower_count)}
+                followState={follows[user.username ?? user.id]}
+                onFollow={() => onFollow(user.username ?? user.id, user.follower_count)}
+                onUnfollow={() => onUnfollow(user.username ?? user.id, user.follower_count)}
               />
             ))}
       </div>
@@ -211,23 +211,23 @@ export default function ExplorePage() {
 
   const sentinelRef = useSentinel(() => { void loadMore(); });
 
-  async function handleFollow(userId: string, currentCount: number) {
-    setFollows((prev) => ({ ...prev, [userId]: { following: true, followerCount: currentCount + 1 } }));
-    const result = await apiClient.users.follow(userId);
+  async function handleFollow(username: string, currentCount: number) {
+    setFollows((prev) => ({ ...prev, [username]: { following: true, followerCount: currentCount + 1 } }));
+    const result = await apiClient.users.follow(username);
     if (result.ok) {
-      setFollows((prev) => ({ ...prev, [userId]: { following: result.data.following, followerCount: result.data.follower_count } }));
+      setFollows((prev) => ({ ...prev, [username]: { following: result.data.following, followerCount: result.data.follower_count } }));
     } else {
-      setFollows((prev) => ({ ...prev, [userId]: { following: false, followerCount: currentCount } }));
+      setFollows((prev) => ({ ...prev, [username]: { following: false, followerCount: currentCount } }));
     }
   }
 
-  async function handleUnfollow(userId: string, currentCount: number) {
-    setFollows((prev) => ({ ...prev, [userId]: { following: false, followerCount: Math.max(0, currentCount - 1) } }));
-    const result = await apiClient.users.unfollow(userId);
+  async function handleUnfollow(username: string, currentCount: number) {
+    setFollows((prev) => ({ ...prev, [username]: { following: false, followerCount: Math.max(0, currentCount - 1) } }));
+    const result = await apiClient.users.unfollow(username);
     if (result.ok) {
-      setFollows((prev) => ({ ...prev, [userId]: { following: result.data.following, followerCount: result.data.follower_count } }));
+      setFollows((prev) => ({ ...prev, [username]: { following: result.data.following, followerCount: result.data.follower_count } }));
     } else {
-      setFollows((prev) => ({ ...prev, [userId]: { following: true, followerCount: currentCount } }));
+      setFollows((prev) => ({ ...prev, [username]: { following: true, followerCount: currentCount } }));
     }
   }
 
