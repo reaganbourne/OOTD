@@ -43,10 +43,10 @@ export default async function HomePage() {
             est. 2026
           </div>
           <div
-            className="font-logo"
-            style={{ fontSize: 88, lineHeight: 0.95, letterSpacing: "-0.02em", fontWeight: 100, color: "#faf7f5", marginTop: 40 }}
+            className="font-display"
+            style={{ fontSize: 88, lineHeight: 0.95, letterSpacing: "-0.02em", color: "#faf7f5", marginTop: 40 }}
           >
-            checkd.
+            checkd
           </div>
           <div
             className="font-display"
@@ -89,8 +89,8 @@ export default async function HomePage() {
           <div className="grid lg:grid-cols-[1fr_380px]">
             {/* Left — brand + tagline */}
             <div className="flex flex-col justify-center border-b border-line px-8 py-10 lg:border-b-0 lg:border-r lg:px-12 lg:py-14">
-              <p className="font-logo text-[80px] leading-none text-pink-deep" style={{ fontWeight: 100, letterSpacing: "-0.02em" }}>
-                checkd.
+              <p className="font-display text-[80px] leading-none text-pink-deep" style={{ letterSpacing: "-0.02em" }}>
+                checkd
               </p>
               <h1 className="mt-5 max-w-sm text-3xl leading-snug text-ink">
                 your daily fit, kept close,<br />shared with the girls.

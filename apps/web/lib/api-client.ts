@@ -745,6 +745,20 @@ export const userApiClient = {
     });
   },
 
+  async getFollowers(username: string): Promise<ApiResult<{ id: string; username: string; display_name: string | null; profile_image_url: string | null }[]>> {
+    return sendRequest(`/users/${username}/followers`, {
+      requiresAuth: true,
+      successMessage: "Loaded followers."
+    });
+  },
+
+  async getFollowing(username: string): Promise<ApiResult<{ id: string; username: string; display_name: string | null; profile_image_url: string | null }[]>> {
+    return sendRequest(`/users/${username}/following`, {
+      requiresAuth: true,
+      successMessage: "Loaded following."
+    });
+  },
+
   /** month must be "YYYY-MM" (e.g. "2026-04"). Defaults to the current calendar month. */
   async getWrapped(month?: string): Promise<ApiResult<WrappedStats>> {
     const m = month ?? new Date().toISOString().slice(0, 7); // "YYYY-MM"

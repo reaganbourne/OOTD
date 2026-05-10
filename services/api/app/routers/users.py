@@ -206,6 +206,50 @@ def follow_user(
     return FollowResponse(following=True, follower_count=follow_crud.follower_count(db, target.id))
 
 
+@router.get("/{username}/followers", response_model=list[SearchResult])
+def get_followers(
+    username: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[SearchResult]:
+    target = user_crud.get_by_username(db, username)
+    if not target:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    from app.models.follow import Follow
+    rows = db.query(Follow).filter(Follow.following_id == target.id).all()
+    users = [user_crud.get_by_id(db, r.follower_id) for r in rows]
+    return [
+        SearchResult(
+            id=u.id, username=u.username, display_name=u.display_name,
+            profile_image_url=u.profile_image_url,
+            follower_count=follow_crud.follower_count(db, u.id),
+        )
+        for u in users if u
+    ]
+
+
+@router.get("/{username}/following", response_model=list[SearchResult])
+def get_following(
+    username: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[SearchResult]:
+    target = user_crud.get_by_username(db, username)
+    if not target:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    from app.models.follow import Follow
+    rows = db.query(Follow).filter(Follow.follower_id == target.id).all()
+    users = [user_crud.get_by_id(db, r.following_id) for r in rows]
+    return [
+        SearchResult(
+            id=u.id, username=u.username, display_name=u.display_name,
+            profile_image_url=u.profile_image_url,
+            follower_count=follow_crud.follower_count(db, u.id),
+        )
+        for u in users if u
+    ]
+
+
 @router.delete("/{username}/follow", response_model=FollowResponse)
 def unfollow_user(
     username: str,

@@ -49,16 +49,21 @@ def refresh_token_expires_at() -> datetime:
 
 
 def set_refresh_cookie(response: Response, token: str) -> None:
+    is_production = settings.environment == "production"
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
         httponly=True,
-        samesite="lax",
-        secure=settings.environment == "production",
+        # In production the frontend and backend are on different domains
+        # (Vercel + Railway). SameSite=Lax blocks cross-site fetch() calls,
+        # so the refresh cookie is never sent → user is logged out on every
+        # page refresh. SameSite=None + Secure allows the cookie across origins.
+        samesite="none" if is_production else "lax",
+        secure=is_production,
         path="/auth",
         max_age=60 * 60 * 24 * REFRESH_TOKEN_EXPIRE_DAYS,
     )
 
 
 def clear_refresh_cookie(response: Response) -> None:
-    response.delete_cookie(key=COOKIE_NAME, path="/auth")
+    response.delete_cookie(key=COOKIE_NAME, path="/auth", samesite="none")
