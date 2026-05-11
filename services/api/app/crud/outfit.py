@@ -202,6 +202,9 @@ def get_explore(
 
 
 def delete_outfit(db: Session, outfit: "Outfit") -> None:
-    """Permanently delete an outfit and all related rows (cascade handles children)."""
-    db.delete(outfit)
+    """Permanently delete an outfit. Uses a direct SQL DELETE so SQLAlchemy
+    doesn't try to nullify the non-nullable clothing_item.outfit_id FK before
+    the row is gone — Postgres CASCADE handles child rows automatically."""
+    from sqlalchemy import delete as sql_delete
+    db.execute(sql_delete(Outfit).where(Outfit.id == outfit.id))
     db.commit()
