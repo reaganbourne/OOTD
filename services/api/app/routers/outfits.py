@@ -1,8 +1,11 @@
 import json
+import logging
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 import uuid
 
@@ -90,6 +93,7 @@ def create_outfit(
         vibe_check_text=vibe_check_text,
         vibe_check_tone=vibe_check_tone,
     )
+
     return OutfitOut.model_validate(outfit)
 
 
