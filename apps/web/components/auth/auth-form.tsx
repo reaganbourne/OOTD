@@ -12,6 +12,7 @@ import {
 
 type AuthFormProps = {
   mode: AuthMode;
+  next?: string;
 };
 
 type SubmitState =
@@ -33,7 +34,7 @@ const copy = {
   }
 } as const;
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, next }: AuthFormProps) {
   const router = useRouter();
   const { isLoading, login, signup } = useAuth();
   const [values, setValues] = useState<AuthValues>(() => createInitialAuthValues());
@@ -86,7 +87,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     if (result.ok) {
       setErrors({});
       setSubmitState({ status: "idle" });
-      router.replace(mode === "signup" ? "/onboarding" : "/");
+      router.replace(mode === "signup" ? "/onboarding" : (next ?? "/feed"));
       return;
     }
 

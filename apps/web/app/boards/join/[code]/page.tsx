@@ -15,8 +15,8 @@ function formatDate(d?: string | null) {
 
 function formatExpiry(d: string) {
   const days = Math.ceil((new Date(d).getTime() - Date.now()) / 86_400_000);
-  if (days < 0) return "Expired";
-  if (days === 0) return "Expires today";
+  if (days < 0) return "expired";
+  if (days === 0) return "expires today";
   if (days === 1) return "1 day left";
   return `${days} days left`;
 }
@@ -31,10 +31,8 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
 
-  // Load board preview (no auth needed)
   useEffect(() => {
     let active = true;
-
     async function load() {
       const result = await apiClient.boards.previewInvite(code);
       if (!active) return;
@@ -45,22 +43,18 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
         setStatus(result.message?.toLowerCase().includes("not found") ? "not-found" : "error");
       }
     }
-
     void load();
     return () => { active = false; };
   }, [code]);
 
   async function handleJoin() {
     if (!isAuthenticated) {
-      // Send to login, then return here
-      router.push(`/login?redirect=/boards/join/${code}`);
+      router.push(`/login?next=/boards/join/${code}`);
       return;
     }
-
     setJoining(true);
     setJoinError(null);
     const result = await apiClient.boards.join(code);
-
     if (result.ok) {
       router.replace(`/boards/${result.data.id}`);
     } else {
@@ -72,31 +66,28 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
   // ── Loading ──
   if (status === "loading" || authLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-4">
-        <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">checkd</p>
-          <h1 className="mt-4 text-2xl text-ink">loading invite…</h1>
-        </div>
+      <main className="flex min-h-[100dvh] flex-col items-center justify-center px-5">
+        <p className="font-display italic text-4xl text-pink-deep animate-pulse">checkd</p>
       </main>
     );
   }
 
-  // ── Not found ──
+  // ── Not found / error ──
   if (status === "not-found" || status === "error") {
     return (
-      <main className="flex min-h-screen items-center justify-center px-4">
-        <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">checkd</p>
-          <h1 className="mt-4 text-2xl text-ink">invite not found</h1>
-          <p className="mt-3 text-sm leading-6 text-ink-soft">
-            This invite link is invalid or the board no longer exists.
-          </p>
-          <Link
-            href="/feed"
-            className="mt-6 inline-flex items-center justify-center rounded-[1.2rem] border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25"
-          >
-            Go to feed
-          </Link>
+      <main className="flex min-h-[100dvh] flex-col items-center justify-center px-5">
+        <div className="w-full max-w-[360px] text-center">
+          <p className="font-display italic text-4xl text-pink-deep mb-8">checkd</p>
+          <div className="soft-panel px-6 py-10">
+            <p className="text-3xl mb-2">🔗</p>
+            <h1 className="font-display text-2xl tracking-[-0.03em] text-ink mb-2">link not found</h1>
+            <p className="text-sm leading-6 text-ink-soft mb-6">
+              This invite link is invalid or has expired.
+            </p>
+            <Link href="/feed" className="btn-primary w-full">
+              go to feed
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -104,86 +95,93 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
 
   const eventLabel = formatDate(board?.event_date);
   const expiryLabel = board ? formatExpiry(board.expires_at) : "";
-  const expired = expiryLabel === "Expired";
+  const expired = expiryLabel === "expired";
+  const memberCount = board?.member_count ?? 0;
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10">
-      <div className="w-full max-w-sm">
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center px-5 py-12"
+      style={{ background: "var(--canvas)" }}>
+      <div className="w-full max-w-[360px] flex flex-col gap-6">
 
-        {/* Logo */}
-        <p className="mb-8 text-center font-display text-5xl text-pink-deep">checkd</p>
+        {/* Wordmark */}
+        <p className="text-center font-display italic text-4xl text-pink-deep">checkd</p>
 
-        {/* Board preview card */}
+        {/* Invite card */}
         <div className="soft-panel overflow-hidden">
-          {/* Coloured header */}
-          <div className="bg-pink-soft px-6 pt-6 pb-5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-line bg-white/80 text-pink-deep">
-              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
-                <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
-                <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4" />
-                <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Board details */}
-          <div className="px-6 py-5">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-mute">
-              You&apos;re invited to join
+          {/* Pink header band */}
+          <div
+            className="px-6 pt-6 pb-5"
+            style={{ background: "linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%)" }}
+          >
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-pink-deep/60 mb-3">
+              you&apos;re invited to
             </p>
-            <h1 className="mt-2 font-display text-3xl leading-tight tracking-[-0.03em] text-ink">
+            <h1 className="font-display text-[2rem] leading-[1.1] tracking-[-0.04em] text-ink">
               {board?.name}
             </h1>
             {eventLabel ? (
-              <p className="mt-1 text-sm text-mute">{eventLabel}</p>
+              <p className="mt-1.5 text-sm text-ink-soft">{eventLabel}</p>
             ) : null}
+          </div>
 
-            <div className="mt-4 flex items-center gap-3">
-              <span className={`rounded-full px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.16em] ${expired ? "bg-line/40 text-mute" : "bg-pink-soft text-pink-deep"}`}>
-                {expiryLabel}
-              </span>
-              <span className="text-[0.72rem] text-mute">
-                {board?.member_count ?? 0} {(board?.member_count ?? 0) === 1 ? "member" : "members"}
-              </span>
+          {/* Meta row */}
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-line">
+            <div className="flex items-center gap-1.5 text-[0.72rem] text-mute">
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              {memberCount} {memberCount === 1 ? "member" : "members"}
             </div>
+            <span className="text-line">·</span>
+            <span className={`text-[0.72rem] font-medium ${expired ? "text-error" : "text-ink-soft"}`}>
+              {expiryLabel}
+            </span>
+          </div>
 
+          {/* CTA area */}
+          <div className="px-6 py-5 space-y-3">
             {joinError ? (
-              <p className="mt-4 rounded-[1rem] border border-pink-deep/25 bg-pink-soft px-4 py-3 text-sm text-error">{joinError}</p>
+              <p className="rounded-[1rem] border border-error/20 bg-error/5 px-4 py-3 text-sm text-error">
+                {joinError}
+              </p>
             ) : null}
 
-            {/* CTA */}
-            <div className="mt-6 space-y-3">
-              {expired ? (
-                <p className="rounded-[1.2rem] border border-line bg-pink-soft px-5 py-3.5 text-center text-sm font-semibold text-error">
-                  This board has expired
-                </p>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => void handleJoin()}
-                  disabled={joining}
-                  className="btn-primary w-full"
-                >
-                  {joining ? "joining…" : isAuthenticated ? "join board" : "sign in to join"}
-                </button>
-              )}
-
-              <Link
-                href="/feed"
-                className="block rounded-[1.2rem] border border-line bg-white py-3.5 text-center text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25"
+            {expired ? (
+              <p className="w-full rounded-[1.2rem] border border-line bg-line/20 py-3.5 text-center text-sm font-semibold text-mute">
+                this invite has expired
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void handleJoin()}
+                disabled={joining}
+                className="btn-primary w-full"
               >
-                maybe later
-              </Link>
-            </div>
+                {joining ? "joining…" : isAuthenticated ? "join board" : "sign in to join"}
+              </button>
+            )}
+
+            <Link
+              href="/feed"
+              className="block rounded-[1.2rem] border border-line bg-white py-3.5 text-center text-sm font-medium text-mute transition hover:text-ink hover:border-line/80"
+            >
+              maybe later
+            </Link>
           </div>
         </div>
 
+        {/* Sign up nudge */}
         {!isAuthenticated ? (
-          <p className="mt-5 text-center text-[0.72rem] text-mute">
-            Don&apos;t have an account?{" "}
-            <Link href={`/signup?redirect=/boards/join/${code}`} className="text-pink-deep hover:underline">
-              Sign up free
+          <p className="text-center text-[0.72rem] text-mute">
+            No account yet?{" "}
+            <Link
+              href={`/signup?next=/boards/join/${code}`}
+              className="font-semibold text-pink-deep hover:underline"
+            >
+              sign up free
             </Link>
           </p>
         ) : null}
