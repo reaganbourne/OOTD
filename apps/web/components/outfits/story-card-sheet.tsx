@@ -55,7 +55,10 @@ export function StoryCardSheet({ outfitId, imageUrl, wornOn, createdAt, onClose 
     canvas.height = H;
 
     const img = new Image();
-    img.crossOrigin = "anonymous";
+    // Load through the Next.js proxy so the image is same-origin.
+    // Direct S3 URLs fail with crossOrigin="anonymous" unless the bucket
+    // has CORS headers — the proxy adds them server-side.
+    const proxiedSrc = `/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
 
     img.onload = () => {
       // Background
@@ -151,7 +154,7 @@ export function StoryCardSheet({ outfitId, imageUrl, wornOn, createdAt, onClose 
       setRendered(true);
     };
 
-    img.src = imageUrl;
+    img.src = proxiedSrc;
   }, [imageUrl, dateLabel]);
 
   function handleDownload() {
