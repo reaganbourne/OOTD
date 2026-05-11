@@ -1,7 +1,7 @@
 import json
 import logging
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -45,38 +45,8 @@ from app.services.vibe_check import run_vibe_check
 router = APIRouter(prefix="/outfits", tags=["outfits"])
 
 
-def _run_vibe_check_background(
-    outfit_id: uuid.UUID,
-    file_bytes: bytes,
-    content_type: str,
-    caption: str | None,
-) -> None:
-    """Run vibe check after the response has been sent and write results to the DB."""
-    from app.db import SessionLocal
-    from app.models.outfit import Outfit
-
-    vibe_check_text, vibe_check_tone = run_vibe_check(
-        file_bytes=file_bytes,
-        content_type=content_type,
-        caption=caption,
-    )
-    if vibe_check_text is None:
-        return
-
-    try:
-        with SessionLocal() as db:
-            outfit = db.query(Outfit).filter(Outfit.id == outfit_id).first()
-            if outfit:
-                outfit.vibe_check_text = vibe_check_text
-                outfit.vibe_check_tone = vibe_check_tone
-                db.commit()
-    except Exception:
-        logger.exception("Failed to persist vibe check for outfit %s", outfit_id)
-
-
 @router.post("", response_model=OutfitOut, status_code=status.HTTP_201_CREATED)
 def create_outfit(
-    background_tasks: BackgroundTasks,
     image: UploadFile = File(...),
     metadata: str = Form(default="{}"),
     current_user: User = Depends(get_current_user),
@@ -105,6 +75,13 @@ def create_outfit(
     except StorageError as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
 
+    # Vibe check is best-effort — never blocks outfit creation if it fails.
+    vibe_check_text, vibe_check_tone = run_vibe_check(
+        file_bytes=file_bytes,
+        content_type=content_type,
+        caption=meta.caption,
+    )
+
     outfit = outfit_crud.create_outfit(
         db,
         user_id=current_user.id,
@@ -113,15 +90,8 @@ def create_outfit(
         event_name=meta.event_name,
         worn_on=meta.worn_on,
         clothing_items=meta.clothing_items,
-    )
-
-    # Vibe check runs after the response is sent — never blocks the upload.
-    background_tasks.add_task(
-        _run_vibe_check_background,
-        outfit.id,
-        file_bytes,
-        content_type,
-        meta.caption,
+        vibe_check_text=vibe_check_text,
+        vibe_check_tone=vibe_check_tone,
     )
 
     return OutfitOut.model_validate(outfit)
