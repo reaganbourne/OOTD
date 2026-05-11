@@ -90,7 +90,14 @@ def refresh(
     )
     auth_service.set_refresh_cookie(response, new_refresh_token)
 
-    return RefreshResponse(access_token=auth_service.create_access_token(session.user_id))
+    user = user_crud.get_by_id(db, session.user_id)
+    if not user:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="User not found.")
+
+    return RefreshResponse(
+        access_token=auth_service.create_access_token(session.user_id),
+        user=UserResponse.model_validate(user),
+    )
 
 
 @router.post("/logout", response_model=MessageResponse)
