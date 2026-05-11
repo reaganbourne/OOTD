@@ -257,6 +257,51 @@ const DEFAULT_API_BASE_URL =
 
 let accessToken: string | null = null;
 
+// ── Session-storage token cache ───────────────────────────────────────────────
+// The access token lives in JS memory only and is lost on every page refresh.
+// Persisting it in sessionStorage (same-tab, cleared on tab close) means a page
+// reload can skip the cross-origin cookie round-trip to /auth/refresh entirely.
+// Access tokens only live 15 minutes, so we store an expiry and reject stale ones.
+
+const _SESSION_TOKEN_KEY = "ootd_at";
+const _SESSION_EXPIRY_KEY = "ootd_at_exp";
+const _TOKEN_TTL_MS = 14 * 60 * 1000; // 14 min (1 min buffer before JWT expires)
+
+function _saveTokenToSession(token: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(_SESSION_TOKEN_KEY, token);
+    sessionStorage.setItem(_SESSION_EXPIRY_KEY, String(Date.now() + _TOKEN_TTL_MS));
+  } catch { /* private browsing may block sessionStorage */ }
+}
+
+function _clearTokenFromSession(): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(_SESSION_TOKEN_KEY);
+    sessionStorage.removeItem(_SESSION_EXPIRY_KEY);
+  } catch { /* ignore */ }
+}
+
+/**
+ * Try to hydrate the in-memory access token from sessionStorage.
+ * Returns the token if found and not expired, otherwise null.
+ * Call this at app boot before attempting a network refresh.
+ */
+export function hydrateAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const token = sessionStorage.getItem(_SESSION_TOKEN_KEY);
+    const expiry = sessionStorage.getItem(_SESSION_EXPIRY_KEY);
+    if (!token || !expiry || Date.now() > Number(expiry)) {
+      _clearTokenFromSession();
+      return null;
+    }
+    accessToken = token;
+    return token;
+  } catch { return null; }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -333,6 +378,11 @@ async function parseJson(response: Response): Promise<unknown> {
 
 function setAccessToken(token: string | null) {
   accessToken = token;
+  if (token) {
+    _saveTokenToSession(token);
+  } else {
+    _clearTokenFromSession();
+  }
 }
 
 export function getAccessToken() {
