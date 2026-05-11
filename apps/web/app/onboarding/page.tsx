@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -215,11 +216,11 @@ function StepUpload({ onDone }: { onDone: () => void }) {
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+// ── Page (inner — uses useSearchParams, must be inside Suspense) ──────────────
 
 const STEPS = 3;
 
-export default function OnboardingPage() {
+function OnboardingInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
@@ -307,5 +308,21 @@ export default function OnboardingPage() {
         )}
       </div>
     </main>
+  );
+}
+
+// ── Page (exported — wraps inner in Suspense for Next.js static prerender) ────
+
+export default function OnboardingPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-paper px-4">
+          <p className="font-display text-5xl text-pink-deep">checkd</p>
+        </main>
+      }
+    >
+      <OnboardingInner />
+    </Suspense>
   );
 }
