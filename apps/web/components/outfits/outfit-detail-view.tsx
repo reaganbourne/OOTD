@@ -23,6 +23,12 @@ const TONE_BADGE: Record<string, { bg: string; text: string; border: string }> =
   vintage:    { bg: "bg-orange-100/85",  text: "text-orange-900",  border: "border-orange-300/75" },
 };
 
+/** Trim AI-generated vibe text to the first sentence for a tighter display. */
+function firstSentence(text: string): string {
+  const m = text.match(/^.+?[.!?](?:\s|$)/);
+  return m ? m[0].trim() : text;
+}
+
 function formatDate(d?: string | null) {
   if (!d) return null;
   return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(d));
@@ -444,7 +450,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                     {outfit?.vibe_check_text ? (
                       <div className="rounded-[1rem] border border-line bg-pink-soft px-4 py-3">
                         <p className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-pink-deep">Vibe check</p>
-                        <p className="text-sm leading-6 text-ink-soft">{outfit.vibe_check_text}</p>
+                        <p className="text-sm leading-6 text-ink-soft">{firstSentence(outfit.vibe_check_text)}</p>
                       </div>
                     ) : null}
                   </>
@@ -536,6 +542,8 @@ export function OutfitDetailView({ id }: { id: string }) {
           imageUrl={outfit?.image_url ?? ""}
           wornOn={outfit?.worn_on}
           createdAt={outfit?.created_at}
+          vibeCheckText={outfit?.vibe_check_text}
+          vibeCheckTone={outfit?.vibe_check_tone}
           onClose={() => setShowShare(false)}
         />
       ) : null}

@@ -46,7 +46,7 @@ Respond with ONLY a JSON object in this exact format (no markdown, no extra text
 {{"vibe_check_text": "...", "vibe_check_tone": "..."}}
 
 Rules:
-- vibe_check_text: 1-2 punchy, encouraging sentences about the overall vibe. Be specific and fun.
+- vibe_check_text: exactly 1 punchy, encouraging sentence (under 15 words) about the overall vibe. Be specific and fun.
 - vibe_check_tone: pick EXACTLY ONE word from this list: {tones}
 """
 
