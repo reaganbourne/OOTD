@@ -250,7 +250,6 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="sr-only"
               onChange={handleFileChange}
             />

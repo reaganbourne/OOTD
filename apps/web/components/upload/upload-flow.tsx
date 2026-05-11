@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
@@ -63,6 +63,7 @@ export function UploadFlow() {
   });
   const [errors, setErrors] = useState<ValidationErrors>(createEmptyErrors);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
+  const isSubmittingRef = useRef(false); // synchronous guard against double-tap
 
   useEffect(() => {
     if (!photo) { setPhotoPreviewUrl(null); return; }
@@ -173,9 +174,12 @@ export function UploadFlow() {
   }
 
   async function handleSubmit() {
+    // Synchronous ref guard prevents double-submission from rapid taps
+    if (isSubmittingRef.current) return;
     if (!validateStep(1) || !photo) { setCurrentStep(1); return; }
     if (!validateStep(2)) { setCurrentStep(2); return; }
 
+    isSubmittingRef.current = true;
     setSubmitState({ status: "submitting" });
 
     try {
@@ -210,6 +214,7 @@ export function UploadFlow() {
         status: "error",
         message: error instanceof Error ? error.message : "Upload failed. Please try again."
       });
+      isSubmittingRef.current = false; // allow retry after error
     }
   }
 
@@ -580,6 +585,13 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: CURRENT_YEAR - 2019 }, (_, i) => CURRENT_YEAR - i);
 
+function daysInMonth(year: string, month: string): number {
+  const y = parseInt(year, 10);
+  const m = parseInt(month, 10);
+  if (!y || !m) return 31; // no context yet — show max
+  return new Date(y, m, 0).getDate(); // day 0 of next month = last day of this month
+}
+
 function DateSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   // Use local state so partial picks aren't wiped on re-render.
   // Parent only receives a value when all three parts are filled.
@@ -588,12 +600,27 @@ function DateSelect({ value, onChange }: { value: string; onChange: (v: string) 
   const [m, setM] = useState(initial[1] ?? "");
   const [d, setD] = useState(initial[2] ?? "");
 
+  // Clamp day if the selected day exceeds the month's actual length
+  const maxDays = daysInMonth(y, m);
+  const clampedD = d && parseInt(d, 10) > maxDays ? "" : d;
+
   function commit(nextY: string, nextM: string, nextD: string) {
-    if (nextY && nextM && nextD) {
-      onChange(`${nextY}-${nextM.padStart(2, "0")}-${nextD.padStart(2, "0")}`);
+    const max = daysInMonth(nextY, nextM);
+    const safeD = nextD && parseInt(nextD, 10) > max ? "" : nextD;
+    if (nextY && nextM && safeD) {
+      onChange(`${nextY}-${nextM.padStart(2, "0")}-${safeD.padStart(2, "0")}`);
     } else if (!nextY && !nextM && !nextD) {
       onChange("");
     }
+  }
+
+  function handleMonthChange(nextM: string) {
+    setM(nextM);
+    // If current day is invalid for new month, reset it
+    const max = daysInMonth(y, nextM);
+    const nextD = d && parseInt(d, 10) > max ? "" : d;
+    if (nextD !== d) setD(nextD);
+    commit(y, nextM, nextD);
   }
 
   const selectClass = "flex-1 h-12 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition focus:border-pink-deep focus:ring-2 focus:ring-pink/40 appearance-none";
@@ -602,7 +629,7 @@ function DateSelect({ value, onChange }: { value: string; onChange: (v: string) 
     <div className="flex gap-2">
       <select
         value={m}
-        onChange={(e) => { setM(e.target.value); commit(y, e.target.value, d); }}
+        onChange={(e) => handleMonthChange(e.target.value)}
         className={selectClass}
         style={{ flex: "2" }}
       >
@@ -612,18 +639,18 @@ function DateSelect({ value, onChange }: { value: string; onChange: (v: string) 
         ))}
       </select>
       <select
-        value={d}
+        value={clampedD}
         onChange={(e) => { setD(e.target.value); commit(y, m, e.target.value); }}
         className={selectClass}
       >
         <option value="">day</option>
-        {Array.from({ length: 31 }, (_, i) => i + 1).map((n) => (
+        {Array.from({ length: maxDays }, (_, i) => i + 1).map((n) => (
           <option key={n} value={String(n)}>{n}</option>
         ))}
       </select>
       <select
         value={y}
-        onChange={(e) => { setY(e.target.value); commit(e.target.value, m, d); }}
+        onChange={(e) => { setY(e.target.value); commit(e.target.value, m, clampedD); }}
         className={selectClass}
         style={{ flex: "1.5" }}
       >

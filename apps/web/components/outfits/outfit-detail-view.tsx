@@ -41,6 +41,7 @@ export function OutfitDetailView({ id }: { id: string }) {
   const [showShare, setShowShare] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -96,11 +97,13 @@ export function OutfitDetailView({ id }: { id: string }) {
   async function handleDelete() {
     if (!confirm("Delete this outfit? This can't be undone.")) return;
     setDeleting(true);
+    setDeleteError(null);
     const result = await apiClient.outfits.delete(id);
     if (result.ok) {
       router.push("/vault");
     } else {
       setDeleting(false);
+      setDeleteError(result.message ?? "Failed to delete. Please try again.");
     }
   }
 
@@ -175,7 +178,9 @@ export function OutfitDetailView({ id }: { id: string }) {
                   {toneStyle ? (
                     <div className="absolute left-4 top-4">
                       <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.16em] backdrop-blur ${toneStyle.border} ${toneStyle.bg} ${toneStyle.text}`}>
-                        {outfit?.vibe_check_tone}
+                        {outfit?.vibe_check_tone
+                          ? outfit.vibe_check_tone.charAt(0).toUpperCase() + outfit.vibe_check_tone.slice(1)
+                          : null}
                       </span>
                     </div>
                   ) : null}
@@ -285,6 +290,12 @@ export function OutfitDetailView({ id }: { id: string }) {
                       </li>
                     ))}
                   </ul>
+                </div>
+              ) : null}
+
+              {deleteError ? (
+                <div className="rounded-[1rem] border border-error/25 bg-error/5 px-4 py-3 text-sm text-error">
+                  {deleteError}
                 </div>
               ) : null}
 

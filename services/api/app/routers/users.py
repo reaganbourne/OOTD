@@ -182,6 +182,22 @@ def get_profile(username: str, db: Session = Depends(get_db)) -> PublicProfile:
     )
 
 
+@router.get("/{username}/follow-status", response_model=FollowResponse)
+def get_follow_status(
+    username: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> FollowResponse:
+    """Return whether the current user is following this profile."""
+    target = user_crud.get_by_username(db, username)
+    if not target:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    return FollowResponse(
+        following=follow_crud.is_following(db, follower_id=current_user.id, following_id=target.id),
+        follower_count=follow_crud.follower_count(db, target.id),
+    )
+
+
 @router.post("/{username}/follow", response_model=FollowResponse)
 def follow_user(
     username: str,
