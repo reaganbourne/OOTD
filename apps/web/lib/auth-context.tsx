@@ -78,30 +78,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearAccessToken();
       }
 
-      // ── Slow path: ask the backend to exchange the refresh-token cookie ───
+      // ── Slow path: exchange refresh-token cookie for token + user in one request ───
       const refreshResult = await authApiClient.refresh();
 
       if (!isActive) {
         return;
       }
 
-      if (!refreshResult.ok) {
-        clearAccessToken();
-        clearAuthSessionCookie();
-        setUser(null);
-        setIsLoading(false);
-        return;
-      }
-
-      const meResult = await authApiClient.me();
-
-      if (!isActive) {
-        return;
-      }
-
-      if (meResult.ok) {
+      if (refreshResult.ok) {
         setAuthSessionCookie();
-        setUser(meResult.data);
+        setUser(refreshResult.data.user);
       } else {
         clearAccessToken();
         clearAuthSessionCookie();

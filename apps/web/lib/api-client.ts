@@ -34,6 +34,7 @@ export type AuthSessionResponse = {
 export type AuthRefreshResponse = {
   access_token: string;
   token_type: string;
+  user: AuthUser;
 };
 
 export type AuthLogoutResponse = {
