@@ -92,7 +92,7 @@ async function mockAuthenticatedApi(
 
     // Auth
     if (url.pathname === "/auth/refresh") {
-      await route.fulfill(jsonResponse({ access_token: "test-token", token_type: "bearer" }));
+      await route.fulfill(jsonResponse({ access_token: "test-token", token_type: "bearer", user: authUser }));
       return;
     }
     if (url.pathname === "/auth/me") {
