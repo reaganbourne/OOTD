@@ -17,6 +17,12 @@ from app.schemas.auth import (
     UserResponse,
 )
 from app.services import auth as auth_service
+from app.services.rate_limit import (
+    check_rate_limit,
+    get_client_ip,
+    login_rate_limiter,
+    register_rate_limiter,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -28,6 +34,7 @@ def register(
     request: Request,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
+    check_rate_limit(register_rate_limiter, get_client_ip(request))
     if user_crud.get_by_email(db, body.email):
         raise HTTPException(status.HTTP_409_CONFLICT, detail="Email already registered.")
     if user_crud.get_by_username(db, body.username):
@@ -51,6 +58,7 @@ def login(
     request: Request,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
+    check_rate_limit(login_rate_limiter, get_client_ip(request))
     user = user_crud.get_by_email(db, body.email)
     if not user or not auth_service.verify_password(body.password, user.password_hash):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
