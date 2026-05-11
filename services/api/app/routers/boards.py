@@ -24,6 +24,7 @@ from app.schemas.board import (
     BoardOut,
     CreateBoardRequest,
     PinRequest,
+    UpdateBoardRequest,
 )
 from app.schemas.outfit import BoardOutfitOut, BoardOutfitPage, FeedAuthor, OutfitOut
 
@@ -114,6 +115,20 @@ def delete_board(
     board = _board_or_404(db, board_id)
     _require_creator(db, board_id, current_user.id)
     board_crud.delete_board(db, board)
+
+
+@router.patch("/{board_id}", response_model=BoardOut)
+def update_board(
+    board_id: uuid.UUID,
+    payload: UpdateBoardRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> BoardOut:
+    """Rename a board. Creator only."""
+    board = _board_or_404(db, board_id)
+    _require_creator(db, board_id, current_user.id)
+    board = board_crud.update_board(db, board, payload.name)
+    return _board_out(db, board)
 
 
 # ── Joining ───────────────────────────────────────────────────────────────────

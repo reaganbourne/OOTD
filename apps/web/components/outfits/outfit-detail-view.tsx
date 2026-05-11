@@ -467,7 +467,7 @@ export function OutfitDetailView({ id }: { id: string }) {
                       <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-mute">{outfit.event_name}</p>
                     ) : null}
                     {dateLabel ? <p className="text-[0.7rem] uppercase tracking-[0.18em] text-mute">{dateLabel}</p> : null}
-                    {outfit?.vibe_check_text ? (
+                    {outfit?.vibe_check_text?.trim() ? (
                       <div className="rounded-[1rem] border border-line bg-pink-soft px-4 py-3">
                         <p className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-pink-deep">Vibe check</p>
                         <p className="text-sm leading-6 text-ink-soft">{firstSentence(outfit.vibe_check_text)}</p>

@@ -88,9 +88,9 @@ export function StoryCardSheet({ outfitId, imageUrl, wornOn, createdAt, vibeChec
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // 1080 × 1350 — 4:5 portrait (Instagram-friendly)
+    // 1080 × 1920 — 9:16 portrait (Instagram Story size)
     const W = 1080;
-    const H = 1350;
+    const H = 1920;
     canvas.width = W;
     canvas.height = H;
 
@@ -332,7 +332,7 @@ export function StoryCardSheet({ outfitId, imageUrl, wornOn, createdAt, vibeChec
 
         {/* Card preview — shows the canvas at display scale */}
         <div className="mx-6 mb-5 overflow-hidden rounded-[1.2rem] border border-line bg-pink-soft">
-          <div className="relative aspect-[4/5] w-full">
+          <div className="relative aspect-[9/16] w-full">
             <canvas
               ref={canvasRef}
               className="h-full w-full"

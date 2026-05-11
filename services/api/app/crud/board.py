@@ -74,6 +74,14 @@ def get_by_invite_code(db: Session, invite_code: str) -> Board | None:
     return db.query(Board).filter(Board.invite_code == invite_code).first()
 
 
+def update_board(db: Session, board: Board, name: str) -> Board:
+    """Rename a board. Only the creator should call this."""
+    board.name = name.strip()
+    db.commit()
+    db.refresh(board)
+    return board
+
+
 def delete_board(db: Session, board: Board) -> None:
     db.delete(board)
     db.commit()
