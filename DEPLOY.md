@@ -36,7 +36,7 @@ In the AWS console → S3 → your bucket → Permissions:
 
 | Variable | Value |
 |----------|-------|
-| `SECRET_KEY` | `e6d8f9685403192a4334ceb63fe27a7395df934cf15da3dc6901b42b1f5675f1` |
+| `SECRET_KEY` | `generate-with-python-secrets-token-urlsafe-64` |
 | `ANTHROPIC_API_KEY` | *(your key)* |
 | `S3_BUCKET` | `ootd-outfits-prod-696360034317-us-east-2-an` |
 | `AWS_ACCESS_KEY_ID` | *(from .env)* |
