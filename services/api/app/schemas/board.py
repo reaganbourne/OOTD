@@ -13,6 +13,10 @@ class CreateBoardRequest(BaseModel):
     event_date: date | None = None
 
 
+class UpdateBoardRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
+
+
 class BoardOut(BaseModel):
     id: uuid.UUID
     name: str

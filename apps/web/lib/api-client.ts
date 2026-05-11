@@ -852,6 +852,15 @@ export const boardApiClient = {
     });
   },
 
+  async update(boardId: string, input: { name: string }): Promise<ApiResult<Board>> {
+    return sendRequest<Board>(`/boards/${boardId}`, {
+      method: "PATCH",
+      body: input,
+      requiresAuth: true,
+      successMessage: "Board updated."
+    });
+  },
+
   async delete(boardId: string): Promise<ApiResult<null>> {
     return sendRequest<null>(`/boards/${boardId}`, {
       method: "DELETE",

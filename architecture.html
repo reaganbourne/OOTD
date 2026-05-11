@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>OOTD Architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f1117; color: #e2e8f0; padding: 32px; }
+  h1 { text-align: center; font-size: 22px; font-weight: 700; color: #f8fafc; margin-bottom: 6px; letter-spacing: .5px; }
+  .subtitle { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 36px; }
+
+  .arch { display: grid; grid-template-columns: 260px 1fr 260px; gap: 0; align-items: start; }
+
+  /* ─── LAYER CARD ─── */
+  .layer { border-radius: 12px; padding: 18px 16px; }
+  .layer-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  /* FRONTEND */
+  .fe { background: #1a1f35; border: 1px solid #2d3a6e; }
+  .fe .layer-title { color: #818cf8; }
+
+  /* BACKEND */
+  .be-col { display: flex; flex-direction: column; gap: 12px; padding: 0 16px; }
+
+  /* DB */
+  .db { background: #1a2a1a; border: 1px solid #2d5a2d; }
+  .db .layer-title { color: #4ade80; }
+
+  /* ─── BOX (router / crud / model) ─── */
+  .box {
+    border-radius: 8px; padding: 12px 14px;
+    font-size: 12.5px; line-height: 1.55;
+  }
+  .box-title { font-weight: 700; font-size: 12px; margin-bottom: 6px; }
+  .box ul { list-style: none; padding: 0; }
+  .box ul li { padding: 1px 0; color: #94a3b8; }
+  .box ul li span.method { display: inline-block; width: 42px; font-weight: 600; font-size: 11px; }
+  .box ul li span.get  { color: #34d399; }
+  .box ul li span.post { color: #60a5fa; }
+  .box ul li span.del  { color: #f87171; }
+  .box ul li span.lock { color: #fbbf24; font-size: 10px; margin-left: 3px; }
+  .box ul li span.path { color: #e2e8f0; }
+
+  /* router boxes */
+  .rtr { background: #1e2a3a; border: 1px solid #2d4a6e; }
+  .rtr .box-title { color: #60a5fa; }
+
+  /* crud boxes */
+  .crd { background: #261e3a; border: 1px solid #4a2d6e; }
+  .crd .box-title { color: #c084fc; }
+
+  /* service boxes */
+  .svc { background: #2a1e2a; border: 1px solid #6e2d5a; }
+  .svc .box-title { color: #f0abfc; }
+
+  /* dep boxes */
+  .dep { background: #1e2a26; border: 1px solid #2d6e4a; }
+  .dep .box-title { color: #6ee7b7; }
+
+  /* layer header cards */
+  .layer-hdr { border-radius: 10px; padding: 14px 16px; text-align: center; }
+  .fe-hdr { background: #1a1f35; border: 1px solid #2d3a6e; }
+  .be-hdr { background: #1e1a2a; border: 1px solid #4a2d6e; }
+  .db-hdr { background: #1a2a1a; border: 1px solid #2d5a2d; }
+  .layer-hdr .lbl { font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+  .fe-hdr .lbl { color: #818cf8; }
+  .be-hdr .lbl { color: #c084fc; }
+  .db-hdr .lbl { color: #4ade80; }
+  .layer-hdr .tech { font-size: 11px; color: #64748b; margin-top: 3px; }
+
+  /* ─── DB TABLES ─── */
+  .table-card {
+    border-radius: 8px; padding: 12px 14px; margin-bottom: 10px;
+    background: #1f2e1f; border: 1px solid #2d5a2d;
+    font-size: 12px;
+  }
+  .table-card:last-child { margin-bottom: 0; }
+  .table-name { font-weight: 700; color: #4ade80; font-size: 12px; margin-bottom: 6px; font-family: monospace; }
+  .field { color: #94a3b8; padding: 1px 0; }
+  .field .fname { color: #e2e8f0; font-family: monospace; font-size: 11px; }
+  .field .ftype { color: #64748b; font-size: 10.5px; margin-left: 4px; }
+  .field .ftag { font-size: 10px; margin-left: 4px; border-radius: 3px; padding: 1px 4px; }
+  .pk  { background: #422006; color: #fb923c; }
+  .fk  { background: #1e3a5f; color: #60a5fa; }
+  .idx { background: #2d1f50; color: #a78bfa; }
+  .rel { font-size: 11px; color: #64748b; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.06); }
+  .rel span { color: #86efac; }
+
+  /* ─── ARROWS / CONNECTORS ─── */
+  .arrows { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding-top: 60px; }
+  .arrow { font-size: 20px; color: #4a5568; }
+  .arrow-lbl { font-size: 10px; color: #4a5568; text-align: center; max-width: 60px; }
+
+  /* ─── FE SECTION ─── */
+  .fe-section { margin-bottom: 10px; }
+  .fe-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: #4a5568; margin-bottom: 6px; }
+  .fe-box { background: #1f2540; border: 1px solid #2d3a6e; border-radius: 7px; padding: 10px 12px; margin-bottom: 8px; font-size: 12px; }
+  .fe-box .fb-title { font-weight: 700; color: #a5b4fc; margin-bottom: 5px; font-size: 11.5px; }
+  .fe-box ul { list-style: none; }
+  .fe-box ul li { color: #64748b; padding: 1px 0; font-size: 11.5px; }
+  .fe-box ul li strong { color: #94a3b8; }
+
+  /* ─── CENTER COLUMN ─── */
+  .be-section-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+    color: #4a5568; margin-bottom: 6px; margin-top: 4px;
+  }
+
+  /* ─── FLOW LEGEND ─── */
+  .flow-row {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    margin-top: 32px;
+  }
+  .flow-step {
+    border-radius: 8px; padding: 12px; text-align: center;
+    font-size: 11.5px;
+  }
+  .flow-step .fs-num { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .flow-step .fs-name { font-weight: 700; margin-bottom: 4px; font-size: 12px; }
+  .flow-step .fs-desc { font-size: 11px; color: #94a3b8; }
+  .fs1 { background: #1a1f35; border: 1px solid #2d3a6e; }
+  .fs1 .fs-num { color: #818cf8; }
+  .fs1 .fs-name { color: #a5b4fc; }
+  .fs2 { background: #1e2a3a; border: 1px solid #2d4a6e; }
+  .fs2 .fs-num { color: #60a5fa; }
+  .fs2 .fs-name { color: #93c5fd; }
+  .fs3 { background: #261e3a; border: 1px solid #4a2d6e; }
+  .fs3 .fs-num { color: #c084fc; }
+  .fs3 .fs-name { color: #d8b4fe; }
+  .fs4 { background: #2a1e1e; border: 1px solid #6e2d2d; }
+  .fs4 .fs-num { color: #f87171; }
+  .fs4 .fs-name { color: #fca5a5; }
+  .fs5 { background: #1a2a1a; border: 1px solid #2d5a2d; }
+  .fs5 .fs-num { color: #4ade80; }
+  .fs5 .fs-name { color: #86efac; }
+  .flow-arrow { display: flex; align-items: center; justify-content: center; font-size: 22px; color: #374151; padding-top: 12px; }
+
+  /* ─── CONNECTOR LINE SECTION ─── */
+  .connector { display: flex; align-items: center; justify-content: center; }
+  .conn-line { height: 2px; flex: 1; background: linear-gradient(to right, transparent, #374151, transparent); }
+  .conn-mid { font-size: 11px; color: #4b5563; padding: 0 10px; white-space: nowrap; }
+
+  hr.divider { border: none; border-top: 1px solid #1e293b; margin: 28px 0; }
+  .section-label { font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<h1>OOTD — Full Architecture</h1>
+<p class="subtitle">Frontend · API · Database · Service connections</p>
+
+<!-- ═══════════════════════════ MAIN 3-COLUMN GRID ═══════════════════════════ -->
+<div class="arch">
+
+  <!-- ═══ LEFT: FRONTEND ═══ -->
+  <div class="fe layer">
+    <div class="layer-title">Frontend &nbsp;·&nbsp; Next.js + React</div>
+
+    <div class="fe-section">
+      <div class="fe-section-title">API Client &nbsp;·&nbsp; lib/api-client.ts</div>
+      <div class="fe-box">
+        <div class="fb-title">sendRequest&lt;T&gt;()</div>
+        <ul>
+          <li>Auto Bearer token injection</li>
+          <li>Auto-refresh on 401</li>
+          <li>Multipart FormData support</li>
+          <li>Error normalization</li>
+        </ul>
+      </div>
+      <div class="fe-box">
+        <div class="fb-title">Auth API</div>
+        <ul>
+          <li><strong>register()</strong></li>
+          <li><strong>login()</strong></li>
+          <li><strong>logout()</strong></li>
+          <li><strong>refresh()</strong></li>
+          <li><strong>me()</strong></li>
+        </ul>
+      </div>
+      <div class="fe-box">
+        <div class="fb-title">Outfit API</div>
+        <ul>
+          <li><strong>create()</strong> &nbsp;→ multipart</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="fe-section">
+      <div class="fe-section-title">Auth &nbsp;·&nbsp; lib/auth-context.tsx</div>
+      <div class="fe-box">
+        <div class="fb-title">AuthProvider</div>
+        <ul>
+          <li>Bootstrap: refresh → me</li>
+          <li>State: AuthUser | null</li>
+          <li><strong>login()</strong>, <strong>signup()</strong>, <strong>logout()</strong></li>
+          <li>Cookie: HttpOnly session</li>
+        </ul>
+      </div>
+      <div class="fe-box">
+        <div class="fb-title">useAuth() hook</div>
+        <ul>
+          <li>Consumed by all pages</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="fe-section">
+      <div class="fe-section-title">Pages &nbsp;·&nbsp; app/</div>
+      <div class="fe-box">
+        <ul>
+          <li>Next.js App Router</li>
+          <li>middleware.ts (route guards)</li>
+          <li>Tailwind CSS</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CENTER: BACKEND ═══ -->
+  <div class="be-col">
+
+    <!-- Header -->
+    <div class="be-hdr layer-hdr">
+      <div class="lbl">Backend &nbsp;·&nbsp; FastAPI + SQLAlchemy</div>
+      <div class="tech">Python 3.12 · PostgreSQL 16 · JWT Auth · S3 Storage</div>
+    </div>
+
+    <!-- ROUTERS -->
+    <div class="be-section-title">Routers &nbsp;→&nbsp; HTTP interface</div>
+
+    <div class="box rtr">
+      <div class="box-title">auth.py</div>
+      <ul>
+        <li><span class="method post">POST</span><span class="path">/auth/register</span></li>
+        <li><span class="method post">POST</span><span class="path">/auth/login</span></li>
+        <li><span class="method post">POST</span><span class="path">/auth/refresh</span></li>
+        <li><span class="method post">POST</span><span class="path">/auth/logout</span></li>
+        <li><span class="method get">GET</span><span class="path">/auth/me</span><span class="lock">🔒</span></li>
+      </ul>
+    </div>
+
+    <div class="box rtr">
+      <div class="box-title">users.py</div>
+      <ul>
+        <li><span class="method get">GET</span><span class="path">/users/{username}</span></li>
+        <li><span class="method post">POST</span><span class="path">/users/{id}/follow</span><span class="lock">🔒</span></li>
+        <li><span class="method del">DEL</span><span class="path">/users/{id}/follow</span><span class="lock">🔒</span></li>
+      </ul>
+    </div>
+
+    <div class="box rtr">
+      <div class="box-title">outfits.py</div>
+      <ul>
+        <li><span class="method post">POST</span><span class="path">/outfits</span><span class="lock">🔒</span></li>
+        <li><span class="method get">GET</span><span class="path">/outfits/feed</span><span class="lock">🔒</span></li>
+        <li><span class="method get">GET</span><span class="path">/outfits/me</span><span class="lock">🔒</span></li>
+        <li><span class="method get">GET</span><span class="path">/outfits/user/{username}</span></li>
+      </ul>
+    </div>
+
+    <div class="box rtr">
+      <div class="box-title">health.py</div>
+      <ul>
+        <li><span class="method get">GET</span><span class="path">/health</span></li>
+      </ul>
+    </div>
+
+    <!-- DEPENDENCIES -->
+    <div class="be-section-title">Dependencies &nbsp;→&nbsp; Injected per request</div>
+    <div class="box dep">
+      <div class="box-title">dependencies.py</div>
+      <ul>
+        <li><strong style="color:#6ee7b7">get_db()</strong> — yields SQLAlchemy Session</li>
+        <li><strong style="color:#6ee7b7">get_current_user()</strong> — validates Bearer JWT → User or 401</li>
+      </ul>
+    </div>
+
+    <!-- CRUD -->
+    <div class="be-section-title">CRUD &nbsp;→&nbsp; Database operations</div>
+
+    <div class="box crd">
+      <div class="box-title">user_crud.py</div>
+      <ul>
+        <li>get_by_email / get_by_username / get_by_id</li>
+        <li>create_user(username, email, password_hash)</li>
+      </ul>
+    </div>
+
+    <div class="box crd">
+      <div class="box-title">outfit_crud.py</div>
+      <ul>
+        <li>create_outfit() — atomic outfit + items insert</li>
+        <li>get_outfit_with_items(outfit_id)</li>
+        <li>get_user_outfits(user_id, cursor, limit)</li>
+        <li>get_feed(following_ids, cursor, limit)</li>
+      </ul>
+    </div>
+
+    <div class="box crd">
+      <div class="box-title">follow_crud.py</div>
+      <ul>
+        <li>follow / unfollow (idempotent)</li>
+        <li>is_following(follower_id, following_id)</li>
+        <li>follower_count / following_count</li>
+        <li>following_ids(user_id) → list[UUID]</li>
+      </ul>
+    </div>
+
+    <div class="box crd">
+      <div class="box-title">session_crud.py</div>
+      <ul>
+        <li>create_session(user_id, token_hash, expires_at)</li>
+        <li>get_by_token_hash(hash)</li>
+        <li>revoke_session(session) — sets revoked_at</li>
+      </ul>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="be-section-title">Services &nbsp;→&nbsp; External integrations</div>
+
+    <div class="box svc">
+      <div class="box-title">auth.py &nbsp;·&nbsp; AuthService</div>
+      <ul>
+        <li>hash_password / verify_password — bcrypt 4.x</li>
+        <li>create_access_token — JWT HS256, 15-min TTL</li>
+        <li>create_refresh_token — JWT HS256, 7-day TTL</li>
+        <li>Token hashing — SHA-256 for safe DB storage</li>
+        <li>HttpOnly cookie — SameSite=Lax, path=/auth</li>
+      </ul>
+    </div>
+
+    <div class="box svc">
+      <div class="box-title">storage.py &nbsp;·&nbsp; S3</div>
+      <ul>
+        <li>upload_image(file_bytes, content_type, user_id)</li>
+        <li>Allowed: JPEG, PNG, WebP, HEIC · Max 10 MB</li>
+        <li>Returns public HTTPS URL</li>
+        <li>InvalidImageError → 422 · StorageError → 500</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ═══ RIGHT: DATABASE ═══ -->
+  <div class="db layer">
+    <div class="layer-title">Database &nbsp;·&nbsp; PostgreSQL 16</div>
+
+    <div class="table-card">
+      <div class="table-name">users</div>
+      <div class="field"><span class="fname">id</span><span class="ftype">UUID</span><span class="ftag pk">PK</span></div>
+      <div class="field"><span class="fname">email</span><span class="ftype">String</span><span class="ftag idx">UNIQUE</span></div>
+      <div class="field"><span class="fname">username</span><span class="ftype">String?</span><span class="ftag idx">UNIQUE</span></div>
+      <div class="field"><span class="fname">password_hash</span><span class="ftype">String</span></div>
+      <div class="field"><span class="fname">display_name</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">profile_image_url</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">bio</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">created_at / updated_at</span><span class="ftype">DateTime</span></div>
+      <div class="rel">→ <span>outfits</span>, <span>refresh_sessions</span>, <span>follows</span>, <span>likes</span>, <span>comments</span></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-name">outfits</div>
+      <div class="field"><span class="fname">id</span><span class="ftype">UUID</span><span class="ftag pk">PK</span></div>
+      <div class="field"><span class="fname">user_id</span><span class="ftype">UUID</span><span class="ftag fk">FK → users</span></div>
+      <div class="field"><span class="fname">image_url</span><span class="ftype">String</span></div>
+      <div class="field"><span class="fname">caption</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">event_name</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">worn_on</span><span class="ftype">Date?</span></div>
+      <div class="field"><span class="fname">vibe_check_text</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">vibe_check_tone</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">created_at / updated_at</span><span class="ftype">DateTime</span></div>
+      <div class="rel">→ <span>clothing_items</span>, <span>likes</span>, <span>comments</span></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-name">clothing_items</div>
+      <div class="field"><span class="fname">id</span><span class="ftype">UUID</span><span class="ftag pk">PK</span></div>
+      <div class="field"><span class="fname">outfit_id</span><span class="ftype">UUID</span><span class="ftag fk">FK → outfits</span></div>
+      <div class="field"><span class="fname">category</span><span class="ftype">String</span></div>
+      <div class="field"><span class="fname">brand</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">color</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">display_order</span><span class="ftype">Int (0)</span></div>
+      <div class="field"><span class="fname">link_url</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">created_at</span><span class="ftype">DateTime</span></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-name">follows</div>
+      <div class="field"><span class="fname">follower_id</span><span class="ftype">UUID</span><span class="ftag fk">FK → users</span><span class="ftag pk">CPK</span></div>
+      <div class="field"><span class="fname">following_id</span><span class="ftype">UUID</span><span class="ftag fk">FK → users</span><span class="ftag pk">CPK</span></div>
+      <div class="field"><span class="fname">created_at</span><span class="ftype">DateTime</span></div>
+      <div class="rel">CHECK: <span>follower_id ≠ following_id</span></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-name">refresh_sessions</div>
+      <div class="field"><span class="fname">id</span><span class="ftype">UUID</span><span class="ftag pk">PK</span></div>
+      <div class="field"><span class="fname">user_id</span><span class="ftype">UUID</span><span class="ftag fk">FK → users</span></div>
+      <div class="field"><span class="fname">token_hash</span><span class="ftype">String</span><span class="ftag idx">UNIQUE</span></div>
+      <div class="field"><span class="fname">user_agent / ip_address</span><span class="ftype">String?</span></div>
+      <div class="field"><span class="fname">expires_at</span><span class="ftype">DateTime</span></div>
+      <div class="field"><span class="fname">revoked_at</span><span class="ftype">DateTime?</span></div>
+      <div class="field"><span class="fname">created_at</span><span class="ftype">DateTime</span></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-name">likes</div>
+      <div class="field"><span class="fname">user_id</span><span class="ftype">UUID</span><span class="ftag fk">FK → users</span><span class="ftag pk">CPK</span></div>
+      <div class="field"><span class="fname">outfit_id</span><span class="ftype">UUID</span><span class="ftag fk">FK → outfits</span><span class="ftag pk">CPK</span></div>
+      <div class="field"><span class="fname">created_at</span><span class="ftype">DateTime</span></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-name">comments</div>
+      <div class="field"><span class="fname">id</span><span class="ftype">UUID</span><span class="ftag pk">PK</span></div>
+      <div class="field"><span class="fname">outfit_id</span><span class="ftype">UUID</span><span class="ftag fk">FK → outfits</span></div>
+      <div class="field"><span class="fname">user_id</span><span class="ftype">UUID</span><span class="ftag fk">FK → users</span></div>
+      <div class="field"><span class="fname">body</span><span class="ftype">String</span></div>
+      <div class="field"><span class="fname">created_at / updated_at</span><span class="ftype">DateTime</span></div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- ═══════════════════════════ REQUEST FLOW ═══════════════════════════ -->
+<div class="section-label">Request Flow — Example: POST /outfits</div>
+
+<div style="display:grid; grid-template-columns: repeat(9, 1fr); gap:4px; align-items:center;">
+  <div class="flow-step fs1">
+    <div class="fs-num">1</div>
+    <div class="fs-name">Frontend</div>
+    <div class="fs-desc">sendRequest() builds multipart FormData (image + JSON metadata)</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step fs2">
+    <div class="fs-num">2</div>
+    <div class="fs-name">Router</div>
+    <div class="fs-desc">get_current_user() validates Bearer JWT → User</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step svc" style="padding:12px; text-align:center; border-radius:8px;">
+    <div class="fs-num" style="font-size:18px;font-weight:800;color:#f0abfc">3</div>
+    <div class="fs-name" style="font-weight:700;font-size:12px;color:#f0abfc;margin-bottom:4px;">Storage</div>
+    <div class="fs-desc" style="font-size:11px;color:#94a3b8;">upload_image() → S3 → returns HTTPS URL</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step fs3">
+    <div class="fs-num">4</div>
+    <div class="fs-name">CRUD</div>
+    <div class="fs-desc">create_outfit() inserts outfit + items atomically</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step fs5">
+    <div class="fs-num">5</div>
+    <div class="fs-name">Database</div>
+    <div class="fs-desc">outfits + clothing_items rows committed to Postgres</div>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- ═══════════════════════════ AUTH FLOW ═══════════════════════════ -->
+<div class="section-label">Auth Flow — Token Lifecycle</div>
+
+<div style="display:grid; grid-template-columns: repeat(9, 1fr); gap:4px; align-items:center;">
+  <div class="flow-step fs1">
+    <div class="fs-num">1</div>
+    <div class="fs-name">Register / Login</div>
+    <div class="fs-desc">POST credentials → hashed with bcrypt</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step fs2">
+    <div class="fs-num">2</div>
+    <div class="fs-name">Issue Tokens</div>
+    <div class="fs-desc">access_token (JWT, 15 min) + refresh_token (JWT, 7 days)</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step fs3">
+    <div class="fs-num">3</div>
+    <div class="fs-name">Store Session</div>
+    <div class="fs-desc">SHA-256 hash of refresh token saved to DB. Raw token → HttpOnly cookie</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step svc" style="padding:12px; text-align:center; border-radius:8px;">
+    <div class="fs-num" style="font-size:18px;font-weight:800;color:#f0abfc">4</div>
+    <div class="fs-name" style="font-weight:700;font-size:12px;color:#f0abfc;margin-bottom:4px;">Auto-Refresh</div>
+    <div class="fs-desc" style="font-size:11px;color:#94a3b8;">On 401: POST /auth/refresh → new token pair, old session revoked</div>
+  </div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step fs2">
+    <div class="fs-num">5</div>
+    <div class="fs-name">Protected Routes</div>
+    <div class="fs-desc">get_current_user() decodes JWT, returns User or 401</div>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- ═══════════════════════════ MIGRATIONS ═══════════════════════════ -->
+<div class="section-label">Alembic Migrations</div>
+<div style="display:flex;gap:16px;">
+  <div class="box crd" style="flex:1">
+    <div class="box-title">20260411_3f8a1c2d &nbsp;·&nbsp; initial_schema</div>
+    <ul>
+      <li style="color:#94a3b8">Creates all 7 tables: users, outfits, clothing_items, follows, refresh_sessions, likes, comments</li>
+      <li style="color:#94a3b8">All FK constraints + CASCADE deletes</li>
+      <li style="color:#94a3b8">Indexes on email, username, token_hash</li>
+    </ul>
+  </div>
+  <div class="box crd" style="flex:1">
+    <div class="box-title">20260417_a1b2c3d4 &nbsp;·&nbsp; add_link_url_to_clothing_items</div>
+    <ul>
+      <li style="color:#94a3b8">Adds nullable <code style="color:#c084fc">link_url VARCHAR</code> to clothing_items</li>
+      <li style="color:#94a3b8">Depends on: 3f8a1c2d</li>
+      <li style="color:#94a3b8">Reversible (downgrade drops column)</li>
+    </ul>
+  </div>
+</div>
+
+<p style="text-align:center;margin-top:28px;font-size:11px;color:#374151;">OOTD · reaganbourne/OOTD · generated 2026-04-20</p>
+
+</body>
+</html>

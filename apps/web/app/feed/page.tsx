@@ -130,28 +130,11 @@ function TabSwitcher({ active, onChange }: { active: Tab; onChange: (t: Tab) => 
 
 function BoardActivityCard({
   outfit,
-  boardName,
 }: {
   outfit: BoardOutfitResponse;
   boardName: string;
 }) {
-  return (
-    <div className="relative">
-      <OutfitCard outfit={toBoardCardData(outfit)} showAuthor />
-      {/* Board name badge */}
-      <div className="pointer-events-none absolute left-3 bottom-[4.5rem] right-3">
-        <span className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full border border-line bg-white/88 px-3 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-ink-soft backdrop-blur">
-          <svg viewBox="0 0 24 24" className="h-3 w-3 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="4" y="4" width="6.5" height="6.5" rx="1.4" />
-            <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4" />
-            <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4" />
-            <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4" />
-          </svg>
-          <span className="truncate">{boardName}</span>
-        </span>
-      </div>
-    </div>
-  );
+  return <OutfitCard outfit={toBoardCardData(outfit)} showAuthor />;
 }
 
 // ── Vault feed tab ────────────────────────────────────────────────────────────
@@ -455,7 +438,7 @@ export default function FeedPage() {
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl items-center justify-center">
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
-            <p className="font-logo text-5xl text-pink-deep" style={{ fontWeight: 100, letterSpacing: "-0.02em" }}>checkd.</p>
+            <p className="font-display text-5xl text-pink-deep" style={{ letterSpacing: "-0.02em" }}>checkd</p>
             <h1 className="mt-4 text-4xl text-ink">Opening your feed</h1>
           </section>
         </div>
