@@ -129,71 +129,74 @@ export function StoryCardSheet({ outfitId, imageUrl, wornOn, createdAt, vibeChec
       const PAD = 52;
       const VIBE_MAX_W = W - PAD * 2;
 
-      if (vibeCheckText || vibeCheckTone) {
-        const vibe = vibeCheckText ? firstSentence(vibeCheckText) : null;
-        const accentColor = TONE_ACCENT[(vibeCheckTone ?? "").toLowerCase()] ?? "rgba(255,255,255,0.7)";
+      try {
+        if (vibeCheckText?.trim() || vibeCheckTone?.trim()) {
+          const vibe = vibeCheckText?.trim() ? firstSentence(vibeCheckText) : null;
+          const accentColor = TONE_ACCENT[(vibeCheckTone ?? "").toLowerCase()] ?? "rgba(255,255,255,0.7)";
 
-        // Measure how many lines the vibe text needs so we can position from the bottom up
-        let vibeLineCount = 0;
-        if (vibe) {
-          ctx.font = `italic 400 34px Georgia, serif`;
-          vibeLineCount = wrapLines(ctx, vibe, VIBE_MAX_W).length;
-        }
-
-        const TONE_H   = vibeCheckTone ? 44 : 0;
-        const VIBE_H   = vibeLineCount * 42;
-        const BLOCK_H  = TONE_H + (TONE_H && VIBE_H ? 14 : 0) + VIBE_H;
-        const PILL_H   = 72;
-        const PILL_GAP = 24;
-
-        // Start block this many pixels above the pill
-        let vy = H - PAD - PILL_H - PILL_GAP - BLOCK_H;
-
-        // Tone badge
-        if (vibeCheckTone) {
-          ctx.save();
-          ctx.font = `600 22px -apple-system, sans-serif`;
-          const badgeText = vibeCheckTone.toUpperCase();
-          const bw = ctx.measureText(badgeText).width;
-          const bpad = 14;
-          const bh = 32;
-          // Badge background
-          ctx.globalAlpha = 0.18;
-          ctx.fillStyle = accentColor;
-          const rx = PAD, ry = vy;
-          ctx.beginPath();
-          ctx.roundRect(rx, ry, bw + bpad * 2, bh, bh / 2);
-          ctx.fill();
-          ctx.globalAlpha = 1;
-          // Badge border
-          ctx.strokeStyle = accentColor;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.roundRect(rx, ry, bw + bpad * 2, bh, bh / 2);
-          ctx.stroke();
-          // Badge text
-          ctx.fillStyle = accentColor;
-          ctx.textAlign = "left";
-          ctx.textBaseline = "middle";
-          ctx.fillText(badgeText, rx + bpad, ry + bh / 2);
-          ctx.restore();
-          vy += bh + 14;
-        }
-
-        // Vibe text
-        if (vibe) {
-          ctx.save();
-          ctx.font = `italic 400 34px Georgia, serif`;
-          ctx.fillStyle = "rgba(255,255,255,0.92)";
-          ctx.textAlign = "left";
-          ctx.textBaseline = "top";
-          const lines = wrapLines(ctx, vibe, VIBE_MAX_W);
-          for (const line of lines) {
-            ctx.fillText(line, PAD, vy);
-            vy += 42;
+          // Measure how many lines the vibe text needs so we can position from the bottom up
+          let vibeLineCount = 0;
+          if (vibe) {
+            ctx.font = `italic 400 34px Georgia, serif`;
+            vibeLineCount = wrapLines(ctx, vibe, VIBE_MAX_W).length;
           }
-          ctx.restore();
+
+          const TONE_H   = vibeCheckTone?.trim() ? 44 : 0;
+          const VIBE_H   = vibeLineCount * 42;
+          const BLOCK_H  = TONE_H + (TONE_H && VIBE_H ? 14 : 0) + VIBE_H;
+          const PILL_H   = 72;
+          const PILL_GAP = 24;
+
+          // Start block this many pixels above the pill
+          let vy = H - PAD - PILL_H - PILL_GAP - BLOCK_H;
+
+          // Tone badge — use the polyfill roundRect so it works on all browsers
+          if (vibeCheckTone?.trim()) {
+            ctx.save();
+            ctx.font = `600 22px -apple-system, sans-serif`;
+            const badgeText = vibeCheckTone.toUpperCase();
+            const bw = ctx.measureText(badgeText).width;
+            const bpad = 14;
+            const bh = 32;
+            const rx = PAD, ry = vy;
+            // Badge background
+            ctx.globalAlpha = 0.18;
+            ctx.fillStyle = accentColor;
+            roundRect(ctx, rx, ry, bw + bpad * 2, bh, bh / 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            // Badge border
+            ctx.strokeStyle = accentColor;
+            ctx.lineWidth = 1.5;
+            roundRect(ctx, rx, ry, bw + bpad * 2, bh, bh / 2);
+            ctx.stroke();
+            // Badge text
+            ctx.fillStyle = accentColor;
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            ctx.fillText(badgeText, rx + bpad, ry + bh / 2);
+            ctx.restore();
+            vy += bh + 14;
+          }
+
+          // Vibe text
+          if (vibe) {
+            ctx.save();
+            ctx.font = `italic 400 34px Georgia, serif`;
+            ctx.fillStyle = "rgba(255,255,255,0.92)";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            const lines = wrapLines(ctx, vibe, VIBE_MAX_W);
+            for (const line of lines) {
+              ctx.fillText(line, PAD, vy);
+              vy += 42;
+            }
+            ctx.restore();
+          }
         }
+      } catch (e) {
+        // Vibe check rendering failed — canvas continues without it
+        console.warn("Story card vibe check render failed:", e);
       }
 
       // ── Branding pill — bottom-left ──────────────────────────────────
