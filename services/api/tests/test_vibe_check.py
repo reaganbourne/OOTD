@@ -29,8 +29,9 @@ def _post_outfit(client, token, caption="test outfit"):
 
 
 class TestVibeCheck:
-    def test_vibe_check_populated_when_service_returns_values(self, client, monkeypatch):
-        """Outfit response includes vibe_check fields when Claude returns them."""
+    def test_outfit_created_immediately_vibe_check_async(self, client, monkeypatch):
+        """Outfit is returned immediately; vibe_check fields are null in the response
+        because the check runs in a background task after the response is sent."""
         monkeypatch.setattr(
             "app.routers.outfits.upload_image",
             lambda **kw: "https://s3.example.com/test.jpg",
@@ -45,8 +46,10 @@ class TestVibeCheck:
 
         assert res.status_code == 201
         body = res.json()
-        assert body["vibe_check_text"] == "Effortlessly cool with a streetwear edge."
-        assert body["vibe_check_tone"] == "streetwear"
+        # Vibe check is async — the immediate response always has null fields.
+        # The background task updates the DB after the response is sent.
+        assert body["vibe_check_text"] is None
+        assert body["vibe_check_tone"] is None
 
     def test_outfit_created_when_vibe_check_fails(self, client, monkeypatch):
         """Outfit is saved successfully even when Claude returns (None, None)."""
@@ -68,7 +71,7 @@ class TestVibeCheck:
         assert body["vibe_check_tone"] is None
 
     def test_vibe_check_receives_caption(self, client, monkeypatch):
-        """Caption is forwarded to the vibe check service."""
+        """Caption is forwarded to the vibe check service via the background task."""
         monkeypatch.setattr(
             "app.routers.outfits.upload_image",
             lambda **kw: "https://s3.example.com/test.jpg",
@@ -85,6 +88,7 @@ class TestVibeCheck:
         a = _register(client, USER_A)
         _post_outfit(client, a["access_token"], "Sunday brunch fit")
 
+        # TestClient runs background tasks synchronously, so received is populated.
         assert received["caption"] == "Sunday brunch fit"
 
     def test_vibe_check_skipped_when_no_api_key(self, client, monkeypatch):
