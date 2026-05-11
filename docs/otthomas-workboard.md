@@ -2,95 +2,72 @@
 
 Owned areas: frontend only in `apps/web/`
 
-Last synced: 2026-04-13
+Last synced: 2026-05-11
 
 ## Done (merged to main)
 
+### Foundation
 - Typed API client for web (GH #11)
-- Auth screens (login, register)
+- Auth screens (login, register, confirm password)
 - Auth state management (GH #14)
 - Next.js route protection middleware (GH #15)
 - Landing page (GH #16)
 
-## Phase 2 — Unblocked now
+### Phase 2 — Core MVP
+- Outfit upload flow UI — photo picker → clothing item tags → metadata → review → submit (GH #19)
+- Home feed grid (GH #21)
+- Profile page UI — header, vault grid, follower/following counts, follow button (GH #41)
+- Feed tabs UI — Vault Feed + Boards Activity (GH #42)
+- Likes, comments, and search UI (GH #57)
 
-### GH #58 — Figma design system
-- Color palette, typography, spacing tokens
-- Core components: buttons, cards, inputs, modals, bottom sheets
-- Screen designs: feed, profile/vault, board detail, story card, upload flow
-- Export tokens for Tailwind
-- Tools: Figma + v0.dev
-- **Start here — everything else benefits from having designs first**
+### Phase 3 — Boards
+- Board creation and join UI (GH #50)
+- Board outfit upload UI (GH #51)
 
-## Phase 2 — Blocked on backend
+### Phase 3 — Story Card
+- Story card share UI — full-screen 9:16 preview, download + native share (GH #54)
+- Vibe check on story card, one-sentence vibe display (PR #162)
 
-### GH #19 — Build outfit upload flow UI
-- Blocked by: GH #20 (done ✅) and GH #39 (link_url field — Reagan's next)
-- Multipart upload flow: photo picker → clothing item tags (category, brand, color, link_url) → metadata (caption, event, date) → review → submit
-- Mobile-first, loading + error states
+### Phase 3 — Navigation & Onboarding
+- App navigation shell — bottom tab bar with upload FAB (GH #72)
+- Onboarding flow UI (GH #73)
+- Explore page UI (GH #78)
+- User search UI (GH #79)
+- Edit profile UI (GH #84)
 
-### GH #21 — Build home feed grid
-- Blocked by: GH #22 (feed endpoint — Reagan's queue)
-- Two-tab layout: Vault Feed + Boards Activity
-- Outfit card component, board activity card, infinite scroll
+### Design System
+- Checkd v2 design implementation applied across the app (PRs #139–143)
+- Design token cleanup, desktop nav, typography polish
 
-### GH #41 — Build profile page UI
-- Blocked by: GH #40 (profile endpoints — Reagan's queue)
-- Profile header (avatar, name, bio, follower/following counts, follow button)
-- Vault grid with infinite scroll
-- Own vs other profile view
+### Pre-launch Polish (PRs #144–166)
+- QA bug sweep (dead buttons, follow API, missing pages, board overlap, member lists)
+- Auth session persistence — access token in sessionStorage survives page refreshes
+- Auth redirect with `?next=` param, board invite page redesign
+- Home font, profile tabs, SameSite=None cookie, follow lists
+- Strava-style share card, date picker, outfit delete UI
+- Inline comments, auto-join boards, back button improvements
+- Story card 9:16 aspect ratio fix, vibe badge roundRect polyfill (iOS < 15.4)
+- Smooth page transitions, clean vibe prompt copy
+- Mobile/desktop home page unified layout
 
-### GH #42 — Build feed tabs UI
-- Blocked by: GH #22 (feed) and boards backend
-- Tab switcher (Vault Feed / Boards)
-- Outfit card + board activity card components
+### Performance (PRs #167–171)
+- `next/image` in outfit cards — AVIF/WebP delivery, fill layout with `sizes` (PR #170)
+- Auth bootstrap: skip second `GET /auth/me` after refresh, use user from refresh response (PR #168)
+- Smoke test updated: image selectors use `alt` attribute; mock URL matches `remotePatterns`
 
-## Phase 3 — Boards
+## Up Next
 
-### GH #50 — Build board creation and join UI
-- Create board form (name, description, event date, Pinterest URL)
-- Shareable link screen, join landing page, board detail page
-- Pinterest embed rendering, member avatars
+### Performance
+- Frontend timing marks (`performance.mark()`) around feed/explore/profile loads
+- Prefetch detail routes when card links enter viewport
+- Skeleton cards sized to match final content dimensions
 
-### GH #51 — Build board outfit upload UI
-- Camera/gallery picker in board context, caption field
-- Simpler than vault upload — no clothing item tags required
+### Server-side rendering
+- Convert explore and public outfit detail to Server Component shells
+- Add `loading.tsx` for major routes
+- Lazy-load outfit images below the first viewport
 
-## Phase 3 — Story Card
-
-### GH #54 — Build story card share UI
-- "Generate vibe check" button on outfit detail
-- Full-screen 9:16 story card preview
-- Download + native share sheet, fallback when no vibe check exists
-
-## Phase 3 — Monthly Fits Wrapped
-
-### GH #TBD — Monthly Fits Wrapped UI
-- Animated presentation (Spotify Wrapped-style)
-- Cards for: total outfits, top colors, top brands, most active day, vibe of the month, top outfit, longest streak
+### Monthly Fits Wrapped
+- Animated stats presentation (Spotify Wrapped–style)
+- Cards: total outfits, top colors/brands, most active day, vibe of the month, top outfit, streak
 - Shareable summary card (downloadable image)
-
-## Phase 4
-
-### GH #57 — Likes, comments, and search UI
-- Like button with count on cards and detail page
-- Comments modal on outfit detail
-- Search bar + results grid on vault/profile
-
-### GH #59 — UI polish and redesign pass
-- Redesign: landing, feed, upload flow, profile, outfit detail
-- Depends on GH #58 Figma design system
-- Tools: v0.dev for generation → Next.js
-
-## Recommended Order
-
-1. #58 Figma design system (start now, no blockers)
-2. #19 outfit upload flow (once #39 lands)
-3. #41 profile page (once #40 lands)
-4. #21 + #42 feed + tabs (once #22 lands)
-5. #50 board creation + join UI
-6. #51 board outfit upload UI
-7. #54 story card share UI
-8. Wrapped UI
-9. #57 likes, comments, search UI
-10. #59 redesign pass

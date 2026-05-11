@@ -1,5 +1,8 @@
 # App performance plan
 
+> **Status as of 2026-05-11:** Phase 1 and Phase 3 are complete. Phase 2 is partially done (next/image shipped; thumbnail generation pending). Phases 4 and 5 are pending.
+
+
 This write-up focuses on making the app feel faster for real users. The current stack is a Next.js web app on Vercel, a FastAPI service on Railway, Postgres on Railway, and images in S3. Deployment matters, but the biggest gains will likely come from shortening the first-screen request chain, optimizing images, and removing backend query work that grows with feed size.
 
 ## Current performance hypothesis
@@ -290,25 +293,25 @@ Tradeoff:
 
 ### Phase 1: Measure and quick wins
 
-- Add FastAPI request duration logging.
-- Add frontend timing marks for feed/explore/profile.
-- Confirm production regions.
-- Add CloudFront or at least set long-lived cache headers for S3 images.
-- Reduce auth bootstrap from two requests to one after refresh.
+- ✅ Add FastAPI request duration logging. *(PR #169 — logs `METHOD /path STATUS Xms`, WARNING > 500ms)*
+- ❌ Add frontend timing marks for feed/explore/profile.
+- ❌ Confirm production regions.
+- ❌ Add CloudFront or at least set long-lived cache headers for S3 images.
+- ✅ Reduce auth bootstrap from two requests to one after refresh. *(PR #168 — `POST /auth/refresh` now returns `user`)*
 
 ### Phase 2: Image performance
 
-- Generate thumbnail and medium image variants on upload.
-- Store image dimensions and variant URLs.
-- Use feed thumbnails everywhere card-size images are rendered.
-- Configure `next/image` remote patterns and use it on stable card/profile images.
+- ❌ Generate thumbnail and medium image variants on upload. *(Serving originals via next/image optimizer for now)*
+- ❌ Store image dimensions and variant URLs.
+- ❌ Use feed thumbnails everywhere card-size images are rendered.
+- ✅ Configure `next/image` remote patterns and use it on stable card/profile images. *(PR #170 — `*.amazonaws.com` + `localhost:8000`, AVIF/WebP output, `fill` layout with accurate `sizes`)*
 
 ### Phase 3: API query performance
 
-- Bulk load authors in feed/explore/comments.
-- Add eager loading for clothing items only where needed.
-- Create summary schemas for list endpoints.
-- Add indexes based on real query plans.
+- ✅ Bulk load authors in feed/explore/comments. *(PR #167 — `user_crud.get_by_ids()`, feed went from 41 → 3 queries for 20 outfits)*
+- ✅ Add eager loading for clothing items only where needed. *(PR #167 — `selectinload(Outfit.clothing_items)` on all paginated queries)*
+- ❌ Create summary schemas for list endpoints.
+- ❌ Add indexes based on real query plans.
 
 ### Phase 4: Render path improvements
 
@@ -319,9 +322,9 @@ Tradeoff:
 
 ### Phase 5: Background work
 
-- Move vibe checks out of `POST /outfits`.
-- Cache generated story cards.
-- Add a worker/queue if background tasks need reliability.
+- ✅ Vibe check timing resolved. *(PR #171 — runs synchronously; 201 response includes populated `vibe_check_text`/`vibe_check_tone`. Async approach was tried and reverted — user wants the result in the immediate response.)*
+- ❌ Cache generated story cards.
+- ❌ Add a worker/queue if background tasks need reliability.
 
 ## Concrete code hotspots
 

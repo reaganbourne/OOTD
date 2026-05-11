@@ -1,6 +1,6 @@
 # GitHub Board Status
 
-Last synced: 2026-04-13
+Last synced: 2026-05-11
 
 ## Ownership
 
@@ -9,7 +9,7 @@ Last synced: 2026-04-13
 
 ## Merged to Main
 
-| Issue | Title | Owner |
+| PR | Title | Owner |
 |---|---|---|
 | #2 | Repo scaffold | both |
 | #5 | v1 DB schema | reaganbourne |
@@ -23,70 +23,79 @@ Last synced: 2026-04-13
 | #14 | Auth state management | otthomas |
 | #15 | Route protection middleware | otthomas |
 | #16 | Landing page | otthomas |
-| #17 | Outfit + clothing item schema | reaganbourne (included in #10) |
+| #17 | Outfit + clothing item schema | reaganbourne |
 | #18 | S3 image storage adapter | reaganbourne |
+| #19 | Outfit upload flow UI | otthomas |
 | #20 | Create-outfit endpoint | reaganbourne |
+| #21 | Home feed grid | otthomas |
+| #22 | Feed endpoint with cursor pagination | reaganbourne |
+| #23 | Follow/unfollow endpoints | reaganbourne |
+| #39 | `link_url` on clothing items | reaganbourne |
+| #40 | User profile + vault endpoints | reaganbourne |
+| #41 | Profile page UI | otthomas |
+| #42 | Feed tabs UI | otthomas |
+| #50 | Board creation and join UI | otthomas |
+| #51 | Board outfit upload UI | otthomas |
+| #52 | Vibe check AI endpoint | reaganbourne |
+| #53 | Story card image generation | reaganbourne |
+| #54 | Story card share UI | otthomas |
+| #55 | Likes and comments endpoints | reaganbourne |
+| #56 | Vault search endpoint | reaganbourne |
+| #57 | Likes, comments, and search UI | otthomas |
+| #72 | App navigation shell | otthomas |
+| #73 | Onboarding flow UI | otthomas |
+| #78 | Explore page UI | otthomas |
+| #79 | User search UI | otthomas |
+| #84 | Edit profile UI | otthomas |
+| #129–143 | Design system, checkd v2, frontend polish | otthomas |
+| #140 | Board outfit author field + explore endpoint | reaganbourne |
+| #144–166 | Pre-launch QA fixes, auth persistence, story card polish | both |
+| #167 | N+1 fix: bulk author fetch + selectinload | reaganbourne |
+| #168 | Auth bootstrap: refresh returns user | both |
+| #169 | Request duration logging middleware | reaganbourne |
+| #170 | next/image in outfit cards + remotePatterns | both |
+| #171 | Vibe check in immediate POST response | reaganbourne |
 
-## Open Issues by Phase
+## Open — Performance Remaining
 
-### Phase 2 — Core MVP
+| Item | Owner | Notes |
+|---|---|---|
+| Thumbnail generation at upload (400px/900px/original) | reaganbourne | Currently serving originals via next/image optimizer |
+| HTTP cache headers on public endpoints | reaganbourne | Explore, public outfit detail, public profiles |
+| Cached story card PNGs | reaganbourne | Currently regenerated per request |
+| Frontend timing marks (`performance.mark()`) | otthomas | Feed/explore/profile load instrumentation |
+| Prefetch card detail routes | otthomas | On viewport entry |
 
-| # | Title | Owner | Blocked by |
-|---|---|---|---|
-| #23 | Follow and unfollow endpoints | reaganbourne | — |
-| #39 | Add link_url to clothing items | reaganbourne | — |
-| #40 | User profile and vault endpoints | reaganbourne | — |
-| #22 | Feed endpoint with cursor pagination | reaganbourne | #23 |
-| #19 | Build outfit upload flow UI | otthomas | #39 |
-| #21 | Build home feed grid | otthomas | #22 |
-| #41 | Build profile page UI | otthomas | #40 |
-| #42 | Build feed tabs UI | otthomas | #22, boards |
-| #58 | Figma design system | otthomas | — |
+## Open — Server-Side Rendering
 
-### Phase 3 — Boards
+| Item | Owner | Notes |
+|---|---|---|
+| Server Component shell for explore page | otthomas | Good candidate — public, no auth required |
+| Server Component shell for public outfit detail | otthomas | OG metadata + streaming |
+| `loading.tsx` for major routes | otthomas | Feed, vault, profile |
+| Lazy-load images below first viewport | otthomas | Only first 6–8 cards should be eager |
 
-| # | Title | Owner | Blocked by |
-|---|---|---|---|
-| #43 | Boards schema migration | reaganbourne | — |
-| #44 | Board CRUD endpoints | reaganbourne | #43 |
-| #45 | Board outfit upload endpoint | reaganbourne | #43, #44 |
-| #46 | Board creator moderation | reaganbourne | #43, #44 |
-| #47 | Board expiry system | reaganbourne | #43 |
-| #48 | Pinterest embed integration | reaganbourne | #43 |
-| #49 | Board activity SMS notifications | reaganbourne | #43 |
-| #50 | Build board creation and join UI | otthomas | #44 |
-| #51 | Build board outfit upload UI | otthomas | #45 |
+## Open — Infrastructure
 
-### Phase 3 — Story Card & AI
+| Item | Owner | Notes |
+|---|---|---|
+| Confirm Railway API + Postgres region match | reaganbourne | Target us-east-1 if US user base |
+| CloudFront in front of S3 | reaganbourne | Image delivery CDN + long cache headers |
 
-| # | Title | Owner | Blocked by |
-|---|---|---|---|
-| #52 | Vibe check AI endpoint | reaganbourne | — |
-| #53 | Story card image generation | reaganbourne | #52 |
-| #54 | Build story card share UI | otthomas | #52, #53 |
+## Open — Monthly Fits Wrapped
 
-### Phase 3 — Monthly Fits Wrapped
+| Item | Owner | Notes |
+|---|---|---|
+| Wrapped API endpoint | reaganbourne | `GET /users/me/wrapped?month=2026-04` |
+| Wrapped UI | otthomas | Blocked on backend |
 
-| # | Title | Owner | Blocked by |
-|---|---|---|---|
-| TBD | Monthly Fits Wrapped endpoint | reaganbourne | — |
-| TBD | Monthly Fits Wrapped UI | otthomas | backend |
+## Open — Security (see `docs/security-plan.md`)
 
-### Phase 4 — Engagement & Polish
-
-| # | Title | Owner | Blocked by |
-|---|---|---|---|
-| #55 | Likes and comments endpoints | reaganbourne | — |
-| #56 | Vault search endpoint | reaganbourne | — |
-| #57 | Likes, comments, and search UI | otthomas | #55, #56 |
-| #59 | UI polish and redesign pass | otthomas | #58 |
-
-## What to Work on Now
-
-**reaganbourne:** Start #23 (follow/unfollow) — unblocked, unlocks the feed.
-
-**otthomas:** Start #58 (Figma design system) — unblocked, no backend dependency.
+| Item | Owner | Notes |
+|---|---|---|
+| Rate limiting on auth endpoints | reaganbourne | Branch exists, not merged |
+| Password complexity validation | reaganbourne | Branch exists, not merged |
 
 ## CI Status
 
-GitHub Actions runs `pytest` on every push and PR touching `services/api/`. Currently 30 passing tests covering all auth endpoints.
+GitHub Actions runs `pytest` on every push and PR to `services/api/`. Playwright smoke tests run on every push and PR to `apps/web/`. All tests passing on main as of 2026-05-11.
