@@ -4,8 +4,8 @@ import io
 
 REGISTER_URL = "/auth/register"
 
-USER_A = {"username": "detail_a", "email": "detail_a@example.com", "password": "password123"}
-USER_B = {"username": "detail_b", "email": "detail_b@example.com", "password": "password123"}
+USER_A = {"username": "detail_a", "email": "detail_a@example.com", "password": "password12345"}
+USER_B = {"username": "detail_b", "email": "detail_b@example.com", "password": "password12345"}
 
 
 def _register(client, payload):

@@ -1,5 +1,8 @@
 import type { ApiFieldErrors } from "@/lib/api-client";
 
+export const MIN_PASSWORD_LENGTH = 12;
+export const MAX_PASSWORD_BYTES = 72;
+
 export type AuthMode = "login" | "signup";
 
 export type AuthValues = {
@@ -33,10 +36,14 @@ export function validateAuthForm(mode: AuthMode, values: AuthValues): AuthErrors
     errors.email = "Enter a valid email address.";
   }
 
+  const passwordByteLength = new TextEncoder().encode(values.password).length;
+
   if (!values.password) {
     errors.password = "Password is required.";
-  } else if (values.password.length < 8) {
-    errors.password = "Password must be at least 8 characters long.";
+  } else if (mode === "signup" && values.password.length < MIN_PASSWORD_LENGTH) {
+    errors.password = `Password must be at least ${MIN_PASSWORD_LENGTH} characters long.`;
+  } else if (passwordByteLength > MAX_PASSWORD_BYTES) {
+    errors.password = `Password must be ${MAX_PASSWORD_BYTES} bytes or fewer.`;
   }
 
   if (mode === "signup") {

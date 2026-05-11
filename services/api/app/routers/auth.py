@@ -17,8 +17,27 @@ from app.schemas.auth import (
     UserResponse,
 )
 from app.services import auth as auth_service
+from app.services.rate_limit import login_rate_limiter, register_rate_limiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def _client_ip(request: Request) -> str:
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        return forwarded_for.split(",", 1)[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _enforce_rate_limit(key: str, limiter) -> None:
+    decision = limiter.check(key)
+    if decision.allowed:
+        return
+    raise HTTPException(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        detail="Too many attempts. Please try again later.",
+        headers={"Retry-After": str(decision.retry_after_seconds)},
+    )
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
@@ -28,6 +47,8 @@ def register(
     request: Request,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
+    _enforce_rate_limit(f"register:ip:{_client_ip(request)}", register_rate_limiter)
+
     if user_crud.get_by_email(db, body.email):
         raise HTTPException(status.HTTP_409_CONFLICT, detail="Email already registered.")
     if user_crud.get_by_username(db, body.username):
@@ -51,7 +72,12 @@ def login(
     request: Request,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
-    user = user_crud.get_by_email(db, body.email)
+    normalized_email = body.email.lower()
+    client_ip = _client_ip(request)
+    _enforce_rate_limit(f"login:ip:{client_ip}", login_rate_limiter)
+    _enforce_rate_limit(f"login:email:{normalized_email}", login_rate_limiter)
+
+    user = user_crud.get_by_email(db, normalized_email)
     if not user or not auth_service.verify_password(body.password, user.password_hash):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
 

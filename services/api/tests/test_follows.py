@@ -6,8 +6,8 @@ REGISTER_URL = "/auth/register"
 FOLLOW_URL = "/users/{username}/follow"
 PROFILE_URL = "/users/{username}"
 
-USER_A = {"username": "usera", "email": "a@example.com", "password": "password123"}
-USER_B = {"username": "userb", "email": "b@example.com", "password": "password123"}
+USER_A = {"username": "usera", "email": "a@example.com", "password": "password12345"}
+USER_B = {"username": "userb", "email": "b@example.com", "password": "password12345"}
 
 
 def _register(client: TestClient, payload: dict) -> dict:

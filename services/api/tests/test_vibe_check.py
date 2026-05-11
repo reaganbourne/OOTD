@@ -5,7 +5,7 @@ import io
 REGISTER_URL = "/auth/register"
 CREATE_OUTFIT_URL = "/outfits"
 
-USER_A = {"username": "usera", "email": "a@example.com", "password": "password123"}
+USER_A = {"username": "usera", "email": "a@example.com", "password": "password12345"}
 
 
 def _register(client, payload):
