@@ -4,7 +4,7 @@ from datetime import date, datetime, timezone
 from fastapi import HTTPException, status as http_status
 
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.models.clothing_item import ClothingItem
 from app.models.outfit import Outfit
@@ -56,7 +56,12 @@ def create_outfit(
 
 
 def get_outfit_with_items(db: Session, outfit_id: uuid.UUID) -> Outfit | None:
-    return db.query(Outfit).filter(Outfit.id == outfit_id).first()
+    return (
+        db.query(Outfit)
+        .options(selectinload(Outfit.clothing_items))
+        .filter(Outfit.id == outfit_id)
+        .first()
+    )
 
 
 def get_user_outfits(
@@ -70,7 +75,11 @@ def get_user_outfits(
     cursor is the ISO timestamp of the last item seen.
     Returns (outfits, next_cursor).
     """
-    query = db.query(Outfit).filter(Outfit.user_id == user_id)
+    query = (
+        db.query(Outfit)
+        .options(selectinload(Outfit.clothing_items))
+        .filter(Outfit.user_id == user_id)
+    )
 
     if cursor:
         try:
@@ -153,7 +162,11 @@ def get_feed(
     if not following_ids:
         return [], None
 
-    query = db.query(Outfit).filter(Outfit.user_id.in_(following_ids))
+    query = (
+        db.query(Outfit)
+        .options(selectinload(Outfit.clothing_items))
+        .filter(Outfit.user_id.in_(following_ids))
+    )
 
     if cursor:
         try:
@@ -181,7 +194,10 @@ def get_explore(
     All outfits on the platform, newest first.
     No user filter — public explore feed. Cursor-paginated.
     """
-    query = db.query(Outfit)
+    query = (
+        db.query(Outfit)
+        .options(selectinload(Outfit.clothing_items))
+    )
 
     if cursor:
         try:
@@ -198,7 +214,6 @@ def get_explore(
         next_cursor = outfits[-1].created_at.isoformat()
 
     return outfits, next_cursor
-
 
 
 def delete_outfit(db: Session, outfit: "Outfit") -> None:

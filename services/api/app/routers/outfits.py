@@ -107,24 +107,19 @@ def get_feed(
     ids = follow_crud.following_ids(db, current_user.id)
     outfits, next_cursor = outfit_crud.get_feed(db, ids, cursor, limit)
 
-    author_cache: dict[str, FeedAuthor] = {}
+    author_by_id = user_crud.get_by_ids(db, list({o.user_id for o in outfits}))
     feed_items: list[FeedOutfitOut] = []
 
     for outfit in outfits:
-        cache_key = str(outfit.user_id)
-
-        if cache_key not in author_cache:
-            author = user_crud.get_by_id(db, outfit.user_id)
-            author_cache[cache_key] = FeedAuthor(
-                id=outfit.user_id,
-                username=author.username if author else None,
-                profile_image_url=author.profile_image_url if author else None,
-            )
-
+        author = author_by_id.get(outfit.user_id)
         feed_items.append(
             FeedOutfitOut(
                 **OutfitOut.model_validate(outfit).model_dump(),
-                author=author_cache[cache_key],
+                author=FeedAuthor(
+                    id=outfit.user_id,
+                    username=author.username if author else None,
+                    profile_image_url=author.profile_image_url if author else None,
+                ),
             )
         )
 
@@ -145,22 +140,19 @@ def get_explore(
     """
     outfits, next_cursor = outfit_crud.get_explore(db, cursor, limit)
 
-    author_cache: dict[str, FeedAuthor] = {}
+    author_by_id = user_crud.get_by_ids(db, list({o.user_id for o in outfits}))
     feed_items: list[FeedOutfitOut] = []
 
     for outfit in outfits:
-        cache_key = str(outfit.user_id)
-        if cache_key not in author_cache:
-            author = user_crud.get_by_id(db, outfit.user_id)
-            author_cache[cache_key] = FeedAuthor(
-                id=outfit.user_id,
-                username=author.username if author else None,
-                profile_image_url=author.profile_image_url if author else None,
-            )
+        author = author_by_id.get(outfit.user_id)
         feed_items.append(
             FeedOutfitOut(
                 **OutfitOut.model_validate(outfit).model_dump(),
-                author=author_cache[cache_key],
+                author=FeedAuthor(
+                    id=outfit.user_id,
+                    username=author.username if author else None,
+                    profile_image_url=author.profile_image_url if author else None,
+                ),
             )
         )
 
