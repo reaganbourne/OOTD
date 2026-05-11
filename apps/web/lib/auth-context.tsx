@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   authApiClient,
   clearAccessToken,
+  hydrateAccessToken,
   type AuthUser
 } from "@/lib/api-client";
 import { toAuthErrors, type AuthErrors } from "@/lib/auth";
@@ -60,6 +61,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function bootstrapAuth() {
       setIsLoading(true);
 
+      // ── Fast path: valid token already cached in sessionStorage ──────────
+      // This skips the cross-origin cookie round-trip on every page refresh,
+      // which was causing users to get logged out due to SameSite cookie issues.
+      const cachedToken = hydrateAccessToken();
+      if (cachedToken) {
+        const meResult = await authApiClient.me();
+        if (!isActive) return;
+        if (meResult.ok) {
+          setUser(meResult.data);
+          setIsLoading(false);
+          return;
+        }
+        // Token was rejected by the server (expired early, user deleted, etc.)
+        // Fall through to the full refresh flow below.
+        clearAccessToken();
+      }
+
+      // ── Slow path: ask the backend to exchange the refresh-token cookie ───
       const refreshResult = await authApiClient.refresh();
 
       if (!isActive) {
