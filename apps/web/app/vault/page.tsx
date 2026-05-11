@@ -17,24 +17,6 @@ const INITIAL_PAGE_SIZE = 12;
 type VaultStatus = "idle" | "loading" | "ready" | "error";
 type LikeMap = Record<string, { liked: boolean; count: number }>;
 
-function matchesSearch(outfit: OutfitResponse, query: string): boolean {
-  if (!query.trim()) return true;
-  const q = query.trim().toLowerCase();
-  const items = outfit.clothing_items ?? [];
-  return (
-    outfit.caption?.toLowerCase().includes(q) === true ||
-    outfit.event_name?.toLowerCase().includes(q) === true ||
-    outfit.vibe_check_tone?.toLowerCase().includes(q) === true ||
-    outfit.vibe_check_text?.toLowerCase().includes(q) === true ||
-    items.some(
-      (i) =>
-        i.brand?.toLowerCase().includes(q) ||
-        i.category?.toLowerCase().includes(q) ||
-        i.color?.toLowerCase().includes(q)
-    )
-  );
-}
-
 function toCardData(outfit: OutfitResponse): OutfitCardData {
   return {
     id: outfit.id,
@@ -77,6 +59,12 @@ export default function VaultPage() {
 
   // Like state
   const [likes, setLikes] = useState<LikeMap>({});
+
+  // Search state — uses the backend searchVault endpoint so all outfits are searched,
+  // not just the currently loaded page. Debounced 300ms.
+  const [searchResults, setSearchResults] = useState<OutfitResponse[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -144,6 +132,30 @@ export default function VaultPage() {
   }, [nextCursor, loadingMore, vaultStatus]);
 
   const sentinelRef = useSentinel(() => { void loadMore(); });
+
+  // Debounced API search — fires 300ms after the user stops typing.
+  // When query is empty, clears results so the paginated list shows instead.
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (!searchQuery.trim()) {
+      setSearchResults(null);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    searchTimerRef.current = setTimeout(async () => {
+      const result = await apiClient.outfits.searchVault(searchQuery.trim(), 50);
+      setSearchLoading(false);
+      if (result.ok) {
+        setSearchResults(result.data);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
+  }, [searchQuery]);
 
   async function handleLike(outfitId: string) {
     const current = likes[outfitId];
@@ -255,29 +267,44 @@ export default function VaultPage() {
             </div>
           ) : null}
 
-          {(() => {
-            const filtered = outfits.filter((o) => matchesSearch(o, searchQuery));
-            if (vaultStatus === "ready" && outfits.length > 0 && filtered.length === 0) {
-              return (
-                <div className="px-5 py-10 text-center">
-                  <p className="font-display text-2xl text-ink">no matches.</p>
-                  <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
-                    try searching by brand, event, color, or vibe.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery("")}
-                    className="mt-5 text-sm text-pink-deep hover:underline"
-                  >
-                    clear search
-                  </button>
-                </div>
-              );
-            }
-            return null;
-          })()}
+          {/* Search results — API-powered, shows all matching outfits across the full vault */}
+          {searchQuery.trim() ? (
+            searchLoading ? (
+              <div className="grid grid-cols-3 gap-px bg-line">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
+                ))}
+              </div>
+            ) : searchResults !== null && searchResults.length === 0 ? (
+              <div className="px-5 py-10 text-center">
+                <p className="font-display text-2xl text-ink">no matches.</p>
+                <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
+                  try searching by brand, event, color, or vibe.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="mt-5 text-sm text-pink-deep hover:underline"
+                >
+                  clear search
+                </button>
+              </div>
+            ) : searchResults !== null ? (
+              <div className="grid grid-cols-3 gap-px bg-line">
+                {searchResults.map((outfit) => (
+                  <OutfitCard
+                    key={outfit.id}
+                    outfit={toCardData(outfit)}
+                    compact
+                    liked={likes[outfit.id]?.liked}
+                    onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
+                  />
+                ))}
+              </div>
+            ) : null
+          ) : null}
 
-          {vaultStatus === "ready" && outfits.length === 0 ? (
+          {vaultStatus === "ready" && outfits.length === 0 && !searchQuery.trim() ? (
             <div className="px-5 py-16 text-center">
               <p className="font-display text-2xl text-ink">your archive is ready.</p>
               <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
@@ -291,10 +318,10 @@ export default function VaultPage() {
             </div>
           ) : null}
 
-          {vaultStatus === "ready" && outfits.length > 0 ? (
+          {vaultStatus === "ready" && outfits.length > 0 && !searchQuery.trim() ? (
             <>
               <div className="grid grid-cols-3 gap-px bg-line">
-                {outfits.filter((o) => matchesSearch(o, searchQuery)).map((outfit) => (
+                {outfits.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     outfit={toCardData(outfit)}

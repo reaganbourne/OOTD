@@ -154,6 +154,7 @@ export default function ExplorePage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [gridStatus, setGridStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [loadingMore, setLoadingMore] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const [suggested, setSuggested] = useState<UserSearchResult[]>([]);
   const [suggestedLoading, setSuggestedLoading] = useState(true);
@@ -180,7 +181,7 @@ export default function ExplorePage() {
     });
 
     return () => { active = false; };
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, reloadKey]);
 
   // Load suggested users
   useEffect(() => {
@@ -340,7 +341,7 @@ export default function ExplorePage() {
               <p className="text-sm text-mute">Couldn&rsquo;t load outfits. Try refreshing.</p>
               <button
                 type="button"
-                onClick={() => router.refresh()}
+                onClick={() => setReloadKey((k) => k + 1)}
                 className="mt-4 rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25"
               >
                 Refresh

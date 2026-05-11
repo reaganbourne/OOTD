@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
-const AUTH_PATHS = ["/login", "/signup", "/onboarding", "/forgot-password"];
+const AUTH_PATHS = ["/login", "/signup", "/onboarding", "/forgot-password", "/upload"];
 
 const NAV_LINKS = [
   { href: "/feed", label: "feed" },

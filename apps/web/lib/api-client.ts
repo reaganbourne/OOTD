@@ -465,7 +465,8 @@ async function sendRequest<T>(
     }
 
     if (typeof window !== "undefined") {
-      window.location.assign("/login");
+      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.assign(`/login?next=${next}`);
     }
 
     return {
