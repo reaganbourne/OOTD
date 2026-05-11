@@ -779,6 +779,13 @@ export const userApiClient = {
     });
   },
 
+  async getFollowStatus(username: string): Promise<ApiResult<FollowStatus>> {
+    return sendRequest<FollowStatus>(`/users/${username}/follow-status`, {
+      requiresAuth: true,
+      successMessage: "Loaded follow status."
+    });
+  },
+
   async follow(username: string): Promise<ApiResult<FollowStatus>> {
     return sendRequest<FollowStatus>(`/users/${username}/follow`, {
       method: "POST",

@@ -169,8 +169,7 @@ export function OutfitCard({
   const toneClasses = getToneClasses(outfit.vibeTone);
   const toneLabel = formatToneLabel(outfit.vibeTone);
   const metadataLine = [outfit.eventName].filter(Boolean).join(" / ");
-  const caption =
-    outfit.caption?.trim() || "A saved look ready to be revisited later.";
+  const caption = outfit.caption?.trim() || null;
   const dateLabel = formatOutfitDate(outfit.wornOn ?? outfit.createdAt);
 
   if (compact) {
@@ -313,7 +312,7 @@ export function OutfitCard({
         )}
 
         <div className={showCaption ? "space-y-1.5" : "space-y-1"}>
-          {showCaption ? (
+          {showCaption && caption ? (
             <p className="line-clamp-2 font-display text-sm italic leading-snug text-ink-soft">{caption}</p>
           ) : null}
 

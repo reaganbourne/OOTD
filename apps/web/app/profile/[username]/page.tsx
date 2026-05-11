@@ -94,9 +94,12 @@ export default function PublicProfilePage({
     async function load() {
       setStatus("loading");
 
-      const [profileResult, outfitsResult] = await Promise.all([
+      const [profileResult, outfitsResult, followStatusResult] = await Promise.all([
         apiClient.users.getProfile(username),
         apiClient.outfits.getByUser(username, { limit: 12 }),
+        isAuthenticated
+          ? apiClient.users.getFollowStatus(username)
+          : Promise.resolve(null),
       ]);
 
       if (!active) return;
@@ -108,6 +111,11 @@ export default function PublicProfilePage({
 
       setProfile(profileResult.data);
       setFollowerCount(profileResult.data.follower_count);
+
+      // Initialize follow button state from server so it's correct on first render
+      if (followStatusResult && followStatusResult.ok) {
+        setFollowing(followStatusResult.data.following);
+      }
 
       if (outfitsResult.ok) {
         setOutfits(outfitsResult.data.outfits);
@@ -122,7 +130,7 @@ export default function PublicProfilePage({
     return () => {
       active = false;
     };
-  }, [username, isOwnProfile]);
+  }, [username, isOwnProfile, isAuthenticated]);
 
   async function handleFollow() {
     if (!isAuthenticated || followLoading) return;
