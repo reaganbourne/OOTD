@@ -20,6 +20,13 @@ def get_by_id(db: Session, user_id: uuid.UUID) -> User | None:
     return db.query(User).filter(User.id == user_id).first()
 
 
+def get_by_ids(db: Session, user_ids: list[uuid.UUID]) -> dict[uuid.UUID, User]:
+    if not user_ids:
+        return {}
+    rows = db.query(User).filter(User.id.in_(user_ids)).all()
+    return {u.id: u for u in rows}
+
+
 def create_user(db: Session, username: str, email: str, password_hash: str) -> User:
     user = User(
         username=username,
