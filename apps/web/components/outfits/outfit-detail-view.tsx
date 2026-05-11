@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient, type OutfitDetailResponse } from "@/lib/api-client";
+import { apiClient, type Comment, type OutfitDetailResponse } from "@/lib/api-client";
 import { MobileNav } from "@/components/chrome/mobile-nav";
 import { StoryCardSheet } from "@/components/outfits/story-card-sheet";
-import { CommentsSheet } from "@/components/outfits/comments-sheet";
 import { useAuth } from "@/lib/auth-context";
 
 type PageStatus = "loading" | "ready" | "not-found" | "error";
@@ -29,6 +28,233 @@ function formatDate(d?: string | null) {
   return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(d));
 }
 
+function formatCommentDate(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(iso));
+}
+
+// ── Inline comments section ────────────────────────────────────────────────────
+
+function CommentsSection({ outfitId }: { outfitId: string }) {
+  const { user, isAuthenticated } = useAuth();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [newBody, setNewBody] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    apiClient.outfits.getComments(outfitId, { limit: 20 }).then((r) => {
+      if (!active) return;
+      if (r.ok) { setComments(r.data.comments); setCursor(r.data.next_cursor ?? null); }
+      setLoading(false);
+    });
+    return () => { active = false; };
+  }, [outfitId]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !cursor) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !loadingMore) {
+        setLoadingMore(true);
+        apiClient.outfits.getComments(outfitId, { cursor, limit: 20 }).then((r) => {
+          if (r.ok) { setComments((p) => [...p, ...r.data.comments]); setCursor(r.data.next_cursor ?? null); }
+          setLoadingMore(false);
+        });
+      }
+    }, { rootMargin: "120px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [cursor, loadingMore, outfitId]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newBody.trim() || submitting || !isAuthenticated) return;
+    setSubmitting(true);
+    const result = await apiClient.outfits.createComment(outfitId, newBody.trim());
+    if (result.ok) {
+      setComments((prev) => [result.data, ...prev]);
+      setNewBody("");
+    }
+    setSubmitting(false);
+  }
+
+  async function handleEdit(commentId: string, body: string) {
+    const result = await apiClient.outfits.updateComment(outfitId, commentId, body);
+    if (result.ok) setComments((prev) => prev.map((c) => (c.id === commentId ? result.data : c)));
+    setEditingId(null);
+  }
+
+  async function handleDelete(commentId: string) {
+    const result = await apiClient.outfits.deleteComment(outfitId, commentId);
+    if (result.ok) setComments((prev) => prev.filter((c) => c.id !== commentId));
+  }
+
+  return (
+    <div className="soft-panel px-5 py-5">
+      <p className="mb-4 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">
+        Comments {comments.length > 0 ? `· ${comments.length}${cursor ? "+" : ""}` : ""}
+      </p>
+
+      {/* Compose box */}
+      {isAuthenticated ? (
+        <form onSubmit={(e) => void handleSubmit(e)} className="mb-5">
+          <div className="flex items-end gap-2">
+            <textarea
+              ref={inputRef}
+              value={newBody}
+              onChange={(e) => setNewBody(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void handleSubmit(e as unknown as React.FormEvent);
+                }
+              }}
+              placeholder="Add a comment…"
+              rows={1}
+              disabled={submitting}
+              className="min-h-[2.5rem] flex-1 resize-none rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink outline-none transition focus:border-pink-deep disabled:opacity-50 placeholder:text-mute"
+            />
+            <button
+              type="submit"
+              disabled={!newBody.trim() || submitting}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-paper transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Post comment"
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+          </div>
+        </form>
+      ) : (
+        <p className="mb-4 text-sm text-mute">
+          <Link href="/login" className="text-pink-deep hover:underline">Log in</Link> to leave a comment.
+        </p>
+      )}
+
+      {/* Comment list */}
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2].map((i) => (
+            <div key={i} className="flex gap-3 animate-pulse">
+              <div className="h-8 w-8 shrink-0 rounded-full bg-pink-soft" />
+              <div className="flex-1 space-y-2 pt-1">
+                <div className="h-2.5 w-24 rounded-full bg-pink-soft" />
+                <div className="h-3 w-full rounded-full bg-pink-soft" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : comments.length === 0 ? (
+        <p className="py-4 text-center text-sm text-mute">no comments yet — be first ✨</p>
+      ) : (
+        <ul className="divide-y divide-line/40">
+          {comments.map((comment) => (
+            <CommentRow
+              key={comment.id}
+              comment={comment}
+              isOwn={comment.user_id === user?.id}
+              editing={editingId === comment.id}
+              onStartEdit={() => setEditingId(comment.id)}
+              onCancelEdit={() => setEditingId(null)}
+              onSaveEdit={(body) => handleEdit(comment.id, body)}
+              onDelete={() => handleDelete(comment.id)}
+            />
+          ))}
+          {cursor ? <div ref={sentinelRef} className="h-px" /> : null}
+          {loadingMore ? <li className="py-3 text-center text-xs text-mute">loading…</li> : null}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+type CommentRowProps = {
+  comment: Comment;
+  isOwn: boolean;
+  editing: boolean;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
+  onSaveEdit: (body: string) => Promise<void>;
+  onDelete: () => Promise<void>;
+};
+
+function CommentRow({ comment, isOwn, editing, onStartEdit, onCancelEdit, onSaveEdit, onDelete }: CommentRowProps) {
+  const [editBody, setEditBody] = useState(comment.body);
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    if (!editBody.trim() || saving) return;
+    setSaving(true);
+    await onSaveEdit(editBody.trim());
+    setSaving(false);
+  }
+
+  return (
+    <li className="flex gap-3 py-3">
+      {comment.author.profile_image_url ? (
+        <img src={comment.author.profile_image_url} alt={comment.author.username ?? ""} className="h-8 w-8 shrink-0 rounded-full border border-line object-cover" />
+      ) : (
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line bg-pink-soft text-xs font-semibold text-ink-soft">
+          {(comment.author.display_name ?? comment.author.username ?? "?").charAt(0).toUpperCase()}
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="text-xs font-semibold text-ink">
+            {comment.author.display_name ?? comment.author.username ?? "Someone"}
+          </span>
+          <span className="text-[0.65rem] text-mute">{formatCommentDate(comment.created_at)}</span>
+        </div>
+        {editing ? (
+          <div className="mt-1.5 space-y-2">
+            <textarea
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+              rows={2}
+              className="w-full resize-none rounded-xl border border-line bg-white px-3 py-2 text-sm text-ink outline-none focus:border-pink-deep"
+            />
+            <div className="flex gap-2">
+              <button type="button" onClick={() => void handleSave()} disabled={saving || !editBody.trim()}
+                className="rounded-full bg-ink px-3 py-1 text-xs font-medium text-paper hover:opacity-90 disabled:opacity-50">
+                {saving ? "saving…" : "save"}
+              </button>
+              <button type="button" onClick={onCancelEdit}
+                className="rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-soft">
+                cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-0.5 text-sm leading-6 text-ink-soft">{comment.body}</p>
+        )}
+        {isOwn && !editing ? (
+          <div className="mt-1 flex gap-3">
+            <button type="button" onClick={onStartEdit} className="text-[0.65rem] text-mute hover:text-ink-soft transition">edit</button>
+            <button type="button" onClick={() => void onDelete()} className="text-[0.65rem] text-error/60 hover:text-error transition">delete</button>
+          </div>
+        ) : null}
+      </div>
+    </li>
+  );
+}
+
+// ── Main detail view ───────────────────────────────────────────────────────────
+
 export function OutfitDetailView({ id }: { id: string }) {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
@@ -39,37 +265,27 @@ export function OutfitDetailView({ id }: { id: string }) {
   const [likeCount, setLikeCount] = useState(0);
   const [likeLoading, setLikeLoading] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const [showComments, setShowComments] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-
     async function load() {
       setStatus("loading");
       const result = await apiClient.outfits.getDetail(id);
       if (!active) return;
-
       if (!result.ok) {
         setStatus(result.message?.toLowerCase().includes("not found") ? "not-found" : "error");
         return;
       }
-
       setOutfit(result.data);
       setStatus("ready");
-
-      // Fetch like status if logged in
       if (isAuthenticated) {
         const likeResult = await apiClient.outfits.getLikes(id);
         if (!active) return;
-        if (likeResult.ok) {
-          setLiked(likeResult.data.liked);
-          setLikeCount(likeResult.data.like_count);
-        }
+        if (likeResult.ok) { setLiked(likeResult.data.liked); setLikeCount(likeResult.data.like_count); }
       }
     }
-
     void load();
     return () => { active = false; };
   }, [id, isAuthenticated]);
@@ -77,19 +293,12 @@ export function OutfitDetailView({ id }: { id: string }) {
   async function handleLike() {
     if (!isAuthenticated || likeLoading) return;
     setLikeLoading(true);
-
     if (liked) {
       const result = await apiClient.outfits.unlike(id);
-      if (result.ok) {
-        setLiked(false);
-        setLikeCount((c) => Math.max(0, c - 1));
-      }
+      if (result.ok) { setLiked(false); setLikeCount((c) => Math.max(0, c - 1)); }
     } else {
       const result = await apiClient.outfits.like(id);
-      if (result.ok) {
-        setLiked(true);
-        setLikeCount(result.data.like_count);
-      }
+      if (result.ok) { setLiked(true); setLikeCount(result.data.like_count); }
     }
     setLikeLoading(false);
   }
@@ -107,7 +316,6 @@ export function OutfitDetailView({ id }: { id: string }) {
     }
   }
 
-  // ── Not found ──
   if (status === "not-found") {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
@@ -133,32 +341,29 @@ export function OutfitDetailView({ id }: { id: string }) {
       <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
 
-          {/* Top bar */}
+          {/* Top bar — prominent back button */}
           <header className="mb-5 flex items-center justify-between">
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex items-center gap-1.5 text-sm text-mute transition hover:text-ink"
+              className="flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink-soft transition hover:border-pink-deep/30 hover:text-ink"
             >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m15 18-6-6 6-6" />
               </svg>
-              Back
+              back
             </button>
 
             <button
               type="button"
               onClick={() => setShowShare(true)}
-              className="flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2.5 text-[0.78rem] font-semibold text-ink-soft transition hover:border-pink-deep/30"
+              className="flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink-soft transition hover:border-pink-deep/30"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="18" cy="5" r="3" />
-                <circle cx="6" cy="12" r="3" />
-                <circle cx="18" cy="19" r="3" />
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
               </svg>
-              Share
+              share
             </button>
           </header>
 
@@ -201,28 +406,19 @@ export function OutfitDetailView({ id }: { id: string }) {
                   </div>
                 </div>
               ) : outfit?.owner ? (
-                <Link
-                  href={`/profile/${outfit.owner.username}`}
-                  className="soft-panel flex items-center gap-3 px-5 py-4 transition hover:border-pink-deep/20"
-                >
+                <Link href={`/profile/${outfit.owner.username}`}
+                  className="soft-panel flex items-center gap-3 px-5 py-4 transition hover:border-pink-deep/20">
                   {outfit.owner.profile_image_url ? (
-                    <img
-                      src={outfit.owner.profile_image_url}
-                      alt={outfit.owner.username ?? ""}
-                      className="h-11 w-11 rounded-full border border-line object-cover"
-                    />
+                    <img src={outfit.owner.profile_image_url} alt={outfit.owner.username ?? ""}
+                      className="h-11 w-11 rounded-full border border-line object-cover" />
                   ) : (
                     <div className="flex h-11 w-11 items-center justify-center rounded-full border border-line bg-pink-soft text-sm font-semibold text-ink-soft">
                       {(outfit.owner.display_name ?? outfit.owner.username ?? "?").charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-ink">
-                      {outfit.owner.display_name ?? outfit.owner.username}
-                    </p>
-                    {outfit.owner.username ? (
-                      <p className="text-[0.7rem] text-mute">@{outfit.owner.username}</p>
-                    ) : null}
+                    <p className="truncate text-sm font-semibold text-ink">{outfit.owner.display_name ?? outfit.owner.username}</p>
+                    {outfit.owner.username ? <p className="text-[0.7rem] text-mute">@{outfit.owner.username}</p> : null}
                   </div>
                   <svg viewBox="0 0 24 24" className="ml-auto h-4 w-4 shrink-0 text-mute/40" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m9 18 6-6-6-6" />
@@ -240,20 +436,11 @@ export function OutfitDetailView({ id }: { id: string }) {
                   </div>
                 ) : (
                   <>
-                    {outfit?.caption ? (
-                      <p className="text-sm leading-7 text-ink-soft">{outfit.caption}</p>
-                    ) : null}
-
+                    {outfit?.caption ? <p className="text-sm leading-7 text-ink-soft">{outfit.caption}</p> : null}
                     {outfit?.event_name ? (
-                      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-mute">
-                        {outfit.event_name}
-                      </p>
+                      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-mute">{outfit.event_name}</p>
                     ) : null}
-
-                    {dateLabel ? (
-                      <p className="text-[0.7rem] uppercase tracking-[0.18em] text-mute">{dateLabel}</p>
-                    ) : null}
-
+                    {dateLabel ? <p className="text-[0.7rem] uppercase tracking-[0.18em] text-mute">{dateLabel}</p> : null}
                     {outfit?.vibe_check_text ? (
                       <div className="rounded-[1rem] border border-line bg-pink-soft px-4 py-3">
                         <p className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-pink-deep">Vibe check</p>
@@ -273,17 +460,11 @@ export function OutfitDetailView({ id }: { id: string }) {
                       <li key={item.id} className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-ink capitalize">{item.category}</p>
-                          <p className="text-[0.7rem] text-mute">
-                            {[item.brand, item.color].filter(Boolean).join(" · ")}
-                          </p>
+                          <p className="text-[0.7rem] text-mute">{[item.brand, item.color].filter(Boolean).join(" · ")}</p>
                         </div>
                         {item.link_url ? (
-                          <a
-                            href={item.link_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="shrink-0 rounded-full border border-line px-3 py-1 text-[0.68rem] font-semibold text-pink-deep transition hover:border-pink-deep/30"
-                          >
+                          <a href={item.link_url} target="_blank" rel="noopener noreferrer"
+                            className="shrink-0 rounded-full border border-line px-3 py-1 text-[0.68rem] font-semibold text-pink-deep transition hover:border-pink-deep/30">
                             Shop
                           </a>
                         ) : null}
@@ -294,21 +475,17 @@ export function OutfitDetailView({ id }: { id: string }) {
               ) : null}
 
               {deleteError ? (
-                <div className="rounded-[1rem] border border-error/25 bg-error/5 px-4 py-3 text-sm text-error">
-                  {deleteError}
-                </div>
+                <div className="rounded-[1rem] border border-error/25 bg-error/5 px-4 py-3 text-sm text-error">{deleteError}</div>
               ) : null}
 
-              {/* Like + comments + share actions */}
+              {/* Like + share + delete actions */}
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => void handleLike()}
                   disabled={likeLoading || !isAuthenticated}
                   className={`inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full border text-xs font-medium transition disabled:cursor-default ${
-                    liked
-                      ? "border-pink-deep/40 bg-pink-soft text-pink-deep"
-                      : "border-line bg-white text-ink-soft hover:border-pink-deep/30"
+                    liked ? "border-pink-deep/40 bg-pink-soft text-pink-deep" : "border-line bg-white text-ink-soft hover:border-pink-deep/30"
                   }`}
                 >
                   <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -319,25 +496,14 @@ export function OutfitDetailView({ id }: { id: string }) {
 
                 <button
                   type="button"
-                  onClick={() => setShowComments(true)}
+                  onClick={() => setShowShare(true)}
                   className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full border border-line bg-white text-xs font-medium text-ink-soft transition hover:border-pink-deep/30"
                 >
                   <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                  comments
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShowShare(true)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep/30 hover:text-ink"
-                  aria-label="Share"
-                >
-                  <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
                     <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                   </svg>
+                  share
                 </button>
 
                 {isOwn ? (
@@ -351,12 +517,14 @@ export function OutfitDetailView({ id }: { id: string }) {
                     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="3 6 5 6 21 6" />
                       <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                      <path d="M10 11v6M14 11v6" />
-                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                      <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                     </svg>
                   </button>
                 ) : null}
               </div>
+
+              {/* Inline comments — always visible, no sheet needed */}
+              {status === "ready" ? <CommentsSection outfitId={id} /> : null}
             </div>
           </div>
         </div>
@@ -370,10 +538,6 @@ export function OutfitDetailView({ id }: { id: string }) {
           createdAt={outfit?.created_at}
           onClose={() => setShowShare(false)}
         />
-      ) : null}
-
-      {showComments ? (
-        <CommentsSheet outfitId={id} onClose={() => setShowComments(false)} />
       ) : null}
 
       <MobileNav active="feed" />

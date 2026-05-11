@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient, type Board } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
@@ -30,6 +30,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
   const [board, setBoard] = useState<Board | null>(null);
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const hasAutoJoined = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -47,24 +48,41 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
     return () => { active = false; };
   }, [code]);
 
-  async function handleJoin() {
-    if (!isAuthenticated) {
-      router.push(`/login?next=/boards/join/${code}`);
-      return;
-    }
+  // Auto-join when both auth and board preview are ready.
+  // Avoids forcing a manual click for users who are already signed in —
+  // especially common when opening a shared link in a new tab.
+  useEffect(() => {
+    if (authLoading || !isAuthenticated || status !== "preview" || hasAutoJoined.current) return;
+    if (!board) return;
+    const expired = new Date(board.expires_at).getTime() < Date.now();
+    if (expired) return;
+    hasAutoJoined.current = true;
+    void doJoin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, isAuthenticated, status, board]);
+
+  async function doJoin() {
     setJoining(true);
     setJoinError(null);
     const result = await apiClient.boards.join(code);
     if (result.ok) {
       router.replace(`/boards/${result.data.id}`);
     } else {
-      setJoinError(result.message);
       setJoining(false);
+      setJoinError(result.message);
     }
   }
 
-  // ── Loading ──
-  if (status === "loading" || authLoading) {
+  async function handleJoin() {
+    if (!isAuthenticated) {
+      router.push(`/login?next=/boards/join/${code}`);
+      return;
+    }
+    void doJoin();
+  }
+
+  // Show spinner while: board loading, auth loading, or auto-joining in progress
+  if (status === "loading" || authLoading || (isAuthenticated && joining && !joinError)) {
     return (
       <main className="flex min-h-[100dvh] flex-col items-center justify-center px-5">
         <p className="font-display italic text-4xl text-pink-deep animate-pulse">checkd</p>
@@ -79,7 +97,10 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
         <div className="w-full max-w-[360px] text-center">
           <p className="font-display italic text-4xl text-pink-deep mb-8">checkd</p>
           <div className="soft-panel px-6 py-10">
-            <p className="text-3xl mb-2">🔗</p>
+            <svg viewBox="0 0 24 24" className="mx-auto mb-4 h-8 w-8 text-mute" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
             <h1 className="font-display text-2xl tracking-[-0.03em] text-ink mb-2">link not found</h1>
             <p className="text-sm leading-6 text-ink-soft mb-6">
               This invite link is invalid or has expired.
