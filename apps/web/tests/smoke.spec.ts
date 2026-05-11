@@ -295,8 +295,8 @@ test.describe("profile page", () => {
 
     await page.goto("/profile");
 
-    // All 4 tabs visible
-    for (const tab of ["fits", "tagged", "saved", "about"]) {
+    // Tabs visible — "tagged" and "saved" were removed in a previous PR
+    for (const tab of ["fits", "about"]) {
       await expect(page.getByRole("button", { name: new RegExp(`^${tab}$`, "i") })).toBeVisible();
     }
 
