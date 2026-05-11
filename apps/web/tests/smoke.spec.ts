@@ -221,7 +221,7 @@ test.describe("vault page", () => {
     await page.goto("/vault");
 
     // Grid renders — outfit image should be present
-    await expect(page.locator(`img[src="${mockOutfit.image_url}"]`).first()).toBeVisible();
+    await expect(page.getByAltText(/smoke test fit/i).first()).toBeVisible();
     // Stat line shows count
     await expect(page.getByText(/1 fits/i)).toBeVisible();
   });
@@ -258,7 +258,7 @@ test.describe("feed page", () => {
 
     await page.goto("/feed");
 
-    await expect(page.locator(`img[src="${mockOutfit.image_url}"]`).first()).toBeVisible();
+    await expect(page.getByAltText(/smoke test fit/i).first()).toBeVisible();
   });
 
   test("navigation icons link to correct pages", async ({ page }) => {
@@ -311,7 +311,7 @@ test.describe("profile page", () => {
 
     await page.goto("/profile");
 
-    await expect(page.locator(`img[src="${mockOutfit.image_url}"]`).first()).toBeVisible();
+    await expect(page.getByAltText(/smoke test fit/i).first()).toBeVisible();
   });
 });
 

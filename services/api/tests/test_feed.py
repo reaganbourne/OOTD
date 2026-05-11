@@ -9,9 +9,9 @@ FEED_URL = "/outfits/feed"
 MY_VAULT_URL = "/outfits/me"
 USER_VAULT_URL = "/outfits/user/{username}"
 
-USER_A = {"username": "usera", "email": "a@example.com", "password": "password123"}
-USER_B = {"username": "userb", "email": "b@example.com", "password": "password123"}
-USER_C = {"username": "userc", "email": "c@example.com", "password": "password123"}
+USER_A = {"username": "usera", "email": "a@example.com", "password": "password12345"}
+USER_B = {"username": "userb", "email": "b@example.com", "password": "password12345"}
+USER_C = {"username": "userc", "email": "c@example.com", "password": "password12345"}
 
 
 def _register(client, payload):

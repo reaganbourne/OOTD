@@ -36,7 +36,7 @@ In the AWS console → S3 → your bucket → Permissions:
 
 | Variable | Value |
 |----------|-------|
-| `SECRET_KEY` | `e6d8f9685403192a4334ceb63fe27a7395df934cf15da3dc6901b42b1f5675f1` |
+| `SECRET_KEY` | Generate a new value with `openssl rand -hex 32`. Never reuse a value from docs, chat, or local dev. |
 | `ANTHROPIC_API_KEY` | *(your key)* |
 | `S3_BUCKET` | `ootd-outfits-prod-696360034317-us-east-2-an` |
 | `AWS_ACCESS_KEY_ID` | *(from .env)* |
@@ -89,7 +89,7 @@ PUBLIC_BASE_URL=https://checkd.vercel.app
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 DATABASE_URL=postgresql://ootd:ootd@localhost:5432/ootd
-SECRET_KEY=e6d8f9685403192a4334ceb63fe27a7395df934cf15da3dc6901b42b1f5675f1
+SECRET_KEY=replace-with-output-from-openssl-rand-hex-32
 ENVIRONMENT=development
 DEBUG=false
 ANTHROPIC_API_KEY=<your key>
@@ -98,3 +98,14 @@ AWS_ACCESS_KEY_ID=<your key id>
 AWS_SECRET_ACCESS_KEY=<your secret>
 AWS_REGION=us-east-2
 ```
+
+## Security launch checklist
+
+Before making the app public:
+
+- Rotate any `SECRET_KEY` that was ever copied from this file or shared in chat, commits, screenshots, or deployment notes.
+- Rotate AWS and Anthropic keys if they were ever committed, pasted into support tools, or exposed in logs.
+- Use least-privilege AWS IAM credentials: only the exact S3 bucket/actions needed for uploads and reads.
+- Keep production secrets only in Railway/Vercel environment variables; do not commit `.env` files.
+- Set `CORS_ORIGINS` to the exact Vercel/custom domain only. Do not include localhost or `*` in production.
+- Set a long random `ADMIN_SECRET` before enabling admin maintenance endpoints, or leave it empty to keep them disabled.

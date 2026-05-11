@@ -13,13 +13,19 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 COOKIE_NAME = "refresh_token"
+MIN_PASSWORD_LENGTH = 12
+MAX_PASSWORD_BYTES = 72
 
 
 def hash_password(password: str) -> str:
+    if len(password.encode("utf-8")) > MAX_PASSWORD_BYTES:
+        raise ValueError(f"Password must be {MAX_PASSWORD_BYTES} bytes or fewer.")
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
+    if len(plain.encode("utf-8")) > MAX_PASSWORD_BYTES:
+        return False
     return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
@@ -66,4 +72,11 @@ def set_refresh_cookie(response: Response, token: str) -> None:
 
 
 def clear_refresh_cookie(response: Response) -> None:
-    response.delete_cookie(key=COOKIE_NAME, path="/auth", samesite="none")
+    is_production = settings.environment == "production"
+    response.delete_cookie(
+        key=COOKIE_NAME,
+        path="/auth",
+        samesite="none" if is_production else "lax",
+        secure=is_production,
+        httponly=True,
+    )
