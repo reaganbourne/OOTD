@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient, type UserSearchResult } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 
@@ -221,6 +221,7 @@ const STEPS = 3;
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, isLoading } = useAuth();
   const [step, setStep] = useState(0);
   const [follows, setFollows] = useState<FollowMap>({});
@@ -240,7 +241,10 @@ export default function OnboardingPage() {
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, "true");
     }
-    router.replace("/feed");
+    // If the user arrived here from a board invite (or any other ?next= flow),
+    // send them there instead of the generic feed.
+    const next = searchParams.get("next");
+    router.replace(next ?? "/feed");
   }
 
   function skip() {

@@ -111,6 +111,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [leaveLoading, setLeaveLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -276,20 +277,30 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
             ) : null}
 
             {/* Leave / delete */}
-            <div className="mt-4 flex gap-2 border-t border-line/60 pt-4">
+            <div className="mt-4 flex flex-col gap-2 border-t border-line/60 pt-4">
+              {errorMessage && !deleteLoading ? (
+                <p className="text-[0.72rem] text-error">{errorMessage}</p>
+              ) : null}
               {isCreator ? (
-                <Link
-                  href="/boards"
-                  className="text-[0.72rem] text-mute transition hover:text-error"
-                  onClick={async (e) => {
-                    e.preventDefault();
+                <button
+                  type="button"
+                  disabled={deleteLoading}
+                  className="w-fit text-[0.72rem] text-mute transition hover:text-error disabled:opacity-50"
+                  onClick={async () => {
                     if (!confirm("Delete this board and all its content?")) return;
-                    await apiClient.boards.delete(id);
-                    router.replace("/boards");
+                    setDeleteLoading(true);
+                    setErrorMessage(null);
+                    const result = await apiClient.boards.delete(id);
+                    if (result.ok) {
+                      router.replace("/boards");
+                    } else {
+                      setErrorMessage(result.message ?? "Failed to delete. Please try again.");
+                      setDeleteLoading(false);
+                    }
                   }}
                 >
-                  Delete board
-                </Link>
+                  {deleteLoading ? "Deleting…" : "Delete board"}
+                </button>
               ) : (
                 <button
                   type="button"

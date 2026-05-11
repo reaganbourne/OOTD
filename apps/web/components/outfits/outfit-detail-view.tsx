@@ -49,6 +49,7 @@ function CommentsSection({ outfitId }: { outfitId: string }) {
   const [newBody, setNewBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -83,10 +84,13 @@ function CommentsSection({ outfitId }: { outfitId: string }) {
     e.preventDefault();
     if (!newBody.trim() || submitting || !isAuthenticated) return;
     setSubmitting(true);
+    setSubmitError(null);
     const result = await apiClient.outfits.createComment(outfitId, newBody.trim());
     if (result.ok) {
       setComments((prev) => [result.data, ...prev]);
       setNewBody("");
+    } else {
+      setSubmitError(result.message ?? "Failed to post comment. Please try again.");
     }
     setSubmitting(false);
   }
@@ -111,11 +115,16 @@ function CommentsSection({ outfitId }: { outfitId: string }) {
       {/* Compose box */}
       {isAuthenticated ? (
         <form onSubmit={(e) => void handleSubmit(e)} className="mb-5">
+          {submitError ? (
+            <p className="mb-2 rounded-xl border border-error/20 bg-error/5 px-3 py-2 text-xs text-error">
+              {submitError}
+            </p>
+          ) : null}
           <div className="flex items-end gap-2">
             <textarea
               ref={inputRef}
               value={newBody}
-              onChange={(e) => setNewBody(e.target.value)}
+              onChange={(e) => { setNewBody(e.target.value); if (submitError) setSubmitError(null); }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -200,8 +209,11 @@ function CommentRow({ comment, isOwn, editing, onStartEdit, onCancelEdit, onSave
   async function handleSave() {
     if (!editBody.trim() || saving) return;
     setSaving(true);
-    await onSaveEdit(editBody.trim());
-    setSaving(false);
+    try {
+      await onSaveEdit(editBody.trim());
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -345,7 +357,15 @@ export function OutfitDetailView({ id }: { id: string }) {
           <header className="mb-5 flex items-center justify-between">
             <button
               type="button"
-              onClick={() => router.back()}
+              onClick={() => {
+                // If there's browser history, go back. Otherwise fall back to /feed
+                // so users who opened a shared link don't end up on an external page.
+                if (typeof window !== "undefined" && window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push("/feed");
+                }
+              }}
               className="flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-ink-soft transition hover:border-pink-deep/30 hover:text-ink"
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

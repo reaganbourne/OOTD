@@ -87,7 +87,11 @@ export function AuthForm({ mode, next }: AuthFormProps) {
     if (result.ok) {
       setErrors({});
       setSubmitState({ status: "idle" });
-      router.replace(mode === "signup" ? "/onboarding" : (next ?? "/feed"));
+      router.replace(
+        mode === "signup"
+          ? (next ? `/onboarding?next=${encodeURIComponent(next)}` : "/onboarding")
+          : (next ?? "/feed")
+      );
       return;
     }
 

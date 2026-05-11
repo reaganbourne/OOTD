@@ -68,6 +68,13 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
     if (result.ok) {
       router.replace(`/boards/${result.data.id}`);
     } else {
+      // If the user is already a member, just take them to the board —
+      // no need to show an error. We have the board ID from the preview.
+      const msg = result.message?.toLowerCase() ?? "";
+      if ((result.status === 409 || msg.includes("already")) && board) {
+        router.replace(`/boards/${board.id}`);
+        return;
+      }
       setJoining(false);
       setJoinError(result.message);
     }
