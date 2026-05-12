@@ -33,7 +33,6 @@ class OutfitMetadata(BaseModel):
     event_name: str | None = None
     worn_on: date | None = None
     clothing_items: list[ClothingItemIn] = Field(default_factory=list)
-    save_to_vault: bool = True
 
 
 # ------------------------------------------------------------------ output
