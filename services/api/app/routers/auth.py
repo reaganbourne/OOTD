@@ -58,8 +58,14 @@ def login(
     request: Request,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
-    check_rate_limit(login_rate_limiter, get_client_ip(request))
-    user = user_crud.get_by_email(db, body.email)
+    normalized_email = body.email.lower()
+    client_ip = get_client_ip(request)
+    # Rate-limit by IP and by email separately — blocks both distributed brute-force
+    # attempts across IPs and targeted attacks against a single account.
+    check_rate_limit(login_rate_limiter, f"ip:{client_ip}")
+    check_rate_limit(login_rate_limiter, f"email:{normalized_email}")
+
+    user = user_crud.get_by_email(db, normalized_email)
     if not user or not auth_service.verify_password(body.password, user.password_hash):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
 

@@ -2,6 +2,8 @@ import uuid
 
 from pydantic import BaseModel, EmailStr, field_validator
 
+from app.services.auth import MAX_PASSWORD_BYTES, MIN_PASSWORD_LENGTH
+
 
 class RegisterRequest(BaseModel):
     username: str
@@ -17,9 +19,11 @@ class RegisterRequest(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def password_min_length(cls, v: str) -> str:
-        if len(v) < 8:
-            raise ValueError("Password must be at least 8 characters.")
+    def password_strength(cls, v: str) -> str:
+        if len(v) < MIN_PASSWORD_LENGTH:
+            raise ValueError(f"Password must be at least {MIN_PASSWORD_LENGTH} characters.")
+        if len(v.encode("utf-8")) > MAX_PASSWORD_BYTES:
+            raise ValueError(f"Password must be {MAX_PASSWORD_BYTES} bytes or fewer.")
         return v
 
 

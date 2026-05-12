@@ -42,7 +42,7 @@ Create a new account.
 |---|---|---|---|
 | `username` | string | yes | min 3 characters |
 | `email` | string | yes | must be a valid email |
-| `password` | string | yes | min 8 characters |
+| `password` | string | yes | 12-72 bytes |
 
 **Response `201 Created`**
 ```json

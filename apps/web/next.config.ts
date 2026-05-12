@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**.amazonaws.com",
       },
+      // Production: CloudFront CDN
+      {
+        protocol: "https",
+        hostname: "**.cloudfront.net",
+      },
       // Development: local FastAPI upload server
       {
         protocol: "http",

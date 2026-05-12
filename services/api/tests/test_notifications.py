@@ -10,8 +10,8 @@ NOTIF_URL = "/notifications"
 UNSEEN_URL = "/notifications/unseen-count"
 SEEN_URL = "/notifications/seen"
 
-USER_A = {"username": "usera", "email": "a@example.com", "password": "password123"}
-USER_B = {"username": "userb", "email": "b@example.com", "password": "password123"}
+USER_A = {"username": "usera", "email": "a@example.com", "password": "password12345"}
+USER_B = {"username": "userb", "email": "b@example.com", "password": "password12345"}
 
 
 def _register(client: TestClient, payload: dict) -> dict:

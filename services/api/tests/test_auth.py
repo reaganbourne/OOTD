@@ -14,7 +14,7 @@ ME_URL = "/auth/me"
 VALID_USER = {
     "username": "testuser",
     "email": "test@example.com",
-    "password": "securepassword123",
+    "password": "securepassword12345",
 }
 
 
@@ -82,6 +82,10 @@ class TestRegister:
         res = _register(client, {**VALID_USER, "password": "short"})
         assert res.status_code == 422
 
+    def test_bcrypt_truncation_length_password_returns_422(self, client):
+        res = _register(client, {**VALID_USER, "password": "a" * 73})
+        assert res.status_code == 422
+
     def test_short_username_returns_422(self, client):
         res = _register(client, {**VALID_USER, "username": "ab"})
         assert res.status_code == 422
@@ -122,6 +126,15 @@ class TestLogin:
     def test_unregistered_user_returns_401(self, client):
         res = _login(client)
         assert res.status_code == 401
+
+    def test_repeated_login_attempts_are_rate_limited(self, client):
+        for _ in range(10):
+            res = _login(client, email="nobody@example.com", password="wrongpassword")
+            assert res.status_code == 401
+
+        res = _login(client, email="nobody@example.com", password="wrongpassword")
+        assert res.status_code == 429
+        assert "Retry-After" in res.headers
 
     def test_password_never_returned(self, client):
         _register(client)

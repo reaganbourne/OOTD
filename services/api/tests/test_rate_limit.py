@@ -9,8 +9,8 @@ LOGIN_URL = "/auth/login"
 CREATE_OUTFIT_URL = "/outfits"
 CAPTION_URL = "/outfits/caption-suggestion"
 
-USER_A = {"username": "rla", "email": "rla@example.com", "password": "password123"}
-USER_B = {"username": "rlb", "email": "rlb@example.com", "password": "password123"}
+USER_A = {"username": "rla", "email": "rla@example.com", "password": "password123456"}
+USER_B = {"username": "rlb", "email": "rlb@example.com", "password": "password123456"}
 
 
 def _register(client, payload):
@@ -56,12 +56,12 @@ class TestRegisterRateLimit:
 
         for i in range(2):
             res = client.post(REGISTER_URL, json={
-                "username": f"user{i}", "email": f"user{i}@example.com", "password": "password123"
+                "username": f"user{i}", "email": f"user{i}@example.com", "password": "password123456"
             })
             assert res.status_code in (201, 409)
 
         res = client.post(REGISTER_URL, json={
-            "username": "blocked", "email": "blocked@example.com", "password": "password123"
+            "username": "blocked", "email": "blocked@example.com", "password": "password123456"
         })
         assert res.status_code == 429
         assert "Retry-After" in res.headers
@@ -69,8 +69,8 @@ class TestRegisterRateLimit:
     def test_register_429_includes_retry_after(self, client, monkeypatch):
         monkeypatch.setattr("app.routers.auth.register_rate_limiter", FixedWindowRateLimiter(1, 60))
 
-        client.post(REGISTER_URL, json={"username": "user0", "email": "user0@example.com", "password": "password123"})
-        res = client.post(REGISTER_URL, json={"username": "user1", "email": "user1@example.com", "password": "password123"})
+        client.post(REGISTER_URL, json={"username": "user0", "email": "user0@example.com", "password": "password123456"})
+        res = client.post(REGISTER_URL, json={"username": "user1", "email": "user1@example.com", "password": "password123456"})
 
         assert res.status_code == 429
         assert int(res.headers["Retry-After"]) > 0

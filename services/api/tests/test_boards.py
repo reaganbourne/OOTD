@@ -7,9 +7,9 @@ import pytest
 REGISTER_URL = "/auth/register"
 BOARDS_URL = "/boards"
 
-USER_A = {"username": "board_a", "email": "board_a@example.com", "password": "password123"}
-USER_B = {"username": "board_b", "email": "board_b@example.com", "password": "password123"}
-USER_C = {"username": "board_c", "email": "board_c@example.com", "password": "password123"}
+USER_A = {"username": "board_a", "email": "board_a@example.com", "password": "password12345"}
+USER_B = {"username": "board_b", "email": "board_b@example.com", "password": "password12345"}
+USER_C = {"username": "board_c", "email": "board_c@example.com", "password": "password12345"}
 
 
 def _register(client, payload):

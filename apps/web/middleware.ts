@@ -8,6 +8,14 @@ import {
 const AUTH_ROUTES = new Set(["/login", "/signup"]);
 const PROTECTED_ROUTE_PREFIXES = ["/feed", "/vault", "/upload", "/outfits"];
 
+function withSecurityHeaders(response: NextResponse) {
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  response.headers.set("X-Frame-Options", "DENY");
+  return response;
+}
+
 function isProtectedRoute(pathname: string) {
   return PROTECTED_ROUTE_PREFIXES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
@@ -23,7 +31,7 @@ export function middleware(request: NextRequest) {
   const isAuthenticated = hasActiveSession(request);
 
   if (AUTH_ROUTES.has(pathname) && isAuthenticated) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return withSecurityHeaders(NextResponse.redirect(new URL("/", request.url)));
   }
 
   if (isProtectedRoute(pathname) && !isAuthenticated) {
@@ -34,10 +42,10 @@ export function middleware(request: NextRequest) {
       loginUrl.searchParams.set("next", nextPath);
     }
 
-    return NextResponse.redirect(loginUrl);
+    return withSecurityHeaders(NextResponse.redirect(loginUrl));
   }
 
-  return NextResponse.next();
+  return withSecurityHeaders(NextResponse.next());
 }
 
 export const config = {

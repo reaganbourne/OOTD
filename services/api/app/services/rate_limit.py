@@ -50,7 +50,7 @@ class FixedWindowRateLimiter:
 
 # ── Limiter instances ─────────────────────────────────────────────────────────
 
-# Auth — keyed by IP
+# Auth — keyed by IP (and email for login)
 login_rate_limiter = FixedWindowRateLimiter(max_attempts=10, window_seconds=600)     # 10 / 10 min
 register_rate_limiter = FixedWindowRateLimiter(max_attempts=5, window_seconds=3600)  # 5 / hour
 
@@ -71,6 +71,10 @@ def reset_all_rate_limiters() -> None:
         like_rate_limiter,
     ):
         limiter.reset()
+
+
+# Alias kept for backwards compatibility
+reset_auth_rate_limiters = reset_all_rate_limiters
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
