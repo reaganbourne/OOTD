@@ -101,6 +101,7 @@ def create_outfit(
         clothing_items=meta.clothing_items,
         vibe_check_text=vibe_check_text,
         vibe_check_tone=vibe_check_tone,
+        vault_hidden=not meta.save_to_vault,
     )
 
     return OutfitOut.model_validate(outfit)
