@@ -252,10 +252,11 @@ type ValidationDetail = {
   type?: string;
 };
 
+// Route browser traffic through Next.js so local-device testing does not depend
+// on cross-origin cookies, CORS, or "localhost" resolving on the client device.
 const DEFAULT_API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_PROXY_BASE_URL ??
+  "/backend";
 
 let accessToken: string | null = null;
 
@@ -358,7 +359,7 @@ function normalizeErrorPayload(
   return {
     message:
       status === 0
-        ? "Unable to reach the API. Make sure the backend is running and NEXT_PUBLIC_API_URL is set."
+        ? "Unable to reach the API proxy. Make sure the backend is running and restart Next.js after env changes."
         : statusText || "Something went wrong.",
     status
   };

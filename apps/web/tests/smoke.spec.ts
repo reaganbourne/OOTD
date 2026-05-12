@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const apiBase = "http://localhost:8000";
 const appOrigin = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 const appHostname = new URL(appOrigin).hostname;
+const apiBase = `${appOrigin}/backend`;
 
 // ── Shared fixtures ────────────────────────────────────────────────────────────
 

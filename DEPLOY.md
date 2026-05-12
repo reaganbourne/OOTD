@@ -1,100 +1,84 @@
-# Deployment Guide — checkd
+# Deployment Guide - checkd
 
-Stack: **Vercel** (frontend, free) + **Railway** (API + Postgres, ~$5/mo)
+Stack: Vercel (frontend) + Railway (API + Postgres)
 
----
+The frontend now sends browser requests to a same-origin Next.js proxy at `/backend`.
+That means:
 
-## 1. S3 — make uploaded images publicly readable
+- the browser does not need to call Railway directly
+- Vercel still needs the real API origin so the proxy can forward requests
+- an old deployed frontend bundle can still show the old `NEXT_PUBLIC_API_URL` error text
 
-In the AWS console → S3 → your bucket → Permissions:
+## 1. S3
 
-**Uncheck "Block all public access"** (all 4 checkboxes off), then paste this as the Bucket Policy:
+Make uploaded images publicly readable in your S3 bucket.
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicReadGetObject",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "Resource": "arn:aws:s3:::<your-s3-bucket-name>/*""
-    }
-  ]
-}
-```
+## 2. Railway
 
----
+Deploy the API and Postgres on Railway.
 
-## 2. Railway — deploy the API + Postgres
-
-1. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub repo
-2. Select this repo, set **root directory** to `/` (the `railway.toml` at the root handles everything)
-3. Add a **Postgres** plugin inside the project — Railway auto-sets `DATABASE_URL`
-4. Set these environment variables in the Railway service:
+Required Railway environment variables:
 
 | Variable | Value |
-|----------|-------|
-| `SECRET_KEY` | Generate a new value with `openssl rand -hex 32`. Never reuse a value from docs, chat, or local dev. |
-| `ANTHROPIC_API_KEY` | *(your key)* |
-| `S3_BUCKET` | `your-s3-name` |
-| `AWS_ACCESS_KEY_ID` | *(from .env)* |
-| `AWS_SECRET_ACCESS_KEY` | *(from .env)* |
-| `AWS_REGION` | `us-east-2` |
+| --- | --- |
+| `SECRET_KEY` | Generate a new random value |
+| `ANTHROPIC_API_KEY` | Your key |
+| `S3_BUCKET` | Your S3 bucket |
+| `AWS_ACCESS_KEY_ID` | Your AWS key id |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS secret |
+| `AWS_REGION` | Your AWS region |
 | `ENVIRONMENT` | `production` |
-| `CORS_ORIGINS` | *(set after step 3 — your Vercel URL)* |
-| `PUBLIC_BASE_URL` | *(set after step 3 — your Vercel URL)* |
+| `CORS_ORIGINS` | Your Vercel URL |
+| `PUBLIC_BASE_URL` | Your Vercel URL |
 
-5. Deploy — Railway runs `alembic upgrade head` then starts uvicorn automatically
-6. Copy the Railway public URL (e.g. `https://ootd-api-production.up.railway.app`)
+After deploy, copy the Railway public URL, for example:
 
----
+`https://your-api.up.railway.app`
 
-## 3. Vercel — deploy the frontend
+## 3. Vercel
 
-1. Go to [vercel.com](https://vercel.com) → New Project → Import from GitHub
-2. Set **root directory** to `apps/web`
-3. Set this environment variable:
+Deploy the frontend from `apps/web`.
+
+Required Vercel environment variables:
 
 | Variable | Value |
-|----------|-------|
-| `NEXT_PUBLIC_API_URL` | *(your Railway URL from step 2)* |
+| --- | --- |
+| `INTERNAL_API_URL` | Your Railway API URL |
+| `NEXT_PUBLIC_API_PROXY_BASE_URL` | `/backend` |
 
-4. Deploy — Vercel detects Next.js automatically
-5. Copy the Vercel URL (e.g. `https://checkd.vercel.app`)
+Notes:
 
----
+- `NEXT_PUBLIC_API_PROXY_BASE_URL` is optional because `/backend` is already the default.
+- `NEXT_PUBLIC_API_URL` is no longer required in the browser for production.
+- If your deployed site still shows this exact message:
 
-## 4. Wire them together
+`Unable to reach the API. Make sure the backend is running and NEXT_PUBLIC_API_URL is set.`
 
-Back in Railway, set the two remaining env vars and redeploy:
+that deployment is still serving an older frontend bundle and needs a redeploy.
 
-```
-CORS_ORIGINS=https://checkd.vercel.app
-PUBLIC_BASE_URL=https://checkd.vercel.app
-```
-
----
-
-## 5. Custom domain (optional)
-
-- **Vercel**: Project Settings → Domains → add your domain, point DNS to Vercel
-- **Railway**: Service Settings → Networking → Custom Domain
-
----
-
-## Environment variable summary (local .env — do not commit)
+## 4. Local env example
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_PROXY_BASE_URL=/backend
+INTERNAL_API_URL=https://your-api.up.railway.app
+
 DATABASE_URL=postgresql://ootd:ootd@localhost:5432/ootd
 SECRET_KEY=replace-with-output-from-openssl-rand-hex-32
 ENVIRONMENT=development
 DEBUG=false
+
 ANTHROPIC_API_KEY=<your key>
 S3_BUCKET=your-s3-name
 AWS_ACCESS_KEY_ID=<your key id>
 AWS_SECRET_ACCESS_KEY=<your secret>
 AWS_REGION=us-east-2
 ```
+
+## 5. Production checklist
+
+1. Railway API URL works directly.
+2. Vercel has `INTERNAL_API_URL` set to that Railway URL.
+3. Railway `CORS_ORIGINS` includes your Vercel domain.
+4. Vercel has been redeployed after env changes.
+5. The deployed browser no longer shows the old `NEXT_PUBLIC_API_URL` error text.
