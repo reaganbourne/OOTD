@@ -124,7 +124,7 @@ function CreateBoardModal({ onClose, onCreate }: {
 
 // ── Board card ────────────────────────────────────────────────────────────────
 
-function BoardCard({ board, previewImages = [] }: { board: Board; previewImages?: string[] }) {
+function BoardCard({ board }: { board: Board }) {
   const eventLabel = formatEventDate(board.event_date);
   const expiryLabel = formatExpiry(board.expires_at);
   const expired = expiryLabel === "Expired";
@@ -148,15 +148,6 @@ function BoardCard({ board, previewImages = [] }: { board: Board; previewImages?
             {expiryLabel}
           </span>
         </div>
-        {previewImages.length > 0 && (
-          <div className="mt-3 flex gap-1.5">
-            {previewImages.slice(0, 3).map((url, i) => (
-              <div key={i} className="h-11 w-11 overflow-hidden rounded-xl border-2 border-white/70 shadow-sm">
-                <img src={url} alt="" className="h-full w-full object-cover" />
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="px-5 py-4 space-y-1">
@@ -182,7 +173,6 @@ export default function BoardsPage() {
   const [boards, setBoards] = useState<Board[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [boardPreviews, setBoardPreviews] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -199,17 +189,6 @@ export default function BoardsPage() {
       if (result.ok) {
         setBoards(result.data);
         setStatus("ready");
-        // Fetch outfit previews for all boards in parallel (best-effort)
-        const previews = await Promise.all(
-          result.data.map(async (b) => {
-            const r = await apiClient.boards.getOutfits(b.id, { limit: 3 });
-            return { id: b.id, images: r.ok ? r.data.outfits.map((o) => o.image_url) : [] };
-          })
-        );
-        if (!active) return;
-        const map: Record<string, string[]> = {};
-        for (const p of previews) map[p.id] = p.images;
-        setBoardPreviews(map);
       } else {
         setErrorMessage(result.message);
         setStatus("error");
@@ -333,7 +312,7 @@ export default function BoardsPage() {
           {/* Board grid */}
           {status === "ready" && boards.length > 0 ? (
             <div className="grid gap-4 grid-cols-2">
-              {boards.map((b) => <BoardCard key={b.id} board={b} previewImages={boardPreviews[b.id] ?? []} />)}
+              {boards.map((b) => <BoardCard key={b.id} board={b} />)}
             </div>
           ) : null}
           </div>{/* end px wrapper */}
