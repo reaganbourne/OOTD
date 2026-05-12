@@ -24,7 +24,7 @@ export function DesktopNav() {
       {/* Left: wordmark + links */}
       <div className="flex items-center gap-8">
         <Link
-          href="/feed"
+          href="/"
           className="font-display leading-none text-ink"
           style={{ fontSize: "2rem", letterSpacing: "-0.01em" }}
         >
