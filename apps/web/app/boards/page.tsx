@@ -124,7 +124,7 @@ function CreateBoardModal({ onClose, onCreate }: {
 
 // ── Board card ────────────────────────────────────────────────────────────────
 
-function BoardCard({ board }: { board: Board }) {
+function BoardCard({ board, previewImages = [] }: { board: Board; previewImages?: string[] }) {
   const eventLabel = formatEventDate(board.event_date);
   const expiryLabel = formatExpiry(board.expires_at);
   const expired = expiryLabel === "Expired";
@@ -148,6 +148,15 @@ function BoardCard({ board }: { board: Board }) {
             {expiryLabel}
           </span>
         </div>
+        {previewImages.length > 0 && (
+          <div className="mt-3 flex gap-1.5">
+            {previewImages.slice(0, 3).map((url, i) => (
+              <div key={i} className="h-11 w-11 overflow-hidden rounded-xl border-2 border-white/70 shadow-sm">
+                <img src={url} alt="" className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="px-5 py-4 space-y-1">
@@ -173,6 +182,7 @@ export default function BoardsPage() {
   const [boards, setBoards] = useState<Board[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [boardPreviews, setBoardPreviews] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) router.replace("/login");
@@ -189,6 +199,17 @@ export default function BoardsPage() {
       if (result.ok) {
         setBoards(result.data);
         setStatus("ready");
+        // Fetch outfit previews for all boards in parallel (best-effort)
+        const previews = await Promise.all(
+          result.data.map(async (b) => {
+            const r = await apiClient.boards.getOutfits(b.id, { limit: 3 });
+            return { id: b.id, images: r.ok ? r.data.outfits.map((o) => o.image_url) : [] };
+          })
+        );
+        if (!active) return;
+        const map: Record<string, string[]> = {};
+        for (const p of previews) map[p.id] = p.images;
+        setBoardPreviews(map);
       } else {
         setErrorMessage(result.message);
         setStatus("error");
@@ -209,7 +230,7 @@ export default function BoardsPage() {
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-3xl items-center justify-center">
           <section className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl text-pink-deep">checkd</p>
+            <p className="font-display italic text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-3xl text-ink">Loading boards</h1>
           </section>
         </div>
@@ -222,20 +243,20 @@ export default function BoardsPage() {
       <main className="pb-28 lg:pb-0 lg:pt-16">
         <div className="mx-auto max-w-3xl">
 
-          {/* Topbar — matches design 03.01 */}
-          <div
-            className="flex items-center justify-between bg-paper"
-            style={{ padding: "8px 20px 12px" }}
+          {/* Topbar */}
+          <header
+            className="flex items-end justify-between bg-paper"
+            style={{ padding: "16px 20px 10px" }}
           >
             <div>
-              <p
-                className="font-display leading-none text-pink-deep"
-                style={{ fontSize: 38, lineHeight: 0.95, letterSpacing: "-0.01em" }}
+              <h1
+                className="font-display italic text-ink"
+                style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em" }}
               >
-                checkd
-              </p>
-              <p style={{ fontSize: 11, color: "var(--mute)", marginTop: 2 }}>
-                your outfit boards
+                boards.
+              </h1>
+              <p className="text-mute" style={{ fontSize: 11.5, marginTop: 3 }}>
+                {boards.length} {boards.length === 1 ? "board" : "boards"}
               </p>
             </div>
             <div className="flex items-center" style={{ gap: 6 }}>
@@ -261,7 +282,7 @@ export default function BoardsPage() {
                 </svg>
               </button>
             </div>
-          </div>
+          </header>
 
           <div className="px-4 sm:px-5">
 
@@ -271,7 +292,7 @@ export default function BoardsPage() {
 
           {/* Loading skeletons */}
           {status === "loading" ? (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 grid-cols-2">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="animate-pulse overflow-hidden rounded-[1.75rem] border border-line bg-white">
                   <div className="h-20 bg-[linear-gradient(120deg,_rgba(255,236,242,0.8),_rgba(255,255,255,0.98))]" />
@@ -311,8 +332,8 @@ export default function BoardsPage() {
 
           {/* Board grid */}
           {status === "ready" && boards.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {boards.map((b) => <BoardCard key={b.id} board={b} />)}
+            <div className="grid gap-4 grid-cols-2">
+              {boards.map((b) => <BoardCard key={b.id} board={b} previewImages={boardPreviews[b.id] ?? []} />)}
             </div>
           ) : null}
           </div>{/* end px wrapper */}

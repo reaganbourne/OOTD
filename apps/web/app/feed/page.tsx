@@ -438,7 +438,7 @@ export default function FeedPage() {
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl items-center justify-center">
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
-            <p className="font-display text-5xl text-pink-deep" style={{ letterSpacing: "-0.02em" }}>checkd</p>
+            <p className="font-display italic text-5xl text-pink-deep" style={{ letterSpacing: "-0.02em" }}>checkd</p>
             <h1 className="mt-4 text-4xl text-ink">Opening your feed</h1>
           </section>
         </div>
@@ -453,19 +453,11 @@ export default function FeedPage() {
         {/* ── Topbar ─────────────────────────────────────────────────── */}
         <div
           className="flex items-center justify-between bg-paper"
-          style={{ padding: "8px 20px 12px" }}
+          style={{ padding: "16px 20px 12px" }}
         >
-          <div>
-            <p
-              className="font-display leading-none text-pink-deep"
-              style={{ fontSize: 38, lineHeight: 0.95, letterSpacing: "-0.01em" }}
-            >
-              checkd
-            </p>
-            <p style={{ fontSize: 11, color: "var(--mute)", marginTop: 2 }}>
-              welcome back, {displayName}.
-            </p>
-          </div>
+          <p style={{ fontSize: 13, color: "var(--ink-soft)" }}>
+            welcome back, {displayName}.
+          </p>
 
           <div className="flex items-center" style={{ gap: 6 }}>
             {/* Explore */}

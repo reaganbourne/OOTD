@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { AUTH_SESSION_COOKIE, AUTH_SESSION_COOKIE_VALUE } from "@/lib/auth-session";
+import { VibeCheckLabel } from "@/components/vibe-check-label";
 
 const FEATURES = [
   {
@@ -94,7 +95,7 @@ function OutfitMosaicGrid() {
 
       <div className="absolute -bottom-3 left-4 rounded-2xl border border-line bg-paper/95 px-5 py-3.5 shadow-lift backdrop-blur-sm">
         <p className="text-[10px] uppercase tracking-widest text-mute">vibe check</p>
-        <p className="mt-1 text-sm font-medium text-ink">main character energy</p>
+        <VibeCheckLabel />
       </div>
     </div>
   );

@@ -193,7 +193,7 @@ export default function VaultPage() {
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl items-center justify-center">
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
-            <p className="font-display text-5xl text-pink-deep">checkd</p>
+            <p className="font-display italic text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-4xl text-ink">Checking your session</h1>
           </section>
         </div>
@@ -207,25 +207,13 @@ export default function VaultPage() {
     <main className="pb-28 lg:pb-0 lg:pt-16">
       <div className="mx-auto max-w-7xl">
         {/* vault header */}
-        <header className="flex items-end justify-between bg-paper" style={{ padding: "16px 20px 10px" }}>
-          <div>
-            <h1 className="font-logo text-ink" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em", fontWeight: 100 }}>
-              my vault.
-            </h1>
-            <p className="text-mute" style={{ fontSize: 11.5, marginTop: 3 }}>
-              {outfits.length} fits · {displayName}
-            </p>
-          </div>
-          <Link
-            href="/search"
-            aria-label="Search"
-            className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink"
-            style={{ width: 36, height: 36, flexShrink: 0 }}
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-              <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
-            </svg>
-          </Link>
+        <header className="bg-paper" style={{ padding: "16px 20px 10px" }}>
+          <h1 className="font-display italic text-ink" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em" }}>
+            my vault.
+          </h1>
+          <p className="text-mute" style={{ fontSize: 11.5, marginTop: 3 }}>
+            {outfits.length} fits · {displayName}
+          </p>
         </header>
 
         {/* search bar */}
@@ -260,7 +248,7 @@ export default function VaultPage() {
           ) : null}
 
           {vaultStatus === "loading" ? (
-            <div className="grid grid-cols-3 gap-px bg-line">
+            <div className="grid grid-cols-2 gap-3">
               {Array.from({ length: 9 }).map((_, i) => (
                 <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
               ))}
@@ -270,7 +258,7 @@ export default function VaultPage() {
           {/* Search results — API-powered, shows all matching outfits across the full vault */}
           {searchQuery.trim() ? (
             searchLoading ? (
-              <div className="grid grid-cols-3 gap-px bg-line">
+              <div className="grid grid-cols-2 gap-3">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
                 ))}
@@ -290,13 +278,12 @@ export default function VaultPage() {
                 </button>
               </div>
             ) : searchResults !== null ? (
-              <div className="grid grid-cols-3 gap-px bg-line">
+              <div className="grid grid-cols-2 gap-3">
                 {searchResults.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
-                    compact
                     liked={likes[outfit.id]?.liked}
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />
@@ -321,13 +308,12 @@ export default function VaultPage() {
 
           {vaultStatus === "ready" && outfits.length > 0 && !searchQuery.trim() ? (
             <>
-              <div className="grid grid-cols-3 gap-px bg-line">
+              <div className="grid grid-cols-2 gap-3">
                 {outfits.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
-                    compact
                     liked={likes[outfit.id]?.liked}
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />

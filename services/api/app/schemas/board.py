@@ -14,7 +14,8 @@ class CreateBoardRequest(BaseModel):
 
 
 class UpdateBoardRequest(BaseModel):
-    name: str = Field(..., min_length=1, max_length=120)
+    name: str | None = Field(None, min_length=1, max_length=120)
+    media_link: str | None = Field(None, max_length=500)
 
 
 class BoardOut(BaseModel):
@@ -26,6 +27,7 @@ class BoardOut(BaseModel):
     expires_at: datetime
     member_count: int
     created_at: datetime
+    media_link: str | None = None
 
     model_config = {"from_attributes": True}
 

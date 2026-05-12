@@ -193,6 +193,7 @@ export type Board = {
   expires_at: string;
   member_count: number;
   created_at: string;
+  media_link: string | null;
 };
 
 export type BoardMember = {
@@ -856,7 +857,7 @@ export const boardApiClient = {
     });
   },
 
-  async update(boardId: string, input: { name: string }): Promise<ApiResult<Board>> {
+  async update(boardId: string, input: { name?: string; media_link?: string | null }): Promise<ApiResult<Board>> {
     return sendRequest<Board>(`/boards/${boardId}`, {
       method: "PATCH",
       body: input,

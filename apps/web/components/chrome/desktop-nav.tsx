@@ -20,12 +20,12 @@ export function DesktopNav() {
   if (AUTH_PATHS.some((p) => pathname.startsWith(p)) || pathname === "/") return null;
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 hidden h-16 items-center border-b border-pink-deep/30 bg-pink-deep px-8 lg:flex">
+    <nav className="fixed inset-x-0 top-0 z-50 hidden h-16 items-center border-b border-pink/30 bg-pink px-8 lg:flex">
       {/* Left: wordmark + links */}
       <div className="flex items-center gap-8">
         <Link
           href="/"
-          className="font-display leading-none text-ink"
+          className="font-display italic leading-none text-white"
           style={{ fontSize: "2rem", letterSpacing: "-0.01em" }}
         >
           checkd
@@ -35,8 +35,8 @@ export function DesktopNav() {
             <Link
               key={href}
               href={href}
-              className={`text-sm transition hover:text-ink ${
-                pathname.startsWith(href) ? "font-medium text-ink" : "text-mute"
+              className={`text-sm transition hover:text-white ${
+                pathname.startsWith(href) ? "font-medium text-white" : "text-white/70"
               }`}
             >
               {label}

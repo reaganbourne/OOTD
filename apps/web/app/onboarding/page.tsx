@@ -41,7 +41,7 @@ function StepDots({ total, current }: { total: number; current: number }) {
 function StepWelcome({ onNext }: { onNext: () => void }) {
   return (
     <div className="flex flex-col items-center text-center">
-      <p className="font-display text-[4.5rem] leading-none text-pink-deep">
+      <p className="font-display italic text-[4.5rem] leading-none text-pink-deep">
         checkd
       </p>
       <h1 className="mt-8 text-3xl leading-tight text-ink sm:text-4xl">
@@ -271,7 +271,7 @@ function OnboardingInner() {
   if (!ready) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-paper px-4">
-        <p className="font-display text-5xl text-pink-deep">checkd</p>
+        <p className="font-display italic text-5xl text-pink-deep">checkd</p>
       </main>
     );
   }
@@ -318,7 +318,7 @@ export default function OnboardingPage() {
     <Suspense
       fallback={
         <main className="flex min-h-screen items-center justify-center bg-paper px-4">
-          <p className="font-display text-5xl text-pink-deep">checkd</p>
+          <p className="font-display italic text-5xl text-pink-deep">checkd</p>
         </main>
       }
     >

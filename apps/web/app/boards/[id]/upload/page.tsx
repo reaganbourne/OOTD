@@ -101,7 +101,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">checkd</p>
+          <p className="font-display italic text-5xl text-pink-deep">checkd</p>
           <h1 className="mt-4 text-2xl text-ink">loading board…</h1>
         </div>
       </main>
@@ -112,7 +112,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">checkd</p>
+          <p className="font-display italic text-5xl text-pink-deep">checkd</p>
           <h1 className="mt-4 text-2xl text-ink">not a member</h1>
           <p className="mt-3 text-sm leading-6 text-ink-soft">
             You need to join this board before you can post to it.
@@ -132,7 +132,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">checkd</p>
+          <p className="font-display italic text-5xl text-pink-deep">checkd</p>
           <h1 className="mt-4 text-2xl text-ink">board expired</h1>
           <p className="mt-3 text-sm leading-6 text-ink-soft">
             This board has passed its event date and is no longer accepting new posts.
@@ -152,7 +152,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">checkd</p>
+          <p className="font-display italic text-5xl text-pink-deep">checkd</p>
           <h1 className="mt-4 text-2xl text-ink">something went wrong</h1>
           <p className="mt-3 text-sm leading-6 text-ink-soft">
             Couldn&rsquo;t load this board. Try again.

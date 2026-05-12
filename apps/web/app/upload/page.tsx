@@ -18,7 +18,7 @@ export default function UploadPage() {
   if (isLoading || !isAuthenticated) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-paper">
-        <p className="font-display text-5xl text-pink-deep">checkd</p>
+        <p className="font-display italic text-5xl text-pink-deep">checkd</p>
       </main>
     );
   }
