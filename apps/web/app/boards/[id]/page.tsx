@@ -327,7 +327,23 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
     setEditNameSaving(false);
   }
 
-  if (authLoading || !isAuthenticated) return null;
+  if (authLoading) {
+    return (
+      <main className="px-4 pb-28 pt-6 sm:px-6">
+        <div className="mx-auto max-w-3xl space-y-4">
+          <div className="h-8 w-40 animate-pulse rounded-full bg-pink-soft" />
+          <div className="soft-panel h-48 w-full animate-pulse" />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="aspect-square animate-pulse rounded-[1.5rem] bg-pink-soft" />
+            ))}
+          </div>
+        </div>
+        <MobileNav active="boards" />
+      </main>
+    );
+  }
+  if (!isAuthenticated) return null;
 
   // ── Error states ──
   if (status === "gone") {
