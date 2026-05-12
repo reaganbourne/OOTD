@@ -62,6 +62,7 @@ def _board_out(db: Session, board) -> BoardOut:
         expires_at=board.expires_at,
         member_count=board_crud.member_count(db, board.id),
         created_at=board.created_at,
+        media_link=board.media_link,
     )
 
 
@@ -124,10 +125,20 @@ def update_board(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> BoardOut:
-    """Rename a board. Creator only."""
+    """Update board fields. Name change: creator only. Media link: any member."""
     board = _board_or_404(db, board_id)
-    _require_creator(db, board_id, current_user.id)
-    board = board_crud.update_board(db, board, payload.name)
+    _require_member(db, board_id, current_user.id)
+    if payload.name is not None:
+        _require_creator(db, board_id, current_user.id)
+    # media_link=None in the payload means "don't touch it"; empty string means clear it
+    clear_media_link = payload.media_link == ""
+    board = board_crud.update_board(
+        db,
+        board,
+        name=payload.name,
+        media_link=payload.media_link if not clear_media_link else None,
+        clear_media_link=clear_media_link,
+    )
     return _board_out(db, board)
 
 

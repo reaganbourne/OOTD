@@ -237,7 +237,7 @@ export default function ExplorePage() {
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-2xl items-center justify-center">
           <section className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl text-pink-deep">checkd</p>
+            <p className="font-display italic text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-3xl text-ink">Loading</h1>
           </section>
         </div>
@@ -253,10 +253,10 @@ export default function ExplorePage() {
         <header className="mb-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="font-display text-[2.2rem] leading-none text-pink-deep">
+              <p className="font-display italic text-[2.2rem] leading-none text-pink-deep">
                 checkd
               </p>
-              <p className="mt-1 text-sm text-mute">Explore</p>
+              <p className="mt-1 text-sm text-mute">explore</p>
             </div>
             <Link href="/search" className="icon-button" aria-label="Search people">
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
