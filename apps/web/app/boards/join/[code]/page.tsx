@@ -108,7 +108,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
-            <h1 className="font-display text-2xl tracking-[-0.03em] text-ink mb-2">link not found</h1>
+            <h1 className="font-display italic text-2xl tracking-[-0.03em] text-ink mb-2">link not found</h1>
             <p className="text-sm leading-6 text-ink-soft mb-6">
               This invite link is invalid or has expired.
             </p>
@@ -144,7 +144,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-pink-deep/60 mb-3">
               you&apos;re invited to
             </p>
-            <h1 className="font-display text-[2rem] leading-[1.1] tracking-[-0.04em] text-ink">
+            <h1 className="font-display italic text-[2rem] leading-[1.1] tracking-[-0.04em] text-ink">
               {board?.name}
             </h1>
             {eventLabel ? (

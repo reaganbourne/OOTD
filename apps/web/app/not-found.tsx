@@ -7,7 +7,7 @@ export default function NotFound() {
         <p className="font-display italic text-4xl text-pink-deep mb-8">checkd</p>
         <div className="soft-panel px-6 py-10">
           <p className="font-display text-6xl text-ink/10 mb-4">404</p>
-          <h1 className="font-display text-2xl tracking-[-0.03em] text-ink mb-2">
+          <h1 className="font-display italic text-2xl tracking-[-0.03em] text-ink mb-2">
             page not found
           </h1>
           <p className="text-sm leading-6 text-ink-soft mb-6">

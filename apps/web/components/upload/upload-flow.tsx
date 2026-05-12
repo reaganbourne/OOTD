@@ -273,7 +273,7 @@ export function UploadFlow() {
 
         {/* Step heading */}
         <p
-          className="font-display text-ink"
+          className="font-display italic text-ink"
           style={{ fontSize: 28, lineHeight: 1.1, letterSpacing: "-0.02em", marginBottom: 6 }}
         >
           {currentStep === 1 && "add your photo"}

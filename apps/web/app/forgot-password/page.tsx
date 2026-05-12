@@ -6,7 +6,7 @@ export default function ForgotPasswordPage() {
     <AuthShell mode="login">
       <div className="space-y-5">
         <div>
-          <h2 className="font-display text-xl text-ink">forgot your password?</h2>
+          <h2 className="font-display italic text-xl text-ink">forgot your password?</h2>
           <p className="mt-2 text-sm leading-6 text-mute">
             Password reset is coming soon. For now, reach out to us at{" "}
             <a
