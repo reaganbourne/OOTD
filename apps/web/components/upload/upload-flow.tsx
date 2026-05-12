@@ -38,7 +38,7 @@ const STEP_LABELS = ["photo", "items", "context", "review"];
 
 function createItem(): UploadItem {
   return {
-    id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    id: "item-0",
     brand: "",
     category: "",
     color: ""
@@ -52,6 +52,7 @@ function createEmptyErrors(): ValidationErrors {
 export function UploadFlow() {
   const router = useRouter();
   const inputId = useId();
+  const nextItemIdRef = useRef(1);
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
@@ -140,7 +141,15 @@ export function UploadFlow() {
 
   function addItem() {
     resetStatus();
-    setItems((cur) => [...cur, createItem()]);
+    setItems((cur) => [
+      ...cur,
+      {
+        id: `item-${nextItemIdRef.current++}`,
+        brand: "",
+        category: "",
+        color: ""
+      }
+    ]);
     setErrors((cur) => ({ ...cur, items: undefined, form: undefined }));
   }
 
