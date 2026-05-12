@@ -20,7 +20,7 @@ export function DesktopNav() {
   if (AUTH_PATHS.some((p) => pathname.startsWith(p)) || pathname === "/") return null;
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 hidden h-16 items-center border-b border-line bg-paper px-8 lg:flex">
+    <nav className="fixed inset-x-0 top-0 z-50 hidden h-16 items-center border-b border-pink-deep/30 bg-pink-deep px-8 lg:flex">
       {/* Left: wordmark + links */}
       <div className="flex items-center gap-8">
         <Link
@@ -49,7 +49,7 @@ export function DesktopNav() {
       <div className="ml-auto flex items-center gap-3">
         <Link
           href="/search"
-          className="flex h-9 items-center gap-2 rounded-full bg-pink-soft px-4 text-sm text-mute transition hover:text-ink-soft"
+          className="flex h-9 items-center gap-2 rounded-full bg-white px-4 text-sm text-mute transition hover:text-ink-soft"
           style={{ width: 260 }}
         >
           <svg
