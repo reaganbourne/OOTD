@@ -2,10 +2,11 @@
 
 Owned areas: `services/api/`, backend APIs, database (SQLAlchemy models, Alembic migrations), infra wiring
 
-Last synced: 2026-04-13
+Last synced: 2026-05-11
 
 ## Done (merged to main)
 
+### Foundation
 - Repo scaffold
 - v1 DB schema (all 7 tables in initial migration)
 - FastAPI scaffold (routers, models, config, Docker Compose)
@@ -13,106 +14,63 @@ Last synced: 2026-04-13
 - JWT auth flow (register, login, refresh, logout, /me)
 - Auth integration tests — 30 tests, GitHub Actions CI
 - S3 image storage adapter (`app/services/storage.py`)
+
+### Phase 2 — Core MVP
 - Create-outfit endpoint (`POST /outfits` — multipart upload + clothing items)
-- Outfit API contract (`packages/contracts/outfit-contract.md`)
+- Follow/unfollow endpoints (`POST /users/{id}/follow`, `DELETE /users/{id}/follow`)
+- `link_url` field on clothing items (nullable, migration + schema update)
+- User profile endpoints (`GET /users/{username}` — public profile with follower/following counts)
+- Vault endpoints (`GET /outfits/me`, `GET /users/{username}/outfits` — cursor-paginated)
+- Feed endpoint (`GET /outfits/feed` — outfits from followed users, cursor-paginated)
+- Explore endpoint (`GET /outfits/explore`)
+- Likes and comments endpoints (like/unlike, paginated comments, add/delete)
+- Vault search endpoint (`GET /outfits/search?q=...` — full-text search)
+- User search endpoint
+- Outfit delete endpoint (direct SQL DELETE so Postgres CASCADE handles children)
 
-## Up Next (Phase 2)
+### Phase 3 — Boards
+- Boards schema migration (`boards`, `board_memberships`, `board_outfits` tables)
+- Board CRUD endpoints (`POST`, `GET`, `PATCH`, `DELETE /boards/{id}`)
+- Board outfit upload endpoint (`POST /boards/{id}/outfits`)
+- Board creator moderation endpoints (delete outfit, remove member)
+- Board expiry system (`expires_at = event_date + 30 days`)
+- Board outfit author field added to board outfit responses
 
-### GH #23 — Follow and unfollow endpoints
-- Branch: `feat-be-follow-endpoints`
-- `POST /users/{user_id}/follow` (idempotent), `DELETE /users/{user_id}/follow` (idempotent)
-- Self-follow returns 400, unknown user returns 404, both require auth
+### Phase 3 — Story Card & AI
+- Vibe check AI — Claude integration, witty blurb + tone tag stored on outfit
+- Vibe check runs synchronously on `POST /outfits` and is included in the 201 response
+- Story card image generation (`GET /outfits/{id}/story-card` — 1080×1920 PNG, Pillow)
 
-### GH #39 — Add link_url field to clothing items
-- Branch: `feat-be-clothing-link`
-- Migration adding nullable `link_url` to `clothing_items`
-- Update model, schema, and create-outfit endpoint
+### Pre-launch Fixes
+- Railway deployment wiring (port, healthcheck, Dockerfile, Alembic on startup)
+- S3 image proxy through Next.js for share card canvas CORS
+- Auth cookie `SameSite=None` for cross-origin Railway/Vercel setup
+- Direct SQL DELETE for outfit FK cascade fix
 
-### GH #40 — User profile and vault endpoints
-- Branch: `feat-be-profile`
-- `GET /users/{username}` — public profile with follower/following counts
-- `GET /users/{username}/outfits` — paginated vault (cursor-based)
-- `GET /outfits/me` — current user's own vault
+### Phase 5 — Performance (PRs #167–171, all merged 2026-05-11)
+- **PR #167** — N+1 fix: `get_by_ids()` bulk author fetch + `selectinload(Outfit.clothing_items)` on all paginated queries. Feed/explore went from 41 queries → 3 for 20 outfits.
+- **PR #168** — Auth bootstrap collapse: `POST /auth/refresh` now returns `user` alongside `access_token`; frontend skips second `GET /auth/me` call.
+- **PR #169** — Request duration logging middleware: logs `METHOD /path STATUS Xms`; WARNING level for requests > 500ms.
+- **PR #170** — `next/image` in outfit cards: `remotePatterns` for `*.amazonaws.com` and `localhost:8000`, AVIF/WebP output, `fill` layout with accurate `sizes`.
+- **PR #171** — Vibe check in immediate response: runs synchronously before DB write so 201 includes populated `vibe_check_text` and `vibe_check_tone`.
 
-### GH #22 — Feed endpoint with cursor pagination
-- Branch: `feat-be-feed`
-- `GET /feed` — outfits from followed users, newest first, cursor paginated
-- Blocked by: #23 (needs follows to query)
+## Up Next
 
-## Phase 3 — Boards
+### Performance — remaining plan items
+- Thumbnail generation at upload time (400px thumb, 900px medium, original preserved)
+- HTTP cache headers on public outfit/profile endpoints
+- Cached story card PNGs (currently regenerated on every request)
 
-### GH #43 — Boards schema migration
-- New tables: `boards`, `board_memberships`, `board_outfits`
-- `boards`: id, creator_id, name, description, event_date, expires_at, invite_token, pinterest_url
-- `board_outfits` is completely separate from the vault `outfits` table
+### Server-side rendering
+- Convert explore and public outfit detail to Next.js Server Component shells
+- Add `loading.tsx` for major routes
+- Stream below-fold content with `Suspense`
 
-### GH #44 — Board CRUD endpoints
-- `POST /boards`, `GET /boards/{invite_token}`, `GET /boards/{id}`, `PATCH /boards/{id}`, `DELETE /boards/{id}`
-- Expired boards (expires_at in past) return 410
+### Infrastructure
+- Confirm Railway API + Postgres are in same region (target `us-east-1` if US-based)
+- CloudFront in front of S3 for image delivery
 
-### GH #45 — Board outfit upload endpoint
-- `POST /boards/{id}/outfits` — multipart upload, stores to `board_outfits` not vault
-- Non-members: 403, expired board: 410
-
-### GH #46 — Board creator moderation endpoints
-- `DELETE /boards/{id}/outfits/{outfit_id}` (creator or uploader)
-- `DELETE /boards/{id}/members/{user_id}` (creator only, removes their outfits too)
-
-### GH #47 — Board expiry system
-- expires_at = event_date + 30 days, enforced on all endpoints
-- Background cleanup for S3 images from boards expired 90+ days
-
-### GH #48 — Pinterest embed integration
-- `GET /boards/{id}/pinterest-embed` — fetches Pinterest oEmbed, caches 1 hour
-
-### GH #49 — Board activity SMS notifications
-- Add phone_number + sms_opt_in to users, PATCH /users/me to update
-- Twilio: text opted-in members when 5+ outfits uploaded to a board in 1 hour
-
-## Phase 3 — Story Card & AI
-
-### GH #52 — Vibe check AI endpoint
-- `POST /outfits/{id}/vibe-check` — calls Claude, stores witty blurb + tone tag
-- Adds `anthropic` to requirements, `ANTHROPIC_API_KEY` to config
-
-### GH #53 — Story card image generation endpoint
-- `GET /outfits/{id}/story-card` — returns 1080x1920 PNG
-- Full-bleed photo, frosted glass panel, username, date, vibe check text
-- Built with Pillow, works without a vibe check
-
-## Phase 3 — Monthly Fits Wrapped
-
-### GH #TBD — Monthly Fits Wrapped endpoint
-- `GET /users/me/wrapped?month=2026-04`
-- Stats: total outfits, top 3 colors/brands, most active day, most used category, vibe of the month, top outfit, longest streak
-- 404 if no outfits for the month, defaults to current calendar month
-
-## Phase 4
-
-### GH #55 — Likes and comments endpoints
-- Like/unlike, paginated comments, add/delete comment
-- Tables already in schema
-
-### GH #56 — Vault search endpoint
-- `GET /outfits/search?q=black+mini+dress`
-- PostgreSQL full-text search across caption, category, brand, color
-- Scoped to authenticated user's vault
-
-## Recommended Order
-
-1. #23 follow/unfollow
-2. #39 link_url on clothing items
-3. #40 profile + vault endpoints
-4. #22 feed endpoint
-5. #43 boards schema migration
-6. #44 board CRUD
-7. #45 board outfit upload
-8. #46 board moderation
-9. #47 board expiry
-10. #48 Pinterest embed
-11. #49 SMS notifications
-12. #52 vibe check AI
-13. #53 story card
-14. Wrapped endpoint
-15. #55 likes + comments
-16. #56 vault search
+### Security (plan in `docs/security-plan.md`)
+- Rate limiting on auth endpoints
+- Password complexity validation
+- Other items per security plan

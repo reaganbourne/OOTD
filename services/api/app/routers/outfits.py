@@ -1,7 +1,7 @@
 import json
 import logging
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -38,6 +38,13 @@ from app.schemas.social import (
     UpdateCommentRequest,
 )
 from app.services.caption import suggest_captions
+from app.services.rate_limit import (
+    caption_rate_limiter,
+    check_rate_limit,
+    comment_rate_limiter,
+    like_rate_limiter,
+    upload_rate_limiter,
+)
 from app.services.storage import InvalidImageError, StorageError, upload_image
 from app.services.story_card import fetch_image, generate_story_card
 from app.services.vibe_check import run_vibe_check
@@ -47,6 +54,7 @@ router = APIRouter(prefix="/outfits", tags=["outfits"])
 
 @router.post("", response_model=OutfitOut, status_code=status.HTTP_201_CREATED)
 def create_outfit(
+    request: Request,
     image: UploadFile = File(...),
     metadata: str = Form(default="{}"),
     current_user: User = Depends(get_current_user),
@@ -61,6 +69,7 @@ def create_outfit(
                     caption, event_name, worn_on (YYYY-MM-DD),
                     clothing_items: [{ category, brand, color, display_order, link_url }]
     """
+    check_rate_limit(upload_rate_limiter, str(current_user.id))
     try:
         meta = OutfitMetadata.model_validate(json.loads(metadata))
     except (json.JSONDecodeError, ValueError) as exc:
@@ -111,24 +120,19 @@ def get_feed(
     ids = follow_crud.following_ids(db, current_user.id)
     outfits, next_cursor = outfit_crud.get_feed(db, ids, cursor, limit)
 
-    author_cache: dict[str, FeedAuthor] = {}
+    author_by_id = user_crud.get_by_ids(db, list({o.user_id for o in outfits}))
     feed_items: list[FeedOutfitOut] = []
 
     for outfit in outfits:
-        cache_key = str(outfit.user_id)
-
-        if cache_key not in author_cache:
-            author = user_crud.get_by_id(db, outfit.user_id)
-            author_cache[cache_key] = FeedAuthor(
-                id=outfit.user_id,
-                username=author.username if author else None,
-                profile_image_url=author.profile_image_url if author else None,
-            )
-
+        author = author_by_id.get(outfit.user_id)
         feed_items.append(
             FeedOutfitOut(
                 **OutfitOut.model_validate(outfit).model_dump(),
-                author=author_cache[cache_key],
+                author=FeedAuthor(
+                    id=outfit.user_id,
+                    username=author.username if author else None,
+                    profile_image_url=author.profile_image_url if author else None,
+                ),
             )
         )
 
@@ -149,22 +153,19 @@ def get_explore(
     """
     outfits, next_cursor = outfit_crud.get_explore(db, cursor, limit)
 
-    author_cache: dict[str, FeedAuthor] = {}
+    author_by_id = user_crud.get_by_ids(db, list({o.user_id for o in outfits}))
     feed_items: list[FeedOutfitOut] = []
 
     for outfit in outfits:
-        cache_key = str(outfit.user_id)
-        if cache_key not in author_cache:
-            author = user_crud.get_by_id(db, outfit.user_id)
-            author_cache[cache_key] = FeedAuthor(
-                id=outfit.user_id,
-                username=author.username if author else None,
-                profile_image_url=author.profile_image_url if author else None,
-            )
+        author = author_by_id.get(outfit.user_id)
         feed_items.append(
             FeedOutfitOut(
                 **OutfitOut.model_validate(outfit).model_dump(),
-                author=author_cache[cache_key],
+                author=FeedAuthor(
+                    id=outfit.user_id,
+                    username=author.username if author else None,
+                    profile_image_url=author.profile_image_url if author else None,
+                ),
             )
         )
 
@@ -185,6 +186,7 @@ def caption_suggestion(
     Returns up to 3 short caption ideas. Returns an empty list if the AI service
     is unavailable (best-effort, never blocks the upload).
     """
+    check_rate_limit(caption_rate_limiter, str(current_user.id))
     try:
         file_bytes = image.file.read()
         content_type = image.content_type or "image/jpeg"
@@ -413,6 +415,7 @@ def like_outfit(
     db: Session = Depends(get_db),
 ) -> LikeStatus:
     """Like an outfit. Idempotent — safe to call multiple times."""
+    check_rate_limit(like_rate_limiter, str(current_user.id))
     outfit = _outfit_or_404(db, outfit_id)
     already_liked = social_crud.is_liked_by(db, outfit.id, current_user.id)
     social_crud.like_outfit(db, current_user.id, outfit.id)
@@ -474,6 +477,7 @@ def create_comment(
     db: Session = Depends(get_db),
 ) -> CommentOut:
     """Post a comment on an outfit. Auth required."""
+    check_rate_limit(comment_rate_limiter, str(current_user.id))
     outfit = _outfit_or_404(db, outfit_id)
     comment = social_crud.create_comment(db, outfit.id, current_user.id, body.body)
     # Notify the outfit owner (skip if commenter is the owner)

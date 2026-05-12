@@ -9,7 +9,7 @@ import app.models  # noqa: F401 — registers all models with Base.metadata
 from app.dependencies import get_db
 from app.main import app
 from app.models.base import Base
-from app.services.rate_limit import reset_auth_rate_limiters
+from app.services.rate_limit import reset_all_rate_limiters
 
 # In CI, DATABASE_URL points directly at the test database.
 # Locally, set TEST_DATABASE_URL in your .env to a separate test database,
@@ -31,9 +31,16 @@ def create_tables():
 
 
 @pytest.fixture(autouse=True)
+def reset_rate_limiters():
+    """Reset in-process rate limiter state before each test."""
+    reset_all_rate_limiters()
+    yield
+    reset_all_rate_limiters()
+
+
+@pytest.fixture(autouse=True)
 def clean_tables():
     """Wipe all rows before each test so tests are fully isolated."""
-    reset_auth_rate_limiters()
     yield
     with engine.connect() as conn:
         for table in reversed(Base.metadata.sorted_tables):

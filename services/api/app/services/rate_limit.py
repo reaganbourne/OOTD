@@ -4,6 +4,8 @@ import threading
 import time
 from dataclasses import dataclass
 
+from fastapi import HTTPException, Request, status
+
 
 @dataclass
 class RateLimitDecision:
@@ -12,11 +14,11 @@ class RateLimitDecision:
 
 
 class FixedWindowRateLimiter:
-    """Small in-process limiter for auth endpoints.
+    """In-process fixed-window rate limiter.
 
-    This is intentionally dependency-free. In production, keep this as a local
-    safety net and add a shared edge/Redis limiter so limits hold across
-    multiple API instances.
+    Intentionally dependency-free. Works as a last line of defence on a single
+    instance. For multi-instance deploys, pair with a shared Redis counter at
+    the edge.
     """
 
     def __init__(self, max_attempts: int, window_seconds: int) -> None:
@@ -46,10 +48,53 @@ class FixedWindowRateLimiter:
             self._attempts.clear()
 
 
-login_rate_limiter = FixedWindowRateLimiter(max_attempts=10, window_seconds=60)
-register_rate_limiter = FixedWindowRateLimiter(max_attempts=5, window_seconds=60)
+# ── Limiter instances ─────────────────────────────────────────────────────────
+
+# Auth — keyed by IP (and email for login)
+login_rate_limiter = FixedWindowRateLimiter(max_attempts=10, window_seconds=600)     # 10 / 10 min
+register_rate_limiter = FixedWindowRateLimiter(max_attempts=5, window_seconds=3600)  # 5 / hour
+
+# Authenticated actions — keyed by user ID
+upload_rate_limiter = FixedWindowRateLimiter(max_attempts=30, window_seconds=86400)   # 30 / day
+caption_rate_limiter = FixedWindowRateLimiter(max_attempts=20, window_seconds=86400)  # 20 / day
+comment_rate_limiter = FixedWindowRateLimiter(max_attempts=60, window_seconds=3600)   # 60 / hour
+like_rate_limiter = FixedWindowRateLimiter(max_attempts=200, window_seconds=3600)     # 200 / hour
 
 
-def reset_auth_rate_limiters() -> None:
-    login_rate_limiter.reset()
-    register_rate_limiter.reset()
+def reset_all_rate_limiters() -> None:
+    for limiter in (
+        login_rate_limiter,
+        register_rate_limiter,
+        upload_rate_limiter,
+        caption_rate_limiter,
+        comment_rate_limiter,
+        like_rate_limiter,
+    ):
+        limiter.reset()
+
+
+# Alias kept for backwards compatibility
+reset_auth_rate_limiters = reset_all_rate_limiters
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def get_client_ip(request: Request) -> str:
+    """Best-effort client IP, respecting X-Forwarded-For from trusted proxies."""
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    if request.client:
+        return request.client.host
+    return "unknown"
+
+
+def check_rate_limit(limiter: FixedWindowRateLimiter, key: str) -> None:
+    """Raise HTTP 429 if the key has exceeded its limit."""
+    decision = limiter.check(key)
+    if not decision.allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many requests. Please try again later.",
+            headers={"Retry-After": str(decision.retry_after_seconds)},
+        )

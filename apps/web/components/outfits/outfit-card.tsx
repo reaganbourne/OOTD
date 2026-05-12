@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 type OutfitCardAuthor = {
@@ -175,12 +176,15 @@ export function OutfitCard({
   if (compact) {
     return (
       <Link href={href} className="group relative block overflow-hidden bg-pink-soft/30">
-        <img
-          src={outfit.imageUrl}
-          alt={outfit.caption?.trim() || "Outfit photo"}
-          loading="lazy"
-          className="aspect-[3/4] w-full object-cover transition duration-300 group-hover:brightness-95"
-        />
+        <div className="relative aspect-[3/4] w-full overflow-hidden">
+          <Image
+            src={outfit.imageUrl}
+            alt={outfit.caption?.trim() || "Outfit photo"}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition duration-300 group-hover:brightness-95"
+          />
+        </div>
         {toneClasses && toneLabel ? (
           <div className="pointer-events-none absolute left-1.5 top-1.5">
             <span
@@ -219,12 +223,13 @@ export function OutfitCard({
       href={href}
       className="group overflow-hidden rounded-xl border border-line bg-white transition hover:-translate-y-0.5 hover:border-pink-deep"
     >
-      <div className="relative overflow-hidden bg-pink-soft/30">
-        <img
+      <div className="relative aspect-[4/5] overflow-hidden bg-pink-soft/30">
+        <Image
           src={outfit.imageUrl}
           alt={outfit.caption?.trim() || "Outfit card photo"}
-          loading="lazy"
-          className="aspect-[4/5] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover transition duration-300 group-hover:scale-[1.02]"
         />
 
         {showAccentMarker ? (
@@ -280,9 +285,11 @@ export function OutfitCard({
         {showAuthor ? (
           <div className="flex items-center gap-2.5">
             {outfit.author?.profileImageUrl ? (
-              <img
+              <Image
                 src={outfit.author.profileImageUrl}
                 alt={getAuthorLabel(outfit.author)}
+                width={32}
+                height={32}
                 className="h-8 w-8 rounded-full border border-line object-cover"
               />
             ) : (
