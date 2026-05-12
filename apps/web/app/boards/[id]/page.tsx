@@ -446,7 +446,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <h1 className="font-display text-3xl leading-tight tracking-[-0.03em] text-ink">{board?.name}</h1>
+                    <h1 className="font-display italic text-3xl leading-tight tracking-[-0.03em] text-ink">{board?.name}</h1>
                     {isCreator ? (
                       <button
                         type="button"
@@ -541,7 +541,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
         {/* Outfits section */}
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-xl tracking-[-0.02em] text-ink">looks</h2>
+            <h2 className="font-display italic text-xl tracking-[-0.02em] text-ink">looks</h2>
             <Link
               href={`/boards/${id}/upload`}
               className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2 text-[0.78rem] font-semibold text-ink transition hover:border-pink-deep"

@@ -272,7 +272,7 @@ export default function EditProfilePage() {
 
         {/* ── Title ───────────────────────────────────────────────────────── */}
         <div className="mb-6">
-          <h1 className="font-display text-3xl tracking-[-0.03em] text-ink">edit profile</h1>
+          <h1 className="font-display italic text-3xl tracking-[-0.03em] text-ink">edit profile</h1>
           <p className="mt-1 text-sm text-mute">Changes are visible on your public profile</p>
         </div>
 

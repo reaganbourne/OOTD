@@ -60,7 +60,7 @@ function CreateBoardModal({ onClose, onCreate }: {
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(36,21,28,0.38)] px-4 pb-4 sm:items-center sm:pb-0 backdrop-blur-sm">
       <div className="soft-panel w-full max-w-md px-6 py-7">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display text-2xl tracking-[-0.03em] text-ink">new board</h2>
+          <h2 className="font-display italic text-2xl tracking-[-0.03em] text-ink">new board</h2>
           <button
             type="button"
             onClick={onClose}
@@ -151,7 +151,7 @@ function BoardCard({ board }: { board: Board }) {
       </div>
 
       <div className="px-5 py-4 space-y-1">
-        <h3 className="font-display text-xl tracking-[-0.02em] text-ink leading-tight">{board.name}</h3>
+        <h3 className="font-display italic text-xl tracking-[-0.02em] text-ink leading-tight">{board.name}</h3>
         {eventLabel ? (
           <p className="text-[0.72rem] uppercase tracking-[0.18em] text-mute">{eventLabel}</p>
         ) : null}

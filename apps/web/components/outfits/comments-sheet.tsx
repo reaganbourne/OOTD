@@ -204,7 +204,7 @@ export function CommentsSheet({ outfitId, onClose }: CommentsSheetProps) {
 
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-line/60 px-6 pb-4 pt-6">
-          <h2 className="font-display text-2xl tracking-[-0.03em] text-ink">Comments</h2>
+          <h2 className="font-display italic text-2xl tracking-[-0.03em] text-ink">Comments</h2>
           <button
             type="button"
             onClick={onClose}

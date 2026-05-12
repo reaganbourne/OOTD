@@ -112,7 +112,7 @@ export function EventDatePicker({ value, onChange }: EventDatePickerProps) {
                 <path d="m15 18-6-6 6-6" />
               </svg>
             </button>
-            <span className="font-display text-[1.05rem] tracking-[-0.02em] text-ink">
+            <span className="font-display italic text-[1.05rem] tracking-[-0.02em] text-ink">
               {MONTHS[viewMonth]} {viewYear}
             </span>
             <button

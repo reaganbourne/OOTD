@@ -210,7 +210,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
         {/* Step 1: photo + caption */}
         {step === 1 ? (
           <>
-            <h1 className="font-display text-[2rem] leading-tight text-ink">add a look</h1>
+            <h1 className="font-display italic text-[2rem] leading-tight text-ink">add a look</h1>
             <p className="mt-1 text-sm text-mute">post your outfit to this board.</p>
 
             <div
@@ -275,7 +275,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
         {/* Step 2: review */}
         {step === 2 ? (
           <>
-            <h1 className="font-display text-[2rem] leading-tight text-ink">looking good.</h1>
+            <h1 className="font-display italic text-[2rem] leading-tight text-ink">looking good.</h1>
             <p className="mt-1 text-sm text-mute">review before posting to the board.</p>
 
             <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-line bg-white">

@@ -49,7 +49,7 @@ function Avatar({ src, initial }: { src?: string | null; initial: string }) {
 function StatPill({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className="font-display text-2xl leading-none tracking-[-0.04em] text-ink">
+      <span className="font-display italic text-2xl leading-none tracking-[-0.04em] text-ink">
         {value.toLocaleString()}
       </span>
       <span className="text-[0.68rem] uppercase tracking-[0.18em] text-mute">{label}</span>
@@ -249,7 +249,7 @@ export default function PublicProfilePage({
               />
 
               <div className="min-w-0 flex-1">
-                <h1 className="font-display text-3xl leading-tight tracking-[-0.03em] text-ink">
+                <h1 className="font-display italic text-3xl leading-tight tracking-[-0.03em] text-ink">
                   {displayName}
                 </h1>
                 <p className="mt-0.5 text-sm text-mute">@{username}</p>
@@ -294,7 +294,7 @@ export default function PublicProfilePage({
 
         {/* ── Outfit grid ─────────────────────────────────────────────────── */}
         <section>
-          <h2 className="mb-4 font-display text-xl tracking-[-0.02em] text-ink">
+          <h2 className="mb-4 font-display italic text-xl tracking-[-0.02em] text-ink">
             {status === "ready" ? `${displayName?.split(" ")[0]}'s looks` : "Looks"}
           </h2>
 
