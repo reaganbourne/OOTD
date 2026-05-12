@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient, type Comment, type OutfitDetailResponse } from "@/lib/api-client";
 import { MobileNav } from "@/components/chrome/mobile-nav";
 import { StoryCardSheet } from "@/components/outfits/story-card-sheet";
@@ -275,6 +275,8 @@ function CommentRow({ comment, isOwn, editing, onStartEdit, onCancelEdit, onSave
 
 export function OutfitDetailView({ id }: { id: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromVault = searchParams.get("from") === "vault";
   const { user, isAuthenticated } = useAuth();
 
   const [status, setStatus] = useState<PageStatus>("loading");
@@ -364,9 +366,9 @@ export function OutfitDetailView({ id }: { id: string }) {
             <button
               type="button"
               onClick={() => {
-                // If there's browser history, go back. Otherwise fall back to /feed
-                // so users who opened a shared link don't end up on an external page.
-                if (typeof window !== "undefined" && window.history.length > 1) {
+                if (fromVault) {
+                  router.push("/vault");
+                } else if (typeof window !== "undefined" && window.history.length > 1) {
                   router.back();
                 } else {
                   router.push("/feed");
@@ -377,7 +379,7 @@ export function OutfitDetailView({ id }: { id: string }) {
               <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m15 18-6-6 6-6" />
               </svg>
-              back
+              {fromVault ? "vault" : "back"}
             </button>
 
             <button

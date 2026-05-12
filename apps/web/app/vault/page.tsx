@@ -294,6 +294,7 @@ export default function VaultPage() {
                 {searchResults.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
+                    href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
                     compact
                     liked={likes[outfit.id]?.liked}
@@ -324,6 +325,7 @@ export default function VaultPage() {
                 {outfits.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
+                    href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
                     compact
                     liked={likes[outfit.id]?.liked}
