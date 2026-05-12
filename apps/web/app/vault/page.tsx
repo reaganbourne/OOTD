@@ -213,7 +213,7 @@ export default function VaultPage() {
               my vault.
             </h1>
             <p className="text-mute" style={{ fontSize: 11.5, marginTop: 3 }}>
-              {outfits.length} fits · {displayName}
+              {outfits.length} fits{user?.current_streak ? ` · ${user.current_streak} day streak` : ""} · {displayName}
             </p>
           </div>
           <Link

@@ -39,6 +39,8 @@ class UserResponse(BaseModel):
     display_name: str | None
     bio: str | None
     profile_image_url: str | None
+    current_streak: int = 0
+    longest_streak: int = 0
 
     model_config = {"from_attributes": True}
 
