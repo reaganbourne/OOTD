@@ -84,6 +84,9 @@ async function mockAuthenticatedApi(
   await page.route(`${apiBase}/**`, async (route) => {
     const request = route.request();
     const url = new URL(request.url());
+    // Strip the /backend prefix added by the Next.js proxy so path checks
+    // match the API routes as the backend sees them.
+    const path = url.pathname.replace(/^\/backend/, "");
 
     if (request.method() === "OPTIONS") {
       await route.fulfill({ status: 204, headers: corsHeaders() });
@@ -91,54 +94,54 @@ async function mockAuthenticatedApi(
     }
 
     // Auth
-    if (url.pathname === "/auth/refresh") {
+    if (path === "/auth/refresh") {
       await route.fulfill(jsonResponse({ access_token: "test-token", token_type: "bearer", user: authUser }));
       return;
     }
-    if (url.pathname === "/auth/me") {
+    if (path === "/auth/me") {
       await route.fulfill(jsonResponse(authUser));
       return;
     }
 
     // Vault — GET /outfits/me
-    if (url.pathname === "/outfits/me" && request.method() === "GET") {
+    if (path === "/outfits/me" && request.method() === "GET") {
       await route.fulfill(jsonResponse({ outfits: vaultOutfits, next_cursor: null }));
       return;
     }
 
     // Feed — GET /outfits/feed (FeedOutfitResponse requires author field)
-    if (url.pathname === "/outfits/feed" && request.method() === "GET") {
+    if (path === "/outfits/feed" && request.method() === "GET") {
       await route.fulfill(jsonResponse({ outfits: feedOutfits, next_cursor: null }));
       return;
     }
 
     // Profile — GET /users/:username
-    if (url.pathname === `/users/${authUser.username}`) {
+    if (path === `/users/${authUser.username}`) {
       await route.fulfill(jsonResponse(mockProfile));
       return;
     }
 
     // Boards list — GET /boards/me
-    if (url.pathname === "/boards/me") {
+    if (path === "/boards/me") {
       await route.fulfill(jsonResponse([]));
       return;
     }
 
     // Likes — GET /outfits/:id/likes
-    if (/^\/outfits\/[^/]+\/likes$/.test(url.pathname) && request.method() === "GET") {
+    if (/^\/outfits\/[^/]+\/likes$/.test(path) && request.method() === "GET") {
       await route.fulfill(jsonResponse({ liked: false, like_count: 0 }));
       return;
     }
 
     // Upload — POST /outfits
-    if (url.pathname === "/outfits" && request.method() === "POST") {
+    if (path === "/outfits" && request.method() === "POST") {
       await route.fulfill(jsonResponse(mockOutfit, 201));
       return;
     }
 
     // Fallback — unhandled route (helps spot missing mocks in test output)
     await route.fulfill(
-      jsonResponse({ detail: `Unhandled mocked route: ${request.method()} ${url.pathname}` }, 404)
+      jsonResponse({ detail: `Unhandled mocked route: ${request.method()} ${path}` }, 404)
     );
   });
 }
@@ -161,9 +164,9 @@ test.describe("public routes", () => {
   test("landing page links to auth screens", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByRole("heading", { name: /your daily fit/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /get started/i })).toHaveAttribute("href", "/signup");
-    await expect(page.getByRole("link", { name: /^log in$/i })).toHaveAttribute("href", "/login");
+    await expect(page.getByRole("heading", { name: /checkd/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /get started/i }).first()).toHaveAttribute("href", "/signup");
+    await expect(page.getByRole("link", { name: /^log in$/i }).first()).toHaveAttribute("href", "/login");
   });
 
   test("login and signup pages render their forms", async ({ page }) => {

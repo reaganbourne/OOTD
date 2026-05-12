@@ -47,7 +47,10 @@ function rewriteBodyUrls(body: string, request: NextRequest) {
 }
 
 function rewriteSetCookie(setCookie: string) {
-  return setCookie.replace(/Path=\/auth(?=;|$)/gi, "Path=/backend/auth");
+  // Proxy serves auth routes at /backend/auth but the backend issues the
+  // refresh-token cookie with Path=/auth.  Widen the path to / so the browser
+  // sends the cookie on every same-origin request regardless of path prefix.
+  return setCookie.replace(/Path=\/[^;]*/gi, "Path=/");
 }
 
 function buildUpstreamHeaders(request: NextRequest) {
