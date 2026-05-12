@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { apiClient, type Board } from "@/lib/api-client";
 import { MobileNav } from "@/components/chrome/mobile-nav";
 import { useAuth } from "@/lib/auth-context";
+import { EventDatePicker } from "@/components/boards/event-date-picker";
 
 type PageStatus = "loading" | "ready" | "error";
 
@@ -89,18 +90,10 @@ function CreateBoardModal({ onClose, onCreate }: {
           </div>
 
           <div>
-            <label className="field-label" htmlFor="event-date">
+            <label className="field-label">
               Event date <span className="font-normal normal-case tracking-normal text-mute">(optional)</span>
             </label>
-            <div className="field-shell">
-              <input
-                id="event-date"
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
-                className="field-input text-sm"
-              />
-            </div>
+            <EventDatePicker value={eventDate} onChange={setEventDate} />
           </div>
 
           {error ? (
