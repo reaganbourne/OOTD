@@ -227,6 +227,7 @@ export type CreateOutfitInput = {
       display_order: number;
       link_url?: string;
     }>;
+    save_to_vault?: boolean;
   };
 };
 

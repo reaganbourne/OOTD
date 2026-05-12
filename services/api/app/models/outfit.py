@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Date, DateTime, ForeignKey, Index, String, text
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Index, String, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -29,6 +29,7 @@ class Outfit(Base):
     worn_on: Mapped[date | None] = mapped_column(Date, nullable=True)
     vibe_check_text: Mapped[str | None] = mapped_column(String, nullable=True)
     vibe_check_tone: Mapped[str | None] = mapped_column(String, nullable=True)
+    vault_hidden: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("now()")
     )

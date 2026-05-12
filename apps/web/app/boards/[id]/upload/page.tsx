@@ -20,6 +20,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
+  const [saveToVault, setSaveToVault] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,7 +71,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
 
     const createResult = await apiClient.outfits.create({
       image: photo,
-      metadata: { caption: caption.trim() || undefined, clothing_items: [] },
+      metadata: { caption: caption.trim() || undefined, clothing_items: [], save_to_vault: saveToVault },
     });
 
     if (!createResult.ok) {
@@ -291,6 +292,29 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
                 </div>
               )}
             </div>
+
+            {/* Vault toggle */}
+            <button
+              type="button"
+              onClick={() => setSaveToVault((v) => !v)}
+              className="mt-4 flex w-full items-center justify-between rounded-2xl border border-line bg-white px-5 py-4 transition hover:border-pink-deep/30"
+            >
+              <div className="text-left">
+                <p className="text-sm font-medium text-ink">save to my vault</p>
+                <p className="mt-0.5 text-xs text-mute">keep this look in your personal archive</p>
+              </div>
+              <div
+                className={`relative h-6 w-10 flex-shrink-0 rounded-full border transition-colors duration-200 ${
+                  saveToVault ? "border-ink bg-ink" : "border-line bg-line"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                    saveToVault ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </div>
+            </button>
 
             {errorMsg ? (
               <div className="mt-4 rounded-2xl border border-pink-deep/30 bg-pink-soft px-4 py-3 text-sm text-error">
