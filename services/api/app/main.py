@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.routers import auth, boards, health, notifications, outfits, users
+from app.routers import admin, auth, boards, health, notifications, outfits, users
 from app.services.storage import LOCAL_UPLOADS_DIR
 
 logger = logging.getLogger("ootd.api")
@@ -57,6 +57,7 @@ app.include_router(outfits.router)
 app.include_router(users.router)
 app.include_router(boards.router)
 app.include_router(notifications.router)
+app.include_router(admin.router)
 
 # Dev-mode local file storage — only mounted when S3 is not configured.
 # In production S3_BUCKET is set so this block is skipped.

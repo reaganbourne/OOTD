@@ -25,6 +25,7 @@ export type AuthUser = {
   profile_image_url?: string | null;
   current_streak?: number | null;
   longest_streak?: number | null;
+  is_admin?: boolean;
 };
 
 export type AuthSessionResponse = {
@@ -954,11 +955,30 @@ export const boardApiClient = {
   }
 };
 
+const adminApiClient = {
+  async deleteOutfit(outfitId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/admin/outfits/${outfitId}`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Outfit deleted."
+    });
+  },
+
+  async deleteBoard(boardId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/admin/boards/${boardId}`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Board deleted."
+    });
+  }
+};
+
 export const apiClient = {
   auth: authApiClient,
   outfits: outfitApiClient,
   users: userApiClient,
   boards: boardApiClient,
+  admin: adminApiClient,
   request: sendRequest,
   clearAccessToken,
   getAccessToken,

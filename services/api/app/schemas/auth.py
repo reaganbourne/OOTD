@@ -41,6 +41,7 @@ class UserResponse(BaseModel):
     profile_image_url: str | None
     current_streak: int = 0
     longest_streak: int = 0
+    is_admin: bool = False
 
     model_config = {"from_attributes": True}
 

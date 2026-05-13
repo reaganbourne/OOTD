@@ -99,6 +99,11 @@ async function proxy(request: NextRequest, path: string[]) {
     headers.set("location", rewriteBodyUrls(location, request));
   }
 
+  // 204/304 carry no body — return immediately to avoid stream issues
+  if (upstreamResponse.status === 204 || upstreamResponse.status === 304) {
+    return new NextResponse(null, { status: upstreamResponse.status, headers });
+  }
+
   const contentType = upstreamResponse.headers.get("content-type") ?? "";
   if (contentType.includes("application/json") || contentType.startsWith("text/")) {
     const body = await upstreamResponse.text();
