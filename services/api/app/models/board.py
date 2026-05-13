@@ -36,7 +36,6 @@ class Board(Base):
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     event_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     invite_code: Mapped[str] = mapped_column(String(12), nullable=False, unique=True)
-    media_link: Mapped[str | None] = mapped_column(String(500), nullable=True)
     expires_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
