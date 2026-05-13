@@ -7,7 +7,7 @@ Source of truth for `@otthomas` building the upload flow UI (Issue #19).
 
 ```
 http://localhost:8000   (local dev)
-https://api.ootd.app   (production — TBD on Railway)
+https://checkdd.com     (production API on Railway)
 ```
 
 All endpoints are prefixed with `/outfits`.

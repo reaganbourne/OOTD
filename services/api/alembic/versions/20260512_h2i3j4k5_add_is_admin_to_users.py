@@ -1,14 +1,14 @@
 """add is_admin to users
 
 Revision ID: h2i3j4k5
-Revises: c5d6e7f8
+Revises: e8f9a0b1
 Create Date: 2026-05-12
 """
 from alembic import op
 import sqlalchemy as sa
 
 revision = "h2i3j4k5"
-down_revision = "c5d6e7f8"
+down_revision = "e8f9a0b1"
 branch_labels = None
 depends_on = None
 

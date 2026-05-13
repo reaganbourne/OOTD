@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 const DEFAULT_BACKEND_ORIGIN =
   process.env.NODE_ENV === "production"
-    ? "https://api.ootd.app"
+    ? "https://checkdd.com"
     : "http://127.0.0.1:8000";
 const PROXY_PREFIX = "/backend";
 

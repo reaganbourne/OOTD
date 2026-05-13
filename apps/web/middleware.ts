@@ -6,7 +6,7 @@ import {
 } from "@/lib/auth-session";
 
 const AUTH_ROUTES = new Set(["/login", "/signup"]);
-const PROTECTED_ROUTE_PREFIXES = ["/feed", "/vault", "/upload", "/outfits"];
+const PROTECTED_ROUTE_PREFIXES = ["/admin", "/feed", "/vault", "/upload", "/outfits"];
 
 function withSecurityHeaders(response: NextResponse) {
   response.headers.set("X-Content-Type-Options", "nosniff");
