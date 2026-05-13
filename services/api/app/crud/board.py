@@ -48,6 +48,7 @@ def create_board(
     creator_id: uuid.UUID,
     name: str,
     event_date=None,
+    media_link: str | None = None,
 ) -> Board:
     """Create a board and add the creator as the first member."""
     board = Board(
@@ -56,6 +57,7 @@ def create_board(
         event_date=event_date,
         invite_code=_generate_invite_code(db),
         expires_at=_expires_at(event_date),
+        media_link=media_link,
     )
     db.add(board)
     db.flush()
@@ -74,9 +76,17 @@ def get_by_invite_code(db: Session, invite_code: str) -> Board | None:
     return db.query(Board).filter(Board.invite_code == invite_code).first()
 
 
-def update_board(db: Session, board: Board, name: str) -> Board:
-    """Rename a board. Only the creator should call this."""
-    board.name = name.strip()
+def update_board(
+    db: Session,
+    board: Board,
+    name: str | None = None,
+    media_link: object = None,
+) -> Board:
+    """Update a board. Only the creator should call this."""
+    if name is not None:
+        board.name = name.strip()
+    if media_link is not None:
+        board.media_link = media_link if media_link != "" else None
     db.commit()
     db.refresh(board)
     return board

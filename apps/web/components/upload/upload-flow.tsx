@@ -283,7 +283,7 @@ export function UploadFlow() {
         </p>
         <p className="text-mute" style={{ fontSize: 13, marginBottom: 20 }}>
           {currentStep === 1 && "pick the photo that best captures the look."}
-          {currentStep === 2 && "add one row per item — brand, category, color."}
+          {currentStep === 2 && "add one row per item: brand, category, color."}
           {currentStep === 3 && "caption, event, and date are all optional."}
           {currentStep === 4 && "everything look right? go ahead and post it."}
         </p>

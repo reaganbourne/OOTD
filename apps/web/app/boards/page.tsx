@@ -297,7 +297,7 @@ export default function BoardsPage() {
               </div>
               <h2 className="mt-5 text-3xl text-ink">no boards yet</h2>
               <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
-                Boards are private spaces for an event — create one and invite your crew to post their looks together.
+                Boards are private spaces for an event. create one and invite your crew to post their looks together.
               </p>
               <button
                 type="button"

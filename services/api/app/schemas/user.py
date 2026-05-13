@@ -10,6 +10,7 @@ class PublicProfile(BaseModel):
     display_name: str | None
     bio: str | None
     profile_image_url: str | None
+    instagram_handle: str | None = None
     follower_count: int
     following_count: int
     created_at: datetime
@@ -28,6 +29,7 @@ class UpdateProfileRequest(BaseModel):
     display_name: str | None = Field(default=None, max_length=64)
     bio: str | None = Field(default=None, max_length=160)
     username: str | None = Field(default=None, min_length=2, max_length=30)
+    instagram_handle: str | None = Field(default=None, max_length=30)
 
     @field_validator("username")
     @classmethod
