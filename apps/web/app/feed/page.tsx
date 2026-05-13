@@ -184,7 +184,7 @@ function VaultFeedTab({ displayName }: { displayName: string }) {
 
   if (status === "loading") {
     return (
-      <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+      <section className="grid grid-cols-2 gap-3 sm:gap-4">
         {Array.from({ length: 6 }).map((_, i) => <OutfitCardSkeleton key={i} />)}
       </section>
     );
@@ -222,7 +222,7 @@ function VaultFeedTab({ displayName }: { displayName: string }) {
 
   return (
     <>
-      <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+      <section className="grid grid-cols-2 gap-3 sm:gap-4">
         {outfits.map((outfit) => (
           <OutfitCard key={outfit.id} outfit={toVaultCardData(outfit)} showAccentMarker />
         ))}
@@ -332,7 +332,7 @@ function BoardsActivityTab() {
         {Array.from({ length: 2 }).map((_, i) => (
           <div key={i}>
             <div className="mb-4 h-5 w-36 animate-pulse rounded-full bg-pink-soft" />
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {Array.from({ length: 4 }).map((_, j) => <OutfitCardSkeleton key={j} showAuthor={false} />)}
             </div>
           </div>
@@ -371,7 +371,7 @@ function BoardsActivityTab() {
           {/* Board header */}
           <div className="mb-4 flex items-baseline justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="font-display truncate text-xl tracking-[-0.02em] text-ink">
+              <h2 className="font-display italic truncate text-xl tracking-[-0.02em] text-ink">
                 {section.board.name}
               </h2>
               {section.board.event_date ? (
@@ -394,7 +394,7 @@ function BoardsActivityTab() {
             </p>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {section.outfits.map((outfit) => (
                   <BoardActivityCard
                     key={outfit.id}
@@ -465,7 +465,7 @@ export default function FeedPage() {
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl items-center justify-center">
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
-            <p className="font-display text-5xl text-pink-deep" style={{ letterSpacing: "-0.02em" }}>checkd</p>
+            <p className="font-display italic text-5xl text-pink-deep" style={{ letterSpacing: "-0.02em" }}>checkd</p>
             <h1 className="mt-4 text-4xl text-ink">Opening your feed</h1>
           </section>
         </div>
@@ -475,24 +475,16 @@ export default function FeedPage() {
 
   return (
     <main className="pb-28 lg:pb-0 lg:pt-16">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-3xl">
 
         {/* ── Topbar ─────────────────────────────────────────────────── */}
         <div
           className="flex items-center justify-between bg-paper"
-          style={{ padding: "8px 20px 12px" }}
+          style={{ padding: "16px 20px 12px" }}
         >
-          <div>
-            <p
-              className="font-display leading-none text-pink-deep"
-              style={{ fontSize: 38, lineHeight: 0.95, letterSpacing: "-0.01em" }}
-            >
-              checkd
-            </p>
-            <p style={{ fontSize: 11, color: "var(--mute)", marginTop: 2 }}>
-              welcome back, {displayName}.
-            </p>
-          </div>
+          <p style={{ fontSize: 13, color: "var(--ink-soft)" }}>
+            welcome back, {displayName}.
+          </p>
 
           <div className="flex items-center" style={{ gap: 6 }}>
             {/* Explore */}

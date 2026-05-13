@@ -340,7 +340,7 @@ export function OutfitDetailView({ id }: { id: string }) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-          <p className="font-display text-5xl text-pink-deep">checkd</p>
+          <p className="font-display italic text-5xl text-pink-deep">checkd</p>
           <h1 className="mt-4 text-3xl text-ink">Outfit not found</h1>
           <p className="mt-3 text-sm leading-6 text-ink-soft">This look may have been removed.</p>
           <Link href="/feed" className="mt-6 inline-flex items-center justify-center rounded-[1.2rem] border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25">

@@ -47,7 +47,7 @@ export function AuthShell({ mode, children }: AuthShellProps) {
       <div className="flex flex-1 flex-col" style={{ paddingBottom: 32 }}>
         {/* Heading — serif italic per design */}
         <h1
-          className="font-display text-ink"
+          className="font-display italic text-ink"
           style={{
             fontSize: copy.headingSize,
             margin: `${copy.headingMarginTop}px 0 0`,

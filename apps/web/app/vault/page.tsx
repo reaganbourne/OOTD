@@ -193,7 +193,7 @@ export default function VaultPage() {
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl items-center justify-center">
           <section className="soft-panel w-full max-w-xl px-6 py-10 text-center sm:px-8">
-            <p className="font-display text-5xl text-pink-deep">checkd</p>
+            <p className="font-display italic text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-4xl text-ink">Checking your session</h1>
           </section>
         </div>
@@ -205,11 +205,11 @@ export default function VaultPage() {
 
   return (
     <main className="pb-28 lg:pb-0 lg:pt-16">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-3xl">
         {/* vault header */}
         <header className="flex items-end justify-between bg-paper" style={{ padding: "16px 20px 10px" }}>
           <div>
-            <h1 className="font-logo text-ink" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em", fontWeight: 100 }}>
+            <h1 className="font-display italic text-ink" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em" }}>
               my vault.
             </h1>
             <p className="text-mute" style={{ fontSize: 11.5, marginTop: 3 }}>
@@ -251,16 +251,16 @@ export default function VaultPage() {
           </div>
         </div>
 
-        {/* ── Vault grid — 3-col, 2px gap, per design vault-grid ─────── */}
-        <section>
+        {/* ── Vault grid ─────────────────────────────────────────────── */}
+        <section className="px-4 sm:px-5">
           {errorMessage && vaultStatus !== "loading" ? (
-            <div className="mx-5 my-3 rounded-xl border border-pink-deep/30 bg-pink-soft px-4 py-3 text-sm text-error">
+            <div className="my-3 rounded-xl border border-pink-deep/30 bg-pink-soft px-4 py-3 text-sm text-error">
               {errorMessage}
             </div>
           ) : null}
 
           {vaultStatus === "loading" ? (
-            <div className="grid grid-cols-3 gap-px bg-line">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {Array.from({ length: 9 }).map((_, i) => (
                 <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
               ))}
@@ -270,14 +270,14 @@ export default function VaultPage() {
           {/* Search results — API-powered, shows all matching outfits across the full vault */}
           {searchQuery.trim() ? (
             searchLoading ? (
-              <div className="grid grid-cols-3 gap-px bg-line">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
                 ))}
               </div>
             ) : searchResults !== null && searchResults.length === 0 ? (
               <div className="px-5 py-10 text-center">
-                <p className="font-display text-2xl text-ink">no matches.</p>
+                <p className="font-display italic text-2xl text-ink">no matches.</p>
                 <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
                   try searching by brand, event, color, or vibe.
                 </p>
@@ -290,13 +290,12 @@ export default function VaultPage() {
                 </button>
               </div>
             ) : searchResults !== null ? (
-              <div className="grid grid-cols-3 gap-px bg-line">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {searchResults.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
-                    compact
                     liked={likes[outfit.id]?.liked}
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />
@@ -307,7 +306,7 @@ export default function VaultPage() {
 
           {vaultStatus === "ready" && outfits.length === 0 && !searchQuery.trim() ? (
             <div className="px-5 py-16 text-center">
-              <p className="font-display text-2xl text-ink">your archive is ready.</p>
+              <p className="font-display italic text-2xl text-ink">your archive is ready.</p>
               <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
                 it just needs your first look.
               </p>
@@ -321,13 +320,12 @@ export default function VaultPage() {
 
           {vaultStatus === "ready" && outfits.length > 0 && !searchQuery.trim() ? (
             <>
-              <div className="grid grid-cols-3 gap-px bg-line">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {outfits.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
-                    compact
                     liked={likes[outfit.id]?.liked}
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />

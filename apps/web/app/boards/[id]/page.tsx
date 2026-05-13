@@ -65,6 +65,117 @@ function InviteCopy({ code }: { code: string }) {
   );
 }
 
+// ── Media link ────────────────────────────────────────────────────────────────
+
+function MediaLinkRow({
+  boardId,
+  value,
+  onSave,
+}: {
+  boardId: string;
+  value: string | null;
+  onSave: (next: string | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function startEdit() {
+    setDraft(value ?? "");
+    setEditing(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }
+
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+    const trimmed = draft.trim();
+    const result = await apiClient.boards.update(boardId, { media_link: trimmed || "" });
+    if (result.ok) onSave(result.data.media_link);
+    setSaving(false);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-2 rounded-[1.2rem] border border-pink-deep/30 bg-white px-4 py-3">
+        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        </svg>
+        <input
+          ref={inputRef}
+          type="url"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void handleSave();
+            if (e.key === "Escape") setEditing(false);
+          }}
+          placeholder="https://pinterest.com/…"
+          maxLength={500}
+          className="min-w-0 flex-1 bg-transparent text-[0.72rem] text-ink outline-none placeholder:text-mute"
+        />
+        <button
+          type="button"
+          onClick={() => void handleSave()}
+          disabled={saving}
+          className="shrink-0 text-[0.72rem] font-semibold text-pink-deep transition hover:text-[#d94e7a] disabled:opacity-50"
+        >
+          {saving ? "saving…" : "save"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          className="shrink-0 text-[0.72rem] text-mute transition hover:text-ink"
+        >
+          cancel
+        </button>
+      </div>
+    );
+  }
+
+  if (value) {
+    return (
+      <div className="flex items-center gap-2 rounded-[1.2rem] border border-line bg-white px-4 py-3">
+        <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        </svg>
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="min-w-0 flex-1 truncate text-[0.72rem] text-pink-deep hover:underline"
+        >
+          {value.replace(/^https?:\/\//, "")}
+        </a>
+        <button
+          type="button"
+          onClick={startEdit}
+          className="shrink-0 text-[0.72rem] font-semibold text-mute transition hover:text-ink"
+        >
+          Edit
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={startEdit}
+      className="flex w-full items-center gap-2 rounded-[1.2rem] border border-dashed border-line bg-white/50 px-4 py-3 text-left transition hover:border-pink-deep/40"
+    >
+      <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-mute" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      <span className="text-[0.72rem] text-mute">add a link — pinterest, partiful, etc.</span>
+    </button>
+  );
+}
+
 // ── Member strip ──────────────────────────────────────────────────────────────
 
 function MemberAvatar({ member }: { member: BoardMember }) {
@@ -216,7 +327,23 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
     setEditNameSaving(false);
   }
 
-  if (authLoading || !isAuthenticated) return null;
+  if (authLoading) {
+    return (
+      <main className="px-4 pb-28 pt-6 sm:px-6">
+        <div className="mx-auto max-w-3xl space-y-4">
+          <div className="h-8 w-40 animate-pulse rounded-full bg-pink-soft" />
+          <div className="soft-panel h-48 w-full animate-pulse" />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="aspect-square animate-pulse rounded-[1.5rem] bg-pink-soft" />
+            ))}
+          </div>
+        </div>
+        <MobileNav active="boards" />
+      </main>
+    );
+  }
+  if (!isAuthenticated) return null;
 
   // ── Error states ──
   if (status === "gone") {
@@ -224,7 +351,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
       <main className="px-4 pb-28 pt-6 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl text-pink-deep">checkd</p>
+            <p className="font-display italic text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-3xl text-ink">board expired</h1>
             <p className="mt-3 text-sm leading-6 text-ink-soft">This board has passed its event date and is no longer active.</p>
             <Link href="/boards" className="mt-6 inline-flex items-center justify-center rounded-[1.2rem] border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25">
@@ -242,7 +369,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
       <main className="px-4 pb-28 pt-6 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl text-pink-deep">checkd</p>
+            <p className="font-display italic text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-3xl text-ink">board not found</h1>
             <p className="mt-3 text-sm leading-6 text-ink-soft">{errorMessage ?? "This board doesn't exist or you're not a member."}</p>
             <Link href="/boards" className="mt-6 inline-flex items-center justify-center rounded-[1.2rem] border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25">
@@ -272,7 +399,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
               </svg>
               Boards
             </Link>
-            <p className="mt-2 font-display text-[2.2rem] leading-none text-pink-deep">checkd</p>
+            <p className="mt-2 font-display italic text-[2.2rem] leading-none text-pink-deep">checkd</p>
           </div>
         </header>
 
@@ -319,7 +446,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <h1 className="font-display text-3xl leading-tight tracking-[-0.03em] text-ink">{board?.name}</h1>
+                    <h1 className="font-display italic text-3xl leading-tight tracking-[-0.03em] text-ink">{board?.name}</h1>
                     {isCreator ? (
                       <button
                         type="button"
@@ -356,9 +483,19 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
 
             {/* Invite link */}
             {board ? (
-              <div className="mt-4">
-                <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">Invite link</p>
-                <InviteCopy code={board.invite_code} />
+              <div className="mt-4 space-y-3">
+                <div>
+                  <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">Invite link</p>
+                  <InviteCopy code={board.invite_code} />
+                </div>
+                <div>
+                  <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">Board link</p>
+                  <MediaLinkRow
+                    boardId={id}
+                    value={board.media_link ?? null}
+                    onSave={(next) => setBoard((b) => b ? { ...b, media_link: next } : b)}
+                  />
+                </div>
               </div>
             ) : null}
 
@@ -404,7 +541,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
         {/* Outfits section */}
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-xl tracking-[-0.02em] text-ink">looks</h2>
+            <h2 className="font-display italic text-xl tracking-[-0.02em] text-ink">looks</h2>
             <Link
               href={`/boards/${id}/upload`}
               className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2 text-[0.78rem] font-semibold text-ink transition hover:border-pink-deep"

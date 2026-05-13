@@ -236,7 +236,7 @@ export default function EditProfilePage() {
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-2xl items-center justify-center">
           <section className="soft-panel w-full max-w-sm px-6 py-10 text-center">
-            <p className="font-display text-5xl text-pink-deep">checkd</p>
+            <p className="font-display italic text-5xl text-pink-deep">checkd</p>
             <h1 className="mt-4 text-3xl text-ink">Loading…</h1>
           </section>
         </div>
@@ -254,7 +254,7 @@ export default function EditProfilePage() {
 
         {/* ── Top bar ─────────────────────────────────────────────────────── */}
         <header className="mb-6 flex items-center justify-between">
-          <p className="font-display text-[2.2rem] leading-none text-pink-deep">
+          <p className="font-display italic text-[2.2rem] leading-none text-pink-deep">
             checkd
           </p>
           <button
@@ -263,7 +263,7 @@ export default function EditProfilePage() {
             className="icon-button"
             aria-label="Go back"
           >
-            <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5" />
               <polyline points="12 19 5 12 12 5" />
             </svg>
@@ -272,7 +272,7 @@ export default function EditProfilePage() {
 
         {/* ── Title ───────────────────────────────────────────────────────── */}
         <div className="mb-6">
-          <h1 className="font-display text-3xl tracking-[-0.03em] text-ink">edit profile</h1>
+          <h1 className="font-display italic text-3xl tracking-[-0.03em] text-ink">edit profile</h1>
           <p className="mt-1 text-sm text-mute">Changes are visible on your public profile</p>
         </div>
 

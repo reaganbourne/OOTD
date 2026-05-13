@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { AUTH_SESSION_COOKIE, AUTH_SESSION_COOKIE_VALUE } from "@/lib/auth-session";
+import { VibeCheckLabel } from "@/components/vibe-check-label";
 
 const FEATURES = [
   {
@@ -94,7 +95,7 @@ function OutfitMosaicGrid() {
 
       <div className="absolute -bottom-3 left-4 rounded-2xl border border-line bg-paper/95 px-5 py-3.5 shadow-lift backdrop-blur-sm">
         <p className="text-[10px] uppercase tracking-widest text-mute">vibe check</p>
-        <p className="mt-1 text-sm font-medium text-ink">main character energy</p>
+        <VibeCheckLabel />
       </div>
     </div>
   );
@@ -109,7 +110,7 @@ export default async function HomePage() {
     <main className="min-h-screen overflow-x-hidden bg-paper">
       <header className="fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between border-b border-line/50 bg-paper/80 px-6 backdrop-blur-md sm:px-10">
         <span
-          className="font-display text-2xl leading-none text-ink"
+          className="font-display italic text-2xl leading-none text-ink"
           style={{ letterSpacing: "-0.01em" }}
         >
           checkd
@@ -155,7 +156,7 @@ export default async function HomePage() {
           </span>
 
           <h1
-            className="font-display leading-none text-ink"
+            className="font-display italic leading-none text-ink"
             style={{ fontSize: "clamp(72px, 10vw, 108px)", letterSpacing: "-0.03em" }}
           >
             checkd.
@@ -217,7 +218,7 @@ export default async function HomePage() {
           everything you need
         </p>
         <p
-          className="mb-14 text-center font-display text-3xl text-ink"
+          className="mb-14 text-center font-display italic text-3xl text-ink"
           style={{ letterSpacing: "-0.02em" }}
         >
           your whole wardrobe story, in one place.
@@ -232,7 +233,7 @@ export default async function HomePage() {
               <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-full bg-pink-soft text-pink-deep">
                 {f.icon}
               </div>
-              <h3 className="font-display text-lg text-ink">{f.title}</h3>
+              <h3 className="font-display italic text-lg text-ink">{f.title}</h3>
               <p className="mt-2 text-sm leading-6 text-ink-soft">{f.description}</p>
             </div>
           ))}
@@ -246,7 +247,7 @@ export default async function HomePage() {
       >
         <div className="mx-auto max-w-2xl text-center">
           <p
-            className="font-display text-4xl leading-tight text-ink sm:text-5xl"
+            className="font-display italic text-4xl leading-tight text-ink sm:text-5xl"
             style={{ letterSpacing: "-0.025em" }}
           >
             never forget what you wore<br className="hidden sm:block" /> on your best night out.
@@ -267,7 +268,7 @@ export default async function HomePage() {
               <span className="text-xs uppercase tracking-widest text-pink-deep">
                 0{i + 1}
               </span>
-              <h4 className="mt-3 font-display text-base text-ink">{step.label}</h4>
+              <h4 className="mt-3 font-display italic text-base text-ink">{step.label}</h4>
               <p className="mt-1.5 text-sm leading-6 text-ink-soft">{step.body}</p>
             </div>
           ))}
@@ -280,7 +281,7 @@ export default async function HomePage() {
         style={{ background: "linear-gradient(150deg, #F8C8DC 0%, #E8A8C0 50%, #FDEDF3 100%)" }}
       >
         <h2
-          className="font-display text-5xl text-ink sm:text-6xl"
+          className="font-display italic text-5xl text-ink sm:text-6xl"
           style={{ letterSpacing: "-0.03em" }}
         >
           archive the fits.
@@ -319,7 +320,7 @@ export default async function HomePage() {
       <footer className="border-t border-line px-6 py-8 sm:px-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <span
-            className="font-display text-lg text-ink-soft"
+            className="font-display italic text-lg text-ink-soft"
             style={{ letterSpacing: "-0.01em" }}
           >
             checkd

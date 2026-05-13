@@ -217,7 +217,7 @@ export function StoryCardSheet({ outfitId, imageUrl, wornOn, createdAt, vibeChec
       <div className="animate-fade-up soft-panel w-full max-w-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pb-4 pt-5">
-          <h2 className="font-display text-2xl tracking-[-0.03em] text-ink">share look</h2>
+          <h2 className="font-display italic text-2xl tracking-[-0.03em] text-ink">share look</h2>
           <button
             type="button"
             onClick={onClose}
