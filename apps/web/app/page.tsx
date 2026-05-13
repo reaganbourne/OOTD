@@ -194,7 +194,7 @@ export default async function HomePage() {
                   href="/signup"
                   className="inline-flex h-10 items-center rounded-full bg-ink px-7 text-sm font-medium text-paper transition hover:opacity-90"
                 >
-                  get started — it&rsquo;s free
+                  get started
                 </Link>
                 <Link
                   href="/login"
@@ -253,14 +253,14 @@ export default async function HomePage() {
             never forget what you wore<br className="hidden sm:block" /> on your best night out.
           </p>
           <p className="mx-auto mt-5 max-w-md text-base leading-7 text-ink-soft">
-            checkd is a soft place to keep your style history — for yourself, and the
+            checkd is a soft place to keep your style history, for yourself and the
             friends who were there.
           </p>
         </div>
 
         <div className="mt-14 grid gap-3 sm:grid-cols-3">
           {[
-            { label: "log a fit", body: "upload a photo and add details about what you're wearing — brand, category, color, all of it." },
+            { label: "log a fit", body: "upload a photo and add details about what you're wearing: brand, category, color, all of it." },
             { label: "share with your board", body: "create an event board for a trip or a night out and invite your girls to post their looks." },
             { label: "get your vibe check", body: "our ai reads the room and gives your fit a vibe check so you always know the energy you're giving." },
           ].map((step, i) => (
@@ -287,7 +287,7 @@ export default async function HomePage() {
           archive the fits.
         </h2>
         <p className="mx-auto mt-5 max-w-sm text-base leading-7 text-ink-soft">
-          start your vault for free — no subscription, no algorithm, just your style.
+          start your vault for free. no algorithm, just your style.
         </p>
         <div className="mt-10 flex justify-center gap-3">
           {isLoggedIn ? (

@@ -142,7 +142,7 @@ export default function JoinBoardPage({ params }: { params: Promise<{ code: stri
             style={{ background: "linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%)" }}
           >
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-pink-deep/60 mb-3">
-              you&apos;re invited to
+              join my board on checkd
             </p>
             <h1 className="font-display italic text-[2rem] leading-[1.1] tracking-[-0.04em] text-ink">
               {board?.name}

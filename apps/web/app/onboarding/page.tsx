@@ -48,7 +48,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
         your fit diary<br />starts here.
       </h1>
       <p className="mt-4 max-w-xs text-sm leading-6 text-ink-soft/70">
-        Log every look, revisit your style history, and see how your taste evolves — one outfit at a time.
+        Log every look, revisit your style history, and see how your taste evolves. one outfit at a time.
       </p>
       <button
         type="button"
@@ -195,7 +195,7 @@ function StepUpload({ onDone }: { onDone: () => void }) {
         Upload your first fit
       </h2>
       <p className="mt-3 max-w-xs text-sm leading-6 text-ink-soft/70">
-        Drop your outfit photo and get an instant vibe check — our AI will tag your style and kick off your archive.
+        Drop your outfit photo and get an instant vibe check. our AI will tag your style and kick off your archive.
       </p>
 
       <Link

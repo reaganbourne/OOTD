@@ -123,6 +123,7 @@ export default function EditProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
+  const [instagramHandle, setInstagramHandle] = useState("");
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -149,6 +150,7 @@ export default function EditProfilePage() {
     setUsername(user.username ?? "");
     setBio(user.bio ?? "");
     setAvatarSrc(user.profile_image_url ?? null);
+    setInstagramHandle((user as { instagram_handle?: string | null }).instagram_handle ?? "");
   }, [user]);
 
   const checkUsername = useCallback(
@@ -216,6 +218,7 @@ export default function EditProfilePage() {
       display_name: displayName.trim() || null,
       username: username.trim() || null,
       bio: bio.trim() || null,
+      instagram_handle: instagramHandle.trim().replace(/^@/, "") || null,
     });
 
     if (result.ok) {
@@ -347,6 +350,28 @@ export default function EditProfilePage() {
               {fieldErrors.username ? (
                 <p className="mt-1.5 text-xs text-error">{fieldErrors.username}</p>
               ) : null}
+            </div>
+
+            {/* Instagram handle */}
+            <div>
+              <label htmlFor="instagram" className="block text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-mute">
+                Instagram
+              </label>
+              <div className="relative mt-2">
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-mute">
+                  @
+                </span>
+                <input
+                  id="instagram"
+                  type="text"
+                  value={instagramHandle}
+                  onChange={(e) => setInstagramHandle(e.target.value.replace(/^@/, ""))}
+                  placeholder="yourhandle"
+                  maxLength={30}
+                  disabled={isSaving}
+                  className="w-full rounded-2xl border border-line bg-white/70 py-3 pl-8 pr-4 text-sm text-ink placeholder:text-mute/40 outline-none transition focus:border-pink-deep/40 focus:ring-2 focus:ring-pink-deep/12 disabled:opacity-50"
+                />
+              </div>
             </div>
 
             {/* Bio */}

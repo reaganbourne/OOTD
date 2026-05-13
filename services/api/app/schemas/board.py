@@ -11,10 +11,12 @@ from app.schemas.outfit import BoardOutfitPage, OutfitOut  # noqa: F401 (re-expo
 class CreateBoardRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=120)
     event_date: date | None = None
+    media_link: str | None = None
 
 
 class UpdateBoardRequest(BaseModel):
-    name: str = Field(..., min_length=1, max_length=120)
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    media_link: str | None = None
 
 
 class BoardOut(BaseModel):
@@ -25,6 +27,7 @@ class BoardOut(BaseModel):
     creator_id: uuid.UUID
     expires_at: datetime
     member_count: int
+    media_link: str | None
     created_at: datetime
 
     model_config = {"from_attributes": True}

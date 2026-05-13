@@ -41,6 +41,7 @@ def create_outfit(
     worn_on: date | None = None,
     vibe_check_text: str | None = None,
     vibe_check_tone: str | None = None,
+    vault_hidden: bool = False,
 ) -> Outfit:
     """
     Insert one outfit row and all its clothing_items in a single transaction.
@@ -54,6 +55,7 @@ def create_outfit(
         worn_on=worn_on,
         vibe_check_text=vibe_check_text,
         vibe_check_tone=vibe_check_tone,
+        vault_hidden=vault_hidden,
     )
     db.add(outfit)
     db.flush()  # get outfit.id without committing yet
@@ -100,7 +102,7 @@ def get_user_outfits(
     query = (
         db.query(Outfit)
         .options(selectinload(Outfit.clothing_items))
-        .filter(Outfit.user_id == user_id)
+        .filter(Outfit.user_id == user_id, Outfit.vault_hidden.is_(False))
     )
 
     if cursor:

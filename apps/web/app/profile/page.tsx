@@ -408,6 +408,21 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Instagram */}
+            {profile?.instagram_handle ? (
+              <div className="rounded-2xl border border-line bg-white px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-mute">instagram</p>
+                <a
+                  href={`https://instagram.com/${profile.instagram_handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block text-sm text-pink-deep hover:underline"
+                >
+                  @{profile.instagram_handle}
+                </a>
+              </div>
+            ) : null}
+
             {/* Member since */}
             {profile?.created_at ? (
               <div className="rounded-2xl border border-line bg-white px-5 py-4">
