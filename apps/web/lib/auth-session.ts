@@ -19,3 +19,13 @@ export function clearAuthSessionCookie() {
 
   document.cookie = `${AUTH_SESSION_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
 }
+
+export function hasAuthSessionCookie() {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return document.cookie
+    .split(";")
+    .some((cookie) => cookie.trim() === `${AUTH_SESSION_COOKIE}=${AUTH_SESSION_COOKIE_VALUE}`);
+}

@@ -371,7 +371,7 @@ def cleanup_expired_boards(
     Render cron, or AWS EventBridge). Returns the number of boards deleted.
 
     Example cron (GitHub Actions):
-        curl -X POST https://api.ootd.app/boards/admin/cleanup \\
+        curl -X POST https://checkdd.com/boards/admin/cleanup \\
              -H "X-Admin-Secret: $ADMIN_SECRET"
     """
     if not settings.admin_secret:

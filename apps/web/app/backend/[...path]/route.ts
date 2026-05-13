@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 const DEFAULT_BACKEND_ORIGIN =
   process.env.NODE_ENV === "production"
-    ? "https://api.ootd.app"
+    ? "https://checkdd.com"
     : "http://127.0.0.1:8000";
 const PROXY_PREFIX = "/backend";
 
@@ -97,6 +97,11 @@ async function proxy(request: NextRequest, path: string[]) {
   const location = upstreamResponse.headers.get("location");
   if (location) {
     headers.set("location", rewriteBodyUrls(location, request));
+  }
+
+  // 204/304 carry no body — return immediately to avoid stream issues
+  if (upstreamResponse.status === 204 || upstreamResponse.status === 304) {
+    return new NextResponse(null, { status: upstreamResponse.status, headers });
   }
 
   const contentType = upstreamResponse.headers.get("content-type") ?? "";

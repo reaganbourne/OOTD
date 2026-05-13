@@ -28,12 +28,17 @@ Required Railway environment variables:
 | `AWS_SECRET_ACCESS_KEY` | Your AWS secret |
 | `AWS_REGION` | Your AWS region |
 | `ENVIRONMENT` | `production` |
-| `CORS_ORIGINS` | Your Vercel URL |
-| `PUBLIC_BASE_URL` | Your Vercel URL |
+| `CORS_ORIGINS` | `https://www.checkdd.com` |
+| `PUBLIC_BASE_URL` | `https://www.checkdd.com` |
 
 After deploy, copy the Railway public URL, for example:
 
 `https://your-api.up.railway.app`
+
+If you use a Railway custom domain for the API, use that exact origin instead
+of the Railway-generated URL. For the current public setup, that is likely
+`https://checkdd.com` if the apex domain is attached to Railway and
+`https://www.checkdd.com` is attached to Vercel.
 
 ## 3. Vercel
 
@@ -43,7 +48,7 @@ Required Vercel environment variables:
 
 | Variable | Value |
 | --- | --- |
-| `INTERNAL_API_URL` | Your Railway API URL |
+| `INTERNAL_API_URL` | Your Railway API URL or API custom domain, for example `https://checkdd.com` |
 | `NEXT_PUBLIC_API_PROXY_BASE_URL` | `/backend` |
 
 Notes:
@@ -78,7 +83,7 @@ AWS_REGION=us-east-2
 ## 5. Production checklist
 
 1. Railway API URL works directly.
-2. Vercel has `INTERNAL_API_URL` set to that Railway URL.
-3. Railway `CORS_ORIGINS` includes your Vercel domain.
+2. Vercel has `INTERNAL_API_URL` set to that Railway URL or API custom domain.
+3. Railway `CORS_ORIGINS` includes `https://www.checkdd.com`.
 4. Vercel has been redeployed after env changes.
 5. The deployed browser no longer shows the old `NEXT_PUBLIC_API_URL` error text.

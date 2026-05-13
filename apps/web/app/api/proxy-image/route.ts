@@ -36,15 +36,19 @@ export async function GET(request: NextRequest) {
 
   const allowed =
     parsed.hostname.endsWith(".amazonaws.com") ||
-    parsed.hostname.endsWith(".cloudfront.net") ||
-    parsed.hostname === "cdn.example.com";
+    parsed.hostname.endsWith(".cloudfront.net");
 
   if (!allowed) {
     return new NextResponse("Origin not allowed", { status: 403 });
   }
 
   const abort = AbortSignal.timeout(FETCH_TIMEOUT_MS);
-  const upstream = await fetch(url, { cache: "force-cache", signal: abort });
+  let upstream: Response;
+  try {
+    upstream = await fetch(parsed.toString(), { cache: "force-cache", signal: abort });
+  } catch {
+    return new NextResponse("Upstream fetch timed out or failed", { status: 504 });
+  }
 
   if (!upstream.ok) {
     return new NextResponse("Upstream fetch failed", { status: 502 });

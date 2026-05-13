@@ -11,6 +11,23 @@ from app.models.user import User
 from app.services.auth import decode_access_token
 
 
+def _unauthenticated(detail: str = "Not authenticated.") -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=detail,
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+def _parse_user_id(user_id: str | None) -> uuid.UUID:
+    if not user_id:
+        raise _unauthenticated()
+    try:
+        return uuid.UUID(user_id)
+    except ValueError:
+        raise _unauthenticated()
+
+
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
@@ -34,46 +51,29 @@ def get_current_user(
             ...
     """
     if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise _unauthenticated()
 
     token = authorization.removeprefix("Bearer ")
 
     try:
         payload = decode_access_token(token)
     except ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expired.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise _unauthenticated("Token expired.")
     except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise _unauthenticated()
 
-    user_id: str | None = payload.get("sub")
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    user = user_crud.get_by_id(db, uuid.UUID(user_id))
+    user = user_crud.get_by_id(db, _parse_user_id(payload.get("sub")))
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise _unauthenticated()
 
     return user
+
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Dependency for admin-only routes. Returns the user or raises 403."""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required.")
+    return current_user
 
 
 def get_optional_user(
@@ -89,9 +89,6 @@ def get_optional_user(
     try:
         token = authorization.removeprefix("Bearer ")
         payload = decode_access_token(token)
-        user_id: str | None = payload.get("sub")
-        if not user_id:
-            return None
-        return user_crud.get_by_id(db, uuid.UUID(user_id))
-    except (JWTError, ExpiredSignatureError):
+        return user_crud.get_by_id(db, _parse_user_id(payload.get("sub")))
+    except (HTTPException, JWTError, ExpiredSignatureError):
         return None
