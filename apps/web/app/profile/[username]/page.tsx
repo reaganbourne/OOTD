@@ -256,6 +256,16 @@ export default function PublicProfilePage({
                 {bio ? (
                   <p className="mt-3 text-sm leading-6 text-ink-soft">{bio}</p>
                 ) : null}
+                {profile?.instagram_handle ? (
+                  <a
+                    href={`https://instagram.com/${profile.instagram_handle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-sm text-pink-deep hover:underline"
+                  >
+                    @{profile.instagram_handle}
+                  </a>
+                ) : null}
 
                 {isAuthenticated ? (
                   <button

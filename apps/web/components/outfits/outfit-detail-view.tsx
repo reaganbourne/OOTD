@@ -175,7 +175,7 @@ function CommentsSection({ outfitId }: { outfitId: string }) {
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <p className="py-4 text-center text-sm text-mute">no comments yet — be first ✨</p>
+        <p className="py-4 text-center text-sm text-mute">no comments yet. be first ✨</p>
       ) : (
         <ul className="divide-y divide-line/40">
           {comments.map((comment) => (

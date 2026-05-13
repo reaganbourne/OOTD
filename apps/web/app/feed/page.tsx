@@ -418,32 +418,6 @@ function BoardsActivityTab() {
   );
 }
 
-// ── Streak rail card ─────────────────────────────────────────────────────────
-
-function StreakCard({ streak, longest }: { streak: number; longest: number }) {
-  const isAlive = streak > 0;
-  return (
-    <div className="rounded-2xl bg-pink-soft p-5">
-      <p className="text-[10px] uppercase tracking-widest text-mute">your streak</p>
-      <p
-        className="mt-1 font-display leading-none text-ink"
-        style={{ fontSize: 40, letterSpacing: "-0.02em" }}
-      >
-        {streak} {streak === 1 ? "day" : "days"}
-      </p>
-      <p className="mt-2 text-xs leading-5 text-ink-soft">
-        {isAlive
-          ? "post today's fit before midnight to keep it going."
-          : "post today's fit to start your streak."}
-      </p>
-      {longest > 1 && (
-        <p className="mt-3 text-[10px] text-mute">
-          best: {longest} days
-        </p>
-      )}
-    </div>
-  );
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -515,25 +489,13 @@ export default function FeedPage() {
         {/* ── Pill tabs ──────────────────────────────────────────────── */}
         <TabSwitcher active={activeTab} onChange={setActiveTab} />
 
-        {/* ── Tab content + desktop streak rail ────────────────────── */}
-        <div className="lg:grid lg:grid-cols-[1fr_256px] lg:gap-8 lg:px-8">
-          <div className="px-4 sm:px-5 lg:px-0">
-            {activeTab === "vault" ? (
-              <VaultFeedTab displayName={displayName} />
-            ) : (
-              <BoardsActivityTab />
-            )}
-          </div>
-
-          {/* Streak rail — desktop only */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-20 space-y-3 pt-1">
-              <StreakCard
-                streak={user?.current_streak ?? 0}
-                longest={user?.longest_streak ?? 0}
-              />
-            </div>
-          </aside>
+        {/* ── Tab content ──────────────────────────────────────────── */}
+        <div className="px-4 sm:px-5 lg:px-8">
+          {activeTab === "vault" ? (
+            <VaultFeedTab displayName={displayName} />
+          ) : (
+            <BoardsActivityTab />
+          )}
         </div>
       </div>
 

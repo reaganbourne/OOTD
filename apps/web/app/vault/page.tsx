@@ -209,11 +209,18 @@ export default function VaultPage() {
         {/* vault header */}
         <header className="flex items-end justify-between bg-paper" style={{ padding: "16px 20px 10px" }}>
           <div>
-            <h1 className="font-display italic text-ink" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em" }}>
-              my vault.
-            </h1>
+            <div className="flex items-center gap-2.5">
+              <h1 className="font-display italic text-ink" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em" }}>
+                my vault.
+              </h1>
+              {user?.current_streak ? (
+                <span className="flex items-center gap-1 rounded-full bg-pink-soft px-2 py-0.5 text-[0.65rem] font-semibold text-pink-deep" style={{ marginBottom: 2 }}>
+                  🔥 {user.current_streak}
+                </span>
+              ) : null}
+            </div>
             <p className="text-mute" style={{ fontSize: 11.5, marginTop: 3 }}>
-              {outfits.length} fits{user?.current_streak ? ` · ${user.current_streak} day streak` : ""} · {displayName}
+              {outfits.length} fits · {displayName}
             </p>
           </div>
           <Link

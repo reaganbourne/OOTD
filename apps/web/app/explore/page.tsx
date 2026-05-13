@@ -122,7 +122,7 @@ function WhoToFollowRail({
       <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-mute">
         People to follow
       </p>
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
               <div

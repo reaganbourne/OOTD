@@ -153,6 +153,7 @@ export type PublicProfile = {
   display_name: string | null;
   bio: string | null;
   profile_image_url: string | null;
+  instagram_handle?: string | null;
   follower_count: number;
   following_count: number;
   created_at: string;
@@ -751,6 +752,7 @@ export const userApiClient = {
     display_name?: string | null;
     bio?: string | null;
     username?: string | null;
+    instagram_handle?: string | null;
   }): Promise<ApiResult<AuthUser>> {
     return sendRequest<AuthUser>("/users/me", {
       method: "PATCH",
@@ -837,7 +839,7 @@ export const userApiClient = {
 // ── Boards ────────────────────────────────────────────────────────────────────
 
 export const boardApiClient = {
-  async create(input: { name: string; event_date?: string }): Promise<ApiResult<Board>> {
+  async create(input: { name: string; event_date?: string; media_link?: string | null }): Promise<ApiResult<Board>> {
     return sendRequest<Board>("/boards", {
       method: "POST",
       body: input,

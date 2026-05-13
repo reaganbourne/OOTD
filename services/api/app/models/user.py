@@ -20,6 +20,7 @@ class User(Base):
     display_name: Mapped[str | None] = mapped_column(String, nullable=True)
     profile_image_url: Mapped[str | None] = mapped_column(String, nullable=True)
     bio: Mapped[str | None] = mapped_column(String, nullable=True)
+    instagram_handle: Mapped[str | None] = mapped_column(String(30), nullable=True)
     current_streak: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     longest_streak: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     last_outfit_date: Mapped[date | None] = mapped_column(Date, nullable=True)

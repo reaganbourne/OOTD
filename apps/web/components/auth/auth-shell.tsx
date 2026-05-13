@@ -21,7 +21,7 @@ const shellCopy = {
     heading: "create account",
     headingSize: 40,
     headingMarginTop: 8,
-    eyebrow: "welcome — let's set you up.",
+    eyebrow: "welcome. let's set you up.",
     alternateLabel: "have an account?",
     alternateHref: "/login",
     alternateCta: "log in"

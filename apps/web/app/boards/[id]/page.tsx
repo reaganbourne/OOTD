@@ -171,7 +171,7 @@ function MediaLinkRow({
       <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-mute" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 5v14M5 12h14" />
       </svg>
-      <span className="text-[0.72rem] text-mute">add a link — pinterest, partiful, etc.</span>
+      <span className="text-[0.72rem] text-mute">add a link: pinterest, partiful, etc.</span>
     </button>
   );
 }

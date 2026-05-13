@@ -45,6 +45,7 @@ def update_profile(
     display_name: object = _UNSET,
     bio: object = _UNSET,
     username: object = _UNSET,
+    instagram_handle: object = _UNSET,
 ) -> User:
     """
     Partial update — only fields explicitly passed are written.
@@ -56,6 +57,8 @@ def update_profile(
         user.bio = bio  # type: ignore[assignment]
     if username is not _UNSET:
         user.username = username  # type: ignore[assignment]
+    if instagram_handle is not _UNSET:
+        user.instagram_handle = instagram_handle  # type: ignore[assignment]
     db.commit()
     db.refresh(user)
     return user
