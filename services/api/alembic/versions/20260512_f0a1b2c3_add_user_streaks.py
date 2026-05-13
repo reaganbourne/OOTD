@@ -1,7 +1,7 @@
 """add user streaks
 
 Revision ID: f0a1b2c3
-Revises: d7e8f9a0
+Revises: e8f9a0b1
 Create Date: 2026-05-12
 """
 
@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "f0a1b2c3"
-down_revision = "d7e8f9a0"
+down_revision = "e8f9a0b1"
 branch_labels = None
 depends_on = None
 
