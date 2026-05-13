@@ -1,7 +1,7 @@
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import DateTime, Index, String, text
+from sqlalchemy import Boolean, Date, DateTime, Index, Integer, String, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -20,6 +20,9 @@ class User(Base):
     display_name: Mapped[str | None] = mapped_column(String, nullable=True)
     profile_image_url: Mapped[str | None] = mapped_column(String, nullable=True)
     bio: Mapped[str | None] = mapped_column(String, nullable=True)
+    current_streak: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    longest_streak: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    last_outfit_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("now()")
     )

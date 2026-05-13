@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import HTTPException, status as http_status
 
@@ -8,7 +8,27 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.models.clothing_item import ClothingItem
 from app.models.outfit import Outfit
+from app.models.user import User
 from app.schemas.outfit import ClothingItemIn
+
+
+def _update_streak(db: Session, user_id: uuid.UUID, outfit_date: date) -> None:
+    user = db.query(User).filter(User.id == user_id).with_for_update().first()
+    if user is None:
+        return
+    prev = user.last_outfit_date
+    if prev is None:
+        user.current_streak = 1
+    elif outfit_date == prev:
+        return
+    elif outfit_date == prev + timedelta(days=1):
+        user.current_streak = (user.current_streak or 0) + 1
+    elif outfit_date > prev:
+        user.current_streak = 1
+    else:
+        return  # retroactive post for an older date — don't touch streak
+    user.last_outfit_date = outfit_date
+    user.longest_streak = max(user.longest_streak or 0, user.current_streak)
 
 
 def create_outfit(
@@ -37,6 +57,8 @@ def create_outfit(
     )
     db.add(outfit)
     db.flush()  # get outfit.id without committing yet
+
+    _update_streak(db, user_id, worn_on or date.today())
 
     for item in clothing_items:
         db.add(

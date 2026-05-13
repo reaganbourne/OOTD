@@ -23,6 +23,8 @@ export type AuthUser = {
   display_name?: string | null;
   bio?: string | null;
   profile_image_url?: string | null;
+  current_streak?: number | null;
+  longest_streak?: number | null;
 };
 
 export type AuthSessionResponse = {
