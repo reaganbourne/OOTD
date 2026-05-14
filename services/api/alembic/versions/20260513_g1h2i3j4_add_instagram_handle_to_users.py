@@ -1,7 +1,7 @@
 """add instagram_handle to users
 
 Revision ID: g1h2i3j4
-Revises: f0a1b2c3
+Revises: h2i3j4k5
 Create Date: 2026-05-13
 """
 
@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "g1h2i3j4"
-down_revision = "f0a1b2c3"
+down_revision = "h2i3j4k5"
 branch_labels = None
 depends_on = None
 
