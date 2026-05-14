@@ -47,7 +47,7 @@ function useSentinel(onIntersect: () => void) {
 
 export default function VaultPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, refreshUser } = useAuth();
 
   // Vault state
   const [vaultStatus, setVaultStatus] = useState<VaultStatus>("idle");
@@ -71,6 +71,13 @@ export default function VaultPage() {
       router.replace("/login");
     }
   }, [isAuthenticated, isLoading, router]);
+
+  // Refresh user on mount to get up-to-date streak data
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      void refreshUser();
+    }
+  }, [isLoading, isAuthenticated]);
 
   // Load vault
   useEffect(() => {
