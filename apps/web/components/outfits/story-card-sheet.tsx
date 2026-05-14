@@ -103,12 +103,14 @@ export function StoryCardSheet({ outfitId, imageUrl, wornOn, createdAt, vibeChec
       const LOGO_SIZE = 58;
       const DATE_SIZE = 27;
 
+      // Logo sits below Instagram's story chrome (~progress bar + avatar row)
+      const LOGO_TOP = 260;
       ctx.save();
       ctx.font = `italic 400 ${LOGO_SIZE}px Georgia, serif`;
       ctx.fillStyle = "#F9A8D4";
       ctx.textAlign = "right";
       ctx.textBaseline = "top";
-      ctx.fillText("checkd", W - PAD, PAD);
+      ctx.fillText("checkd", W - PAD, LOGO_TOP);
       ctx.restore();
 
       if (dateLabel) {
@@ -117,7 +119,7 @@ export function StoryCardSheet({ outfitId, imageUrl, wornOn, createdAt, vibeChec
         ctx.fillStyle = "rgba(255,255,255,0.68)";
         ctx.textAlign = "right";
         ctx.textBaseline = "top";
-        ctx.fillText(dateLabel, W - PAD, PAD + LOGO_SIZE + 8);
+        ctx.fillText(dateLabel, W - PAD, LOGO_TOP + LOGO_SIZE + 8);
         ctx.restore();
       }
 
