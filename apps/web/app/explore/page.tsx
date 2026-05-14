@@ -72,35 +72,37 @@ function UserChip({
   const initial = (user.display_name?.trim() || user.username?.trim() || "?").charAt(0).toUpperCase();
 
   return (
-    <div className="flex shrink-0 items-center gap-2 rounded-[1.25rem] border border-line bg-white px-3 py-2">
+    <div className="flex flex-col items-center gap-2 rounded-[1.25rem] border border-line bg-white px-2 py-3 text-center">
       {user.profile_image_url ? (
         <img
           src={user.profile_image_url}
           alt={user.username ?? ""}
-          className="h-8 w-8 shrink-0 rounded-full border border-line object-cover"
+          className="h-10 w-10 rounded-full border border-line object-cover"
         />
       ) : (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pink-soft text-xs font-semibold text-ink-soft">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-soft text-sm font-semibold text-ink-soft">
           {initial}
         </div>
       )}
-      <span className="max-w-[80px] truncate text-xs font-semibold text-ink">
+      <p className="w-full truncate text-[0.68rem] font-semibold text-ink">
         {user.display_name ?? user.username ?? "Unknown"}
-      </span>
+      </p>
       <button
         type="button"
         onClick={following ? onUnfollow : onFollow}
-        className={`shrink-0 rounded-full px-2.5 py-1 text-[0.68rem] font-medium lowercase transition ${
+        className={`w-full rounded-full px-2 py-1 text-[0.65rem] font-medium lowercase transition ${
           following
             ? "border border-line bg-white text-ink-soft hover:border-pink-deep"
             : "bg-ink text-paper hover:opacity-90"
         }`}
       >
-        {following ? "Following" : "Follow"}
+        {following ? "following" : "follow"}
       </button>
     </div>
   );
 }
+
+const PAGE_USERS = 3;
 
 function WhoToFollowRail({
   users,
@@ -115,22 +117,39 @@ function WhoToFollowRail({
   onFollow: (userId: string, followerCount: number) => void;
   onUnfollow: (userId: string, followerCount: number) => void;
 }) {
+  const [page, setPage] = useState(0);
+
   if (!loading && users.length === 0) return null;
+
+  const totalPages = Math.ceil(users.length / PAGE_USERS);
+  const visible = users.slice(page * PAGE_USERS, page * PAGE_USERS + PAGE_USERS);
+  const hasNext = page < totalPages - 1;
 
   return (
     <div className="mb-5">
-      <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-mute">
-        People to follow
-      </p>
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-mute">
+          People to follow
+        </p>
+        {!loading && hasNext ? (
+          <button
+            type="button"
+            onClick={() => setPage((p) => p + 1)}
+            className="flex items-center gap-1 text-[0.65rem] font-semibold text-mute transition hover:text-ink"
+          >
+            more
+            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
+        ) : null}
+      </div>
+      <div className="grid grid-cols-3 gap-2">
         {loading
-          ? Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex h-12 w-44 shrink-0 animate-pulse items-center gap-2 rounded-[1.25rem] border border-line bg-pink-soft px-3"
-              />
+          ? Array.from({ length: PAGE_USERS }).map((_, i) => (
+              <div key={i} className="flex h-12 animate-pulse items-center gap-2 rounded-[1.25rem] border border-line bg-pink-soft px-3" />
             ))
-          : users.map((user) => (
+          : visible.map((user) => (
               <UserChip
                 key={user.id}
                 user={user}

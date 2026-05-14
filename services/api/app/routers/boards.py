@@ -132,7 +132,7 @@ def update_board(
     board = board_crud.update_board(
         db, board,
         name=payload.name,
-        media_link=payload.media_link if payload.media_link is not None else None,
+        media_link=payload.media_link,
     )
     return _board_out(db, board)
 
