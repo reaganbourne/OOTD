@@ -522,12 +522,12 @@ export const authApiClient = {
   },
 
   async login(input: {
-    email: string;
+    email: string; // may be email or username — sent as "identifier" to the API
     password: string;
   }): Promise<ApiResult<AuthSessionResponse>> {
     const result = await sendRequest<AuthSessionResponse>("/auth/login", {
       method: "POST",
-      body: input,
+      body: { identifier: input.email, password: input.password },
       successMessage: "Welcome back. The form is now using the shared auth API."
     });
 

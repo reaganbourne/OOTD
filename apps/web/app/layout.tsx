@@ -3,6 +3,7 @@ import { Instrument_Serif, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/lib/auth-context";
 import { DesktopNav } from "@/components/chrome/desktop-nav";
+import { AiConsentModal } from "@/components/ai-consent-modal";
 import "./globals.css";
 
 const display = Instrument_Serif({
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <AuthProvider>
           <DesktopNav />
+          <AiConsentModal />
           {children}
         </AuthProvider>
       </body>
