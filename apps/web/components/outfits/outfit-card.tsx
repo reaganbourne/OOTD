@@ -335,10 +335,18 @@ export function OutfitCard({
 }
 
 export function OutfitCardSkeleton({
-  showAuthor = true
+  showAuthor = true,
+  compact = false,
 }: {
   showAuthor?: boolean;
+  compact?: boolean;
 }) {
+  if (compact) {
+    return (
+      <div className="skeleton-stripe aspect-[3/4] w-full animate-pulse bg-pink-soft" />
+    );
+  }
+
   return (
     <article className="overflow-hidden rounded-xl border border-line bg-white">
       <div className="skeleton-stripe aspect-[4/5] w-full animate-pulse" />
