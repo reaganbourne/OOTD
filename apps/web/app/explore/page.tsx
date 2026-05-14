@@ -46,7 +46,7 @@ function useSentinel(onIntersect: () => void) {
     if (!el) return;
     const obs = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) cb.current(); },
-      { rootMargin: "200px" }
+      { rootMargin: "600px" }
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -278,10 +278,9 @@ export default function ExplorePage() {
   }
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
-      <div className="mx-auto max-w-3xl">
-
-        {/* ── Header ─────────────────────────────────────────────────────── */}
+    <main className="pb-28 pt-6 lg:pb-0 lg:pt-20">
+      {/* Header and people rail stay padded */}
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <header className="mb-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
@@ -307,18 +306,20 @@ export default function ExplorePage() {
             onUnfollow={handleUnfollow}
           />
         </header>
+      </div>
 
-        {/* ── Outfit grid ─────────────────────────────────────────────────── */}
-        <section>
-          {gridStatus === "loading" ? (
-            <div className="grid grid-cols-2 gap-0.5">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <OutfitCardSkeleton key={i} compact />
-              ))}
-            </div>
-          ) : null}
+      {/* ── Outfit grid — edge-to-edge on mobile ────────────────────────── */}
+      <section>
+        {gridStatus === "loading" ? (
+          <div className="grid grid-cols-2 gap-0.5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <OutfitCardSkeleton key={i} compact />
+            ))}
+          </div>
+        ) : null}
 
-          {gridStatus === "ready" && outfits.length === 0 ? (
+        {gridStatus === "ready" && outfits.length === 0 ? (
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <div className="soft-panel px-6 py-10 text-center">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">
                 Nothing yet
@@ -331,29 +332,31 @@ export default function ExplorePage() {
                 Find people to follow
               </Link>
             </div>
-          ) : null}
+          </div>
+        ) : null}
 
-          {gridStatus === "ready" && outfits.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 gap-0.5">
-                {outfits.map((outfit) => (
-                  <OutfitCard
-                    key={outfit.id}
-                    outfit={toCardData(outfit)}
-                    compact
-                  />
-                ))}
-                {loadingMore
-                  ? Array.from({ length: 2 }).map((_, i) => (
-                      <OutfitCardSkeleton key={`skel-${i}`} compact />
-                    ))
-                  : null}
-              </div>
-              {nextCursor ? <div ref={sentinelRef} className="h-px" /> : null}
-            </>
-          ) : null}
+        {gridStatus === "ready" && outfits.length > 0 ? (
+          <>
+            <div className="grid grid-cols-2 gap-0.5">
+              {outfits.map((outfit) => (
+                <OutfitCard
+                  key={outfit.id}
+                  outfit={toCardData(outfit)}
+                  compact
+                />
+              ))}
+              {loadingMore
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <OutfitCardSkeleton key={`skel-${i}`} compact />
+                  ))
+                : null}
+            </div>
+            {nextCursor ? <div ref={sentinelRef} className="h-px" /> : null}
+          </>
+        ) : null}
 
-          {gridStatus === "error" ? (
+        {gridStatus === "error" ? (
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <div className="soft-panel px-6 py-8 text-center">
               <p className="text-sm text-mute">Couldn&rsquo;t load outfits. Try refreshing.</p>
               <button
@@ -364,9 +367,9 @@ export default function ExplorePage() {
                 Refresh
               </button>
             </div>
-          ) : null}
-        </section>
-      </div>
+          </div>
+        ) : null}
+      </section>
 
       <MobileNav active="none" />
     </main>
