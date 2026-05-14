@@ -64,6 +64,7 @@ export function UploadFlow() {
   });
   const [errors, setErrors] = useState<ValidationErrors>(createEmptyErrors);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
+  const [saveToVault, setSaveToVault] = useState(true);
   const isSubmittingRef = useRef(false); // synchronous guard against double-tap
 
   useEffect(() => {
@@ -213,7 +214,7 @@ export function UploadFlow() {
       if (metadata.eventName.trim()) payload.event_name = metadata.eventName.trim();
       if (metadata.wornOn) payload.worn_on = metadata.wornOn;
 
-      const result = await apiClient.outfits.create({ image: photo, metadata: payload });
+      const result = await apiClient.outfits.create({ image: photo, metadata: { ...payload, save_to_vault: saveToVault } });
       if (!result.ok) throw new Error(result.message);
 
       setSubmitState({ status: "success", message: "Outfit uploaded!" });
@@ -476,6 +477,45 @@ export function UploadFlow() {
               <p className="field-label">date worn <span className="ml-1 font-normal normal-case tracking-normal text-mute">(optional)</span></p>
               <DateSelect value={metadata.wornOn} onChange={(v) => updateMetadata("wornOn", v)} />
             </div>
+
+            {/* Save to vault toggle */}
+            <button
+              type="button"
+              onClick={() => setSaveToVault((v) => !v)}
+              className="flex items-center justify-between border border-line bg-white transition hover:border-ink/30"
+              style={{ borderRadius: "1.5rem", padding: "14px 16px" }}
+            >
+              <div style={{ textAlign: "left" }}>
+                <p style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)" }}>save to my vault</p>
+                <p style={{ fontSize: 11, color: "var(--mute)", marginTop: 2 }}>
+                  {saveToVault ? "visible only to you" : "won't appear in your vault"}
+                </p>
+              </div>
+              <div
+                style={{
+                  width: 42,
+                  height: 24,
+                  borderRadius: 99,
+                  background: saveToVault ? "var(--ink)" : "var(--line)",
+                  position: "relative",
+                  flexShrink: 0,
+                  transition: "background 0.2s",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 3,
+                    left: saveToVault ? 21 : 3,
+                    width: 18,
+                    height: 18,
+                    borderRadius: "50%",
+                    background: "white",
+                    transition: "left 0.2s",
+                  }}
+                />
+              </div>
+            </button>
           </div>
         ) : null}
 
@@ -523,6 +563,18 @@ export function UploadFlow() {
                 ))}
               </div>
             </div>
+
+            {/* Vault toggle summary */}
+            {!saveToVault ? (
+              <div
+                className="border border-line bg-white"
+                style={{ borderRadius: "1.5rem", padding: "12px 16px" }}
+              >
+                <p style={{ fontSize: 12, color: "var(--mute)" }}>
+                  this outfit <span style={{ color: "var(--ink)", fontWeight: 500 }}>won't be saved</span> to your vault
+                </p>
+              </div>
+            ) : null}
 
             {/* Metadata summary */}
             {(metadata.caption || metadata.eventName || metadata.wornOn) ? (

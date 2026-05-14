@@ -79,10 +79,12 @@ function MediaLinkRow({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function startEdit() {
     setDraft(value ?? "");
+    setSaveError(null);
     setEditing(true);
     setTimeout(() => inputRef.current?.focus(), 0);
   }
@@ -90,16 +92,25 @@ function MediaLinkRow({
   async function handleSave() {
     if (saving) return;
     setSaving(true);
+    setSaveError(null);
     const trimmed = draft.trim();
-    const result = await apiClient.boards.update(boardId, { media_link: trimmed || "" });
-    if (result.ok) onSave(result.data.media_link);
+    const result = await apiClient.boards.update(boardId, { media_link: trimmed || null });
+    if (result.ok) {
+      onSave(result.data.media_link);
+      setEditing(false);
+    } else {
+      setSaveError(result.message ?? "Couldn't save link.");
+    }
     setSaving(false);
-    setEditing(false);
   }
 
   if (editing) {
     return (
-      <div className="flex items-center gap-2 rounded-[1.2rem] border border-pink-deep/30 bg-white px-4 py-3">
+      <div className="flex flex-col gap-2">
+        {saveError ? (
+          <p className="rounded-[1rem] border border-error/20 bg-error/5 px-3 py-2 text-xs text-error">{saveError}</p>
+        ) : null}
+        <div className="flex items-center gap-2 rounded-[1.2rem] border border-pink-deep/30 bg-white px-4 py-3">
         <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -132,6 +143,7 @@ function MediaLinkRow({
         >
           cancel
         </button>
+      </div>
       </div>
     );
   }

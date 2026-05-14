@@ -224,7 +224,7 @@ function VaultFeedTab({ displayName }: { displayName: string }) {
     <>
       <section className="grid grid-cols-2 gap-3 sm:gap-4">
         {outfits.map((outfit) => (
-          <OutfitCard key={outfit.id} outfit={toVaultCardData(outfit)} showAccentMarker />
+          <OutfitCard key={outfit.id} outfit={toVaultCardData(outfit)} showCaption={false} showAccentMarker />
         ))}
         {loadingMore
           ? Array.from({ length: 3 }).map((_, i) => <OutfitCardSkeleton key={`skel-${i}`} />)
@@ -490,7 +490,7 @@ export default function FeedPage() {
         <TabSwitcher active={activeTab} onChange={setActiveTab} />
 
         {/* ── Tab content ──────────────────────────────────────────── */}
-        <div className="px-4 sm:px-5 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           {activeTab === "vault" ? (
             <VaultFeedTab displayName={displayName} />
           ) : (

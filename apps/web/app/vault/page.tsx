@@ -236,7 +236,7 @@ export default function VaultPage() {
         </header>
 
         {/* search bar */}
-        <div style={{ padding: "0 20px 12px" }}>
+        <div className="px-4 pb-3 sm:px-6">
           <div className="flex items-center gap-2.5 rounded-full border border-line bg-white px-4" style={{ height: 40 }}>
             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-mute" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
               <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
@@ -259,7 +259,7 @@ export default function VaultPage() {
         </div>
 
         {/* ── Vault grid ─────────────────────────────────────────────── */}
-        <section className="px-4 sm:px-5">
+        <section className="px-4 sm:px-6">
           {errorMessage && vaultStatus !== "loading" ? (
             <div className="my-3 rounded-xl border border-pink-deep/30 bg-pink-soft px-4 py-3 text-sm text-error">
               {errorMessage}
@@ -269,7 +269,7 @@ export default function VaultPage() {
           {vaultStatus === "loading" ? (
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
+                <OutfitCardSkeleton key={i} showAuthor={false} />
               ))}
             </div>
           ) : null}
@@ -279,7 +279,7 @@ export default function VaultPage() {
             searchLoading ? (
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
+                  <OutfitCardSkeleton key={i} showAuthor={false} />
                 ))}
               </div>
             ) : searchResults !== null && searchResults.length === 0 ? (
@@ -303,6 +303,7 @@ export default function VaultPage() {
                     key={outfit.id}
                     href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
+                    showCaption={false}
                     liked={likes[outfit.id]?.liked}
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />
@@ -333,6 +334,7 @@ export default function VaultPage() {
                     key={outfit.id}
                     href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
+                    showCaption={false}
                     liked={likes[outfit.id]?.liked}
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />
