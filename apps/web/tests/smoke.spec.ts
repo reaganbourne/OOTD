@@ -157,6 +157,10 @@ async function setActiveSession(page: Page) {
       sameSite: "Lax"
     }
   ]);
+  // Pre-accept AI consent so the modal doesn't block test assertions
+  await page.addInitScript(() => {
+    localStorage.setItem("checkd_ai_consent_v1", "accepted");
+  });
 }
 
 // ── Public routes ──────────────────────────────────────────────────────────────
