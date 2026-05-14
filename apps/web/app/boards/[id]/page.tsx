@@ -37,12 +37,21 @@ function formatExpiry(d: string) {
 
 // ── Invite link copy ──────────────────────────────────────────────────────────
 
-function InviteCopy({ code }: { code: string }) {
+function InviteCopy({ code, boardName }: { code: string; boardName?: string }) {
   const [copied, setCopied] = useState(false);
   const link = `${typeof window !== "undefined" ? window.location.origin : ""}/boards/join/${code}`;
+  const shareText = `Join my board${boardName ? ` "${boardName}"` : ""} on checkd! ${link}`;
 
-  async function copy() {
-    await navigator.clipboard.writeText(link);
+  async function share() {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ text: shareText, url: link });
+        return;
+      } catch {
+        // user cancelled or share failed — fall through to clipboard
+      }
+    }
+    await navigator.clipboard.writeText(shareText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -56,10 +65,10 @@ function InviteCopy({ code }: { code: string }) {
       <span className="min-w-0 flex-1 truncate text-[0.72rem] text-mute">{link}</span>
       <button
         type="button"
-        onClick={() => void copy()}
+        onClick={() => void share()}
         className="shrink-0 text-[0.72rem] font-semibold text-pink-deep transition hover:text-[#d94e7a]"
       >
-        {copied ? "Copied!" : "Copy"}
+        {copied ? "Copied!" : "Share"}
       </button>
     </div>
   );
@@ -498,7 +507,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
               <div className="mt-4 space-y-3">
                 <div>
                   <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">Invite link</p>
-                  <InviteCopy code={board.invite_code} />
+                  <InviteCopy code={board.invite_code} boardName={board.name} />
                 </div>
                 <div>
                   <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">Board link</p>

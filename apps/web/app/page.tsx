@@ -7,7 +7,7 @@ const FEATURES = [
   {
     title: "my vault",
     description:
-      "every outfit you've ever worn, organized and searchable. filter by vibe, date, or clothing item.",
+      "every outfit you've ever worn, organized and searchable. search by date, event, or clothing item.",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -287,7 +287,7 @@ export default async function HomePage() {
           archive the fits.
         </h2>
         <p className="mx-auto mt-5 max-w-sm text-base leading-7 text-ink-soft">
-          start your vault for free. no algorithm, just your style.
+          start today. no algorithm, just your style.
         </p>
         <div className="mt-10 flex justify-center gap-3">
           {isLoggedIn ? (

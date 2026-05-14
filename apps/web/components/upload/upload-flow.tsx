@@ -6,6 +6,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 
+async function normalizeImageFile(file: File): Promise<File> {
+  const type = file.type.toLowerCase();
+  if (type === "image/heic" || type === "image/heif" || (type === "" && file.name.toLowerCase().endsWith(".heic"))) {
+    const heic2any = (await import("heic2any")).default;
+    const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    return new File([blob], file.name.replace(/\.heic$/i, ".jpg"), { type: "image/jpeg" });
+  }
+  return file;
+}
+
 type UploadItem = {
   id: string;
   brand: string;
@@ -60,11 +71,10 @@ export function UploadFlow() {
   const [metadata, setMetadata] = useState<UploadMetadata>({
     caption: "",
     eventName: "",
-    wornOn: ""
+    wornOn: new Date().toISOString().split("T")[0],
   });
   const [errors, setErrors] = useState<ValidationErrors>(createEmptyErrors);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
-  const [saveToVault, setSaveToVault] = useState(true);
   const isSubmittingRef = useRef(false); // synchronous guard against double-tap
 
   useEffect(() => {
@@ -115,7 +125,8 @@ export function UploadFlow() {
     resetStatus();
     const nextFile = event.target.files?.[0] ?? null;
     if (!nextFile) return;
-    if (!nextFile.type.startsWith("image/")) {
+    const isImage = nextFile.type.startsWith("image/") || nextFile.name.toLowerCase().endsWith(".heic") || nextFile.name.toLowerCase().endsWith(".heif");
+    if (!isImage) {
       setErrorState({ photo: "Choose an image file.", form: "Only image files are supported." });
       event.target.value = "";
       return;
@@ -125,8 +136,14 @@ export function UploadFlow() {
       event.target.value = "";
       return;
     }
-    setPhoto(nextFile);
-    setErrors(createEmptyErrors());
+    // Normalize HEIC/HEIF (Live Photos) to JPEG before storing
+    normalizeImageFile(nextFile).then((normalized) => {
+      setPhoto(normalized);
+      setErrors(createEmptyErrors());
+    }).catch(() => {
+      setPhoto(nextFile); // fallback: use original, let the server handle it
+      setErrors(createEmptyErrors());
+    });
   }
 
   function updateItem(itemId: string, field: keyof Omit<UploadItem, "id">, value: string) {
@@ -214,7 +231,7 @@ export function UploadFlow() {
       if (metadata.eventName.trim()) payload.event_name = metadata.eventName.trim();
       if (metadata.wornOn) payload.worn_on = metadata.wornOn;
 
-      const result = await apiClient.outfits.create({ image: photo, metadata: { ...payload, save_to_vault: saveToVault } });
+      const result = await apiClient.outfits.create({ image: photo, metadata: { ...payload, save_to_vault: true } });
       if (!result.ok) throw new Error(result.message);
 
       setSubmitState({ status: "success", message: "Outfit uploaded!" });
@@ -478,44 +495,6 @@ export function UploadFlow() {
               <DateSelect value={metadata.wornOn} onChange={(v) => updateMetadata("wornOn", v)} />
             </div>
 
-            {/* Save to vault toggle */}
-            <button
-              type="button"
-              onClick={() => setSaveToVault((v) => !v)}
-              className="flex items-center justify-between border border-line bg-white transition hover:border-ink/30"
-              style={{ borderRadius: "1.5rem", padding: "14px 16px" }}
-            >
-              <div style={{ textAlign: "left" }}>
-                <p style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)" }}>save to my vault</p>
-                <p style={{ fontSize: 11, color: "var(--mute)", marginTop: 2 }}>
-                  {saveToVault ? "visible only to you" : "won't appear in your vault"}
-                </p>
-              </div>
-              <div
-                style={{
-                  width: 42,
-                  height: 24,
-                  borderRadius: 99,
-                  background: saveToVault ? "var(--ink)" : "var(--line)",
-                  position: "relative",
-                  flexShrink: 0,
-                  transition: "background 0.2s",
-                }}
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 3,
-                    left: saveToVault ? 21 : 3,
-                    width: 18,
-                    height: 18,
-                    borderRadius: "50%",
-                    background: "white",
-                    transition: "left 0.2s",
-                  }}
-                />
-              </div>
-            </button>
           </div>
         ) : null}
 
@@ -563,18 +542,6 @@ export function UploadFlow() {
                 ))}
               </div>
             </div>
-
-            {/* Vault toggle summary */}
-            {!saveToVault ? (
-              <div
-                className="border border-line bg-white"
-                style={{ borderRadius: "1.5rem", padding: "12px 16px" }}
-              >
-                <p style={{ fontSize: 12, color: "var(--mute)" }}>
-                  this outfit <span style={{ color: "var(--ink)", fontWeight: 500 }}>won't be saved</span> to your vault
-                </p>
-              </div>
-            ) : null}
 
             {/* Metadata summary */}
             {(metadata.caption || metadata.eventName || metadata.wornOn) ? (
