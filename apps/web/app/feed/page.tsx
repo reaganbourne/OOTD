@@ -184,8 +184,8 @@ function VaultFeedTab({ displayName }: { displayName: string }) {
 
   if (status === "loading") {
     return (
-      <section className="grid grid-cols-2 gap-3 sm:gap-4">
-        {Array.from({ length: 6 }).map((_, i) => <OutfitCardSkeleton key={i} />)}
+      <section className="grid grid-cols-2 gap-0.5">
+        {Array.from({ length: 6 }).map((_, i) => <OutfitCardSkeleton key={i} compact />)}
       </section>
     );
   }
@@ -222,12 +222,12 @@ function VaultFeedTab({ displayName }: { displayName: string }) {
 
   return (
     <>
-      <section className="grid grid-cols-2 gap-3 sm:gap-4">
+      <section className="grid grid-cols-2 gap-0.5">
         {outfits.map((outfit) => (
-          <OutfitCard key={outfit.id} outfit={toVaultCardData(outfit)} showCaption={false} showAccentMarker />
+          <OutfitCard key={outfit.id} outfit={toVaultCardData(outfit)} compact />
         ))}
         {loadingMore
-          ? Array.from({ length: 3 }).map((_, i) => <OutfitCardSkeleton key={`skel-${i}`} />)
+          ? Array.from({ length: 3 }).map((_, i) => <OutfitCardSkeleton key={`skel-${i}`} compact />)
           : null}
       </section>
       {cursor ? <div ref={sentinelRef} className="h-px" /> : null}
@@ -490,13 +490,13 @@ export default function FeedPage() {
         <TabSwitcher active={activeTab} onChange={setActiveTab} />
 
         {/* ── Tab content ──────────────────────────────────────────── */}
-        <div className="px-4 sm:px-6 lg:px-8">
-          {activeTab === "vault" ? (
-            <VaultFeedTab displayName={displayName} />
-          ) : (
+        {activeTab === "vault" ? (
+          <VaultFeedTab displayName={displayName} />
+        ) : (
+          <div className="px-4 sm:px-6 lg:px-8">
             <BoardsActivityTab />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <MobileNav active="feed" />

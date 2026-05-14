@@ -124,6 +124,7 @@ function WhoToFollowRail({
   const totalPages = Math.ceil(users.length / PAGE_USERS);
   const visible = users.slice(page * PAGE_USERS, page * PAGE_USERS + PAGE_USERS);
   const hasNext = page < totalPages - 1;
+  const hasPrev = page > 0;
 
   return (
     <div className="mb-5">
@@ -131,18 +132,30 @@ function WhoToFollowRail({
         <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-mute">
           People to follow
         </p>
-        {!loading && hasNext ? (
-          <button
-            type="button"
-            onClick={() => setPage((p) => p + 1)}
-            className="flex items-center gap-1 text-[0.65rem] font-semibold text-mute transition hover:text-ink"
-          >
-            more
-            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m9 18 6-6-6-6" />
-            </svg>
-          </button>
-        ) : null}
+        <div className="flex items-center gap-1">
+          {!loading && hasPrev ? (
+            <button
+              type="button"
+              onClick={() => setPage((p) => p - 1)}
+              className="flex items-center gap-1 text-[0.65rem] font-semibold text-mute transition hover:text-ink"
+            >
+              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+          ) : null}
+          {!loading && hasNext ? (
+            <button
+              type="button"
+              onClick={() => setPage((p) => p + 1)}
+              className="flex items-center gap-1 text-[0.65rem] font-semibold text-mute transition hover:text-ink"
+            >
+              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
       </div>
       <div className="grid grid-cols-3 gap-2">
         {loading
@@ -298,9 +311,9 @@ export default function ExplorePage() {
         {/* ── Outfit grid ─────────────────────────────────────────────────── */}
         <section>
           {gridStatus === "loading" ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-0.5">
               {Array.from({ length: 8 }).map((_, i) => (
-                <OutfitCardSkeleton key={i} showAuthor />
+                <OutfitCardSkeleton key={i} compact />
               ))}
             </div>
           ) : null}
@@ -322,19 +335,17 @@ export default function ExplorePage() {
 
           {gridStatus === "ready" && outfits.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 gap-0.5">
                 {outfits.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     outfit={toCardData(outfit)}
-                    showAuthor
-                    showCaption={false}
-                    showAccentMarker={false}
+                    compact
                   />
                 ))}
                 {loadingMore
                   ? Array.from({ length: 2 }).map((_, i) => (
-                      <OutfitCardSkeleton key={`skel-${i}`} showAuthor />
+                      <OutfitCardSkeleton key={`skel-${i}`} compact />
                     ))
                   : null}
               </div>
