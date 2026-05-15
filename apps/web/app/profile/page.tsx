@@ -12,13 +12,31 @@ type PageStatus = "idle" | "loading" | "ready" | "error";
 type ProfileTab = "fits" | "checks" | "about";
 type FollowSheet = "followers" | "following" | null;
 
-function recentMonths(count: number): string[] {
-  const months: string[] = [];
+// Monthly Checks launched May 2026. A month unlocks in its last week (day >= 25).
+const CHECKS_LAUNCH_YEAR = 2026;
+const CHECKS_LAUNCH_MONTH = 5; // May
+
+function availableChecksMonths(): string[] {
   const now = new Date();
-  for (let i = 1; i <= count; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  const months: string[] = [];
+
+  // Walk backwards from the most recent unlocked month
+  let y = now.getFullYear();
+  let m = now.getMonth() + 1; // 1-indexed
+
+  // Current month only unlocks on day 25+
+  if (now.getDate() < 25) {
+    m -= 1;
+    if (m === 0) { m = 12; y -= 1; }
   }
+
+  // Collect months back to launch
+  while (y > CHECKS_LAUNCH_YEAR || (y === CHECKS_LAUNCH_YEAR && m >= CHECKS_LAUNCH_MONTH)) {
+    months.push(`${y}-${String(m).padStart(2, "0")}`);
+    m -= 1;
+    if (m === 0) { m = 12; y -= 1; }
+  }
+
   return months;
 }
 
@@ -395,22 +413,27 @@ export default function ProfilePage() {
           <div className="px-5 py-6">
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-mute">monthly checks</p>
             <p className="mb-5 text-xs text-mute">your style, month by month</p>
-            <div className="space-y-2.5">
-              {recentMonths(12).map((m) => (
-                <Link
-                  key={m}
-                  href={`/monthly-checks?month=${m}`}
-                  className="flex items-center justify-between rounded-2xl border border-line bg-white px-5 py-4 transition hover:border-pink-deep"
-                >
-                  <div>
+            {availableChecksMonths().length === 0 ? (
+              <div className="rounded-2xl border border-line bg-white px-5 py-8 text-center">
+                <p className="font-display italic text-lg text-ink">coming soon</p>
+                <p className="mt-2 text-xs text-mute">your first monthly checks drops the last week of this month</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {availableChecksMonths().map((m) => (
+                  <Link
+                    key={m}
+                    href={`/monthly-checks?month=${m}`}
+                    className="flex items-center justify-between rounded-2xl border border-line bg-white px-5 py-4 transition hover:border-pink-deep"
+                  >
                     <p className="text-sm font-medium text-ink">{formatMonthShort(m)}</p>
-                  </div>
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 text-mute/50" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </Link>
-              ))}
-            </div>
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-mute/50" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         ) : null}
 
