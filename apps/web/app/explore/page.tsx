@@ -37,19 +37,21 @@ function toCardData(outfit: FeedOutfitResponse): OutfitCardData {
 }
 
 function useSentinel(onIntersect: () => void) {
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const cb = useRef(onIntersect);
   cb.current = onIntersect;
+  const obsRef = useRef<IntersectionObserver | null>(null);
 
-  useEffect(() => {
-    const el = sentinelRef.current;
+  // Callback ref: fires whenever the sentinel mounts/unmounts, so the
+  // observer always attaches even when the element appears after data loads.
+  const sentinelRef = useCallback((el: HTMLDivElement | null) => {
+    if (obsRef.current) { obsRef.current.disconnect(); obsRef.current = null; }
     if (!el) return;
     const obs = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) cb.current(); },
       { rootMargin: "600px" }
     );
     obs.observe(el);
-    return () => obs.disconnect();
+    obsRef.current = obs;
   }, []);
 
   return sentinelRef;
@@ -308,27 +310,24 @@ export default function ExplorePage() {
         </header>
       </div>
 
-      {/* ── Outfit grid — edge-to-edge on mobile ────────────────────────── */}
-      <section>
+      {/* ── Outfit grid ─────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-3xl">
         {gridStatus === "loading" ? (
-          <div className="grid grid-cols-2 gap-0.5">
-            {Array.from({ length: 8 }).map((_, i) => (
+          <div className="grid grid-cols-3 gap-0.5">
+            {Array.from({ length: 9 }).map((_, i) => (
               <OutfitCardSkeleton key={i} compact />
             ))}
           </div>
         ) : null}
 
         {gridStatus === "ready" && outfits.length === 0 ? (
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="px-4 sm:px-6 lg:px-8">
             <div className="soft-panel px-6 py-10 text-center">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">
                 Nothing yet
               </p>
               <h2 className="mt-3 text-2xl text-ink">follow some people to see outfits here</h2>
-              <Link
-                href="/search"
-                className="mt-5 btn-primary"
-              >
+              <Link href="/search" className="mt-5 btn-primary">
                 Find people to follow
               </Link>
             </div>
@@ -337,7 +336,7 @@ export default function ExplorePage() {
 
         {gridStatus === "ready" && outfits.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 gap-0.5">
+            <div className="grid grid-cols-3 gap-0.5">
               {outfits.map((outfit) => (
                 <OutfitCard
                   key={outfit.id}
@@ -346,17 +345,17 @@ export default function ExplorePage() {
                 />
               ))}
               {loadingMore
-                ? Array.from({ length: 4 }).map((_, i) => (
+                ? Array.from({ length: 3 }).map((_, i) => (
                     <OutfitCardSkeleton key={`skel-${i}`} compact />
                   ))
                 : null}
             </div>
-            {nextCursor ? <div ref={sentinelRef} className="h-px" /> : null}
+            {nextCursor ? <div ref={sentinelRef} className="h-4" /> : null}
           </>
         ) : null}
 
         {gridStatus === "error" ? (
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="px-4 sm:px-6 lg:px-8">
             <div className="soft-panel px-6 py-8 text-center">
               <p className="text-sm text-mute">Couldn&rsquo;t load outfits. Try refreshing.</p>
               <button
