@@ -54,6 +54,17 @@ a {
   outline-offset: 2px;
 }
 
+/* Prevent double-tap zoom on interactive elements (eliminates 300ms tap delay on iOS) */
+a,
+button,
+[role="button"],
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
 /* Instant press feedback on interactive elements */
 button:active:not(:disabled),
 [role="button"]:active:not(:disabled) {
