@@ -219,7 +219,7 @@ export default function BoardsPage() {
 
   return (
     <>
-      <main className="pb-28 lg:pb-0 lg:pt-16">
+      <main className="pb-28 pt-14 lg:pb-0 lg:pt-16">
         <div className="mx-auto max-w-3xl">
 
           {/* Topbar */}

@@ -350,7 +350,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
 
   if (authLoading) {
     return (
-      <main className="px-4 pb-28 pt-6 sm:px-6">
+      <main className="px-4 pb-28 pt-14 sm:px-6">
         <div className="mx-auto max-w-3xl space-y-4">
           <div className="h-8 w-40 animate-pulse rounded-full bg-pink-soft" />
           <div className="soft-panel h-48 w-full animate-pulse" />
@@ -369,7 +369,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
   // ── Error states ──
   if (status === "gone") {
     return (
-      <main className="px-4 pb-28 pt-6 sm:px-6">
+      <main className="px-4 pb-28 pt-14 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
             <p className="font-display italic text-5xl text-pink-deep">checkd</p>
@@ -387,7 +387,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
 
   if (status === "not-found" || status === "error") {
     return (
-      <main className="px-4 pb-28 pt-6 sm:px-6">
+      <main className="px-4 pb-28 pt-14 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
             <p className="font-display italic text-5xl text-pink-deep">checkd</p>
@@ -408,7 +408,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
   const expiryLabel = board ? formatExpiry(board.expires_at) : "";
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
+    <main className="px-4 pb-28 pt-14 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-3xl">
 
         {/* Top bar */}

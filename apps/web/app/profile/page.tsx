@@ -154,7 +154,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
+    <main className="px-4 pb-28 pt-14 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-3xl">
 
         {/* ── Top bar — @username + ⋯ per design ─────────────────────────── */}
@@ -354,7 +354,6 @@ export default function ProfilePage() {
                       outfit={toCardData(outfit)}
                       showAuthor={false}
                       showCaption={false}
-                      showAccentMarker
                     />
                   ))}
                 </div>

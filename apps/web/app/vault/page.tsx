@@ -211,7 +211,7 @@ export default function VaultPage() {
   const displayName = user?.display_name ?? user?.username ?? "you";
 
   return (
-    <main className="pb-28 lg:pb-0 lg:pt-16">
+    <main className="pb-28 pt-14 lg:pb-0 lg:pt-16">
       <div className="mx-auto max-w-3xl">
         {/* vault header */}
         <header className="flex items-end justify-between bg-paper" style={{ padding: "16px 20px 10px" }}>

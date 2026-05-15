@@ -280,7 +280,7 @@ export default function ExplorePage() {
   }
 
   return (
-    <main className="pb-28 pt-6 lg:pb-0 lg:pt-20">
+    <main className="pb-28 pt-14 lg:pb-0 lg:pt-20">
       {/* Header and people rail stay padded */}
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <header className="mb-5">
