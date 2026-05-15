@@ -239,16 +239,6 @@ export default function BoardsPage() {
               </p>
             </div>
             <div className="flex items-center" style={{ gap: 6 }}>
-              <Link
-                href="/search"
-                aria-label="Search"
-                className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
-                style={{ width: 36, height: 36 }}
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                  <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
-                </svg>
-              </Link>
               <button
                 type="button"
                 onClick={() => setShowCreate(true)}
