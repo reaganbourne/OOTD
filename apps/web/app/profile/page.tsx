@@ -9,8 +9,23 @@ import { OutfitCard, OutfitCardSkeleton, type OutfitCardData } from "@/component
 import { useAuth } from "@/lib/auth-context";
 
 type PageStatus = "idle" | "loading" | "ready" | "error";
-type ProfileTab = "fits" | "about";
+type ProfileTab = "fits" | "checks" | "about";
 type FollowSheet = "followers" | "following" | null;
+
+function recentMonths(count: number): string[] {
+  const months: string[] = [];
+  const now = new Date();
+  for (let i = 1; i <= count; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+  return months;
+}
+
+function formatMonthShort(yyyyMM: string): string {
+  const [y, m] = yyyyMM.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
 
 function toCardData(outfit: OutfitResponse): OutfitCardData {
   return {
@@ -299,7 +314,7 @@ export default function ProfilePage() {
 
         {/* ── Profile tabs ─────────────────────────────────────────────── */}
         <div className="flex border-b border-line">
-          {(["fits", "about"] as ProfileTab[]).map((tab) => {
+          {(["fits", "checks", "about"] as ProfileTab[]).map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
@@ -373,6 +388,30 @@ export default function ProfilePage() {
               </>
             ) : null}
           </section>
+        ) : null}
+
+        {/* ── Tab: checks ─────────────────────────────────────────────────── */}
+        {activeTab === "checks" ? (
+          <div className="px-5 py-6">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-mute">monthly checks</p>
+            <p className="mb-5 text-xs text-mute">your style, month by month</p>
+            <div className="space-y-2.5">
+              {recentMonths(12).map((m) => (
+                <Link
+                  key={m}
+                  href={`/monthly-checks?month=${m}`}
+                  className="flex items-center justify-between rounded-2xl border border-line bg-white px-5 py-4 transition hover:border-pink-deep"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-ink">{formatMonthShort(m)}</p>
+                  </div>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 text-mute/50" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </Link>
+              ))}
+            </div>
+          </div>
         ) : null}
 
         {/* ── Tab: about ──────────────────────────────────────────────────── */}
