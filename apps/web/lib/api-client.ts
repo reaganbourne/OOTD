@@ -25,6 +25,7 @@ export type AuthUser = {
   profile_image_url?: string | null;
   current_streak?: number | null;
   longest_streak?: number | null;
+  vibe_check_enabled?: boolean;
   is_admin?: boolean;
 };
 
@@ -753,6 +754,7 @@ export const userApiClient = {
     bio?: string | null;
     username?: string | null;
     instagram_handle?: string | null;
+    vibe_check_enabled?: boolean;
   }): Promise<ApiResult<AuthUser>> {
     return sendRequest<AuthUser>("/users/me", {
       method: "PATCH",
