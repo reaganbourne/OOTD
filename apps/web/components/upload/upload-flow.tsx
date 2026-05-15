@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
+import { EventDatePicker } from "@/components/boards/event-date-picker";
 
 async function normalizeImageFile(file: File): Promise<File> {
   const type = file.type.toLowerCase();
@@ -492,7 +493,7 @@ export function UploadFlow() {
 
             <div>
               <p className="field-label">date worn <span className="ml-1 font-normal normal-case tracking-normal text-mute">(optional)</span></p>
-              <DateSelect value={metadata.wornOn} onChange={(v) => updateMetadata("wornOn", v)} />
+              <EventDatePicker value={metadata.wornOn} onChange={(v) => updateMetadata("wornOn", v)} />
             </div>
 
           </div>
@@ -603,90 +604,6 @@ export function UploadFlow() {
           </button>
         )}
       </div>
-    </div>
-  );
-}
-
-// ── Date select — three dropdowns instead of native calendar ─────────────────
-
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: CURRENT_YEAR - 2019 }, (_, i) => CURRENT_YEAR - i);
-
-function daysInMonth(year: string, month: string): number {
-  const y = parseInt(year, 10);
-  const m = parseInt(month, 10);
-  if (!y || !m) return 31; // no context yet — show max
-  return new Date(y, m, 0).getDate(); // day 0 of next month = last day of this month
-}
-
-function DateSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  // Use local state so partial picks aren't wiped on re-render.
-  // Parent only receives a value when all three parts are filled.
-  const initial = value ? value.split("-") : ["", "", ""];
-  const [y, setY] = useState(initial[0] ?? "");
-  const [m, setM] = useState(initial[1] ?? "");
-  const [d, setD] = useState(initial[2] ?? "");
-
-  // Clamp day if the selected day exceeds the month's actual length
-  const maxDays = daysInMonth(y, m);
-  const clampedD = d && parseInt(d, 10) > maxDays ? "" : d;
-
-  function commit(nextY: string, nextM: string, nextD: string) {
-    const max = daysInMonth(nextY, nextM);
-    const safeD = nextD && parseInt(nextD, 10) > max ? "" : nextD;
-    if (nextY && nextM && safeD) {
-      onChange(`${nextY}-${nextM.padStart(2, "0")}-${safeD.padStart(2, "0")}`);
-    } else if (!nextY && !nextM && !nextD) {
-      onChange("");
-    }
-  }
-
-  function handleMonthChange(nextM: string) {
-    setM(nextM);
-    // If current day is invalid for new month, reset it
-    const max = daysInMonth(y, nextM);
-    const nextD = d && parseInt(d, 10) > max ? "" : d;
-    if (nextD !== d) setD(nextD);
-    commit(y, nextM, nextD);
-  }
-
-  const selectClass = "flex-1 h-12 rounded-md border border-line bg-white px-3 text-sm text-ink outline-none transition focus:border-pink-deep focus:ring-2 focus:ring-pink/40 appearance-none";
-
-  return (
-    <div className="flex gap-2">
-      <select
-        value={m}
-        onChange={(e) => handleMonthChange(e.target.value)}
-        className={selectClass}
-        style={{ flex: "2" }}
-      >
-        <option value="">month</option>
-        {MONTHS.map((label, i) => (
-          <option key={label} value={String(i + 1).padStart(2, "0")}>{label}</option>
-        ))}
-      </select>
-      <select
-        value={clampedD}
-        onChange={(e) => { setD(e.target.value); commit(y, m, e.target.value); }}
-        className={selectClass}
-      >
-        <option value="">day</option>
-        {Array.from({ length: maxDays }, (_, i) => i + 1).map((n) => (
-          <option key={n} value={String(n)}>{n}</option>
-        ))}
-      </select>
-      <select
-        value={y}
-        onChange={(e) => { setY(e.target.value); commit(e.target.value, m, clampedD); }}
-        className={selectClass}
-        style={{ flex: "1.5" }}
-      >
-        <option value="">year</option>
-        {YEARS.map((yr) => (
-          <option key={yr} value={String(yr)}>{yr}</option>
-        ))}
-      </select>
     </div>
   );
 }

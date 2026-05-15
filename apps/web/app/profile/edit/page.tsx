@@ -124,6 +124,7 @@ export default function EditProfilePage() {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [instagramHandle, setInstagramHandle] = useState("");
+  const [vibeCheckEnabled, setVibeCheckEnabled] = useState(true);
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -151,6 +152,7 @@ export default function EditProfilePage() {
     setBio(user.bio ?? "");
     setAvatarSrc(user.profile_image_url ?? null);
     setInstagramHandle((user as { instagram_handle?: string | null }).instagram_handle ?? "");
+    setVibeCheckEnabled(user.vibe_check_enabled ?? true);
   }, [user]);
 
   const checkUsername = useCallback(
@@ -219,6 +221,7 @@ export default function EditProfilePage() {
       username: username.trim() || null,
       bio: bio.trim() || null,
       instagram_handle: instagramHandle.trim().replace(/^@/, "") || null,
+      vibe_check_enabled: vibeCheckEnabled,
     });
 
     if (result.ok) {
@@ -401,6 +404,33 @@ export default function EditProfilePage() {
                 <p className="mt-1.5 text-xs text-error">{fieldErrors.bio}</p>
               ) : null}
             </div>
+          </section>
+
+          {/* ── AI settings ───────────────────────────────────────────────── */}
+          <section className="soft-panel mb-4 px-6 py-5">
+            <p className="mb-3 text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-mute">AI features</p>
+            <button
+              type="button"
+              onClick={() => setVibeCheckEnabled((v) => !v)}
+              disabled={isSaving}
+              className="flex w-full items-center justify-between gap-4 disabled:opacity-50"
+            >
+              <div className="text-left">
+                <p className="text-sm font-medium text-ink">Vibe check</p>
+                <p className="mt-0.5 text-xs text-mute">AI-generated style label on each outfit photo</p>
+              </div>
+              <div
+                className={`relative h-6 w-10 flex-shrink-0 rounded-full border transition-colors duration-200 ${
+                  vibeCheckEnabled ? "border-ink bg-ink" : "border-line bg-line"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                    vibeCheckEnabled ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </div>
+            </button>
           </section>
 
           {/* ── Error banner ──────────────────────────────────────────────── */}

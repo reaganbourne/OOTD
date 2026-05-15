@@ -83,7 +83,7 @@ export function EventDatePicker({ value, onChange }: EventDatePickerProps) {
         style={{ height: "auto", minHeight: 48, paddingTop: 12, paddingBottom: 12 }}
       >
         <span className={`text-sm leading-snug ${triggerLabel ? "text-ink" : "text-mute"}`}>
-          {triggerLabel ?? "Select date & time (optional)"}
+          {triggerLabel ?? "Select a date (optional)"}
         </span>
         <svg
           viewBox="0 0 24 24"

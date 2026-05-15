@@ -84,12 +84,15 @@ def create_outfit(
     except StorageError as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc))
 
-    # Vibe check is best-effort — never blocks outfit creation if it fails.
-    vibe_check_text, vibe_check_tone = run_vibe_check(
-        file_bytes=file_bytes,
-        content_type=content_type,
-        caption=meta.caption,
-    )
+    # Vibe check is best-effort — skipped if user disabled it, never blocks outfit creation.
+    if getattr(current_user, "vibe_check_enabled", True):
+        vibe_check_text, vibe_check_tone = run_vibe_check(
+            file_bytes=file_bytes,
+            content_type=content_type,
+            caption=meta.caption,
+        )
+    else:
+        vibe_check_text, vibe_check_tone = None, None
 
     outfit = outfit_crud.create_outfit(
         db,
