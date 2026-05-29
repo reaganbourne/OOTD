@@ -206,7 +206,7 @@ export default function SearchPage() {
   const displayList = isSearching ? searchResults : suggested;
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:pb-0 lg:pt-20">
+    <main className="px-4 pb-28 pt-14 sm:px-6 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-lg">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}

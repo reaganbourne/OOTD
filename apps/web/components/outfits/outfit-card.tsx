@@ -175,7 +175,7 @@ export function OutfitCard({
 
   if (compact) {
     return (
-      <Link href={href} className="group relative block overflow-hidden bg-pink-soft/30">
+      <Link href={href} className="group relative block bg-pink-soft/30" style={{ overflow: "hidden" }}>
         <div className="relative aspect-[3/4] w-full overflow-hidden">
           <Image
             src={outfit.imageUrl}
@@ -197,8 +197,8 @@ export function OutfitCard({
         {onLike ? (
           <button
             type="button"
-            onClick={onLike}
             aria-label={liked ? "Unlike" : "Like"}
+            onClick={(e) => { e.stopPropagation(); onLike(e); }}
             className="absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/30 backdrop-blur transition hover:bg-black/50"
           >
             <svg
@@ -335,10 +335,18 @@ export function OutfitCard({
 }
 
 export function OutfitCardSkeleton({
-  showAuthor = true
+  showAuthor = true,
+  compact = false,
 }: {
   showAuthor?: boolean;
+  compact?: boolean;
 }) {
+  if (compact) {
+    return (
+      <div className="skeleton-stripe aspect-[3/4] w-full animate-pulse bg-pink-soft" />
+    );
+  }
+
   return (
     <article className="overflow-hidden rounded-xl border border-line bg-white">
       <div className="skeleton-stripe aspect-[4/5] w-full animate-pulse" />

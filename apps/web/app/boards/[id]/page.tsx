@@ -37,12 +37,21 @@ function formatExpiry(d: string) {
 
 // ── Invite link copy ──────────────────────────────────────────────────────────
 
-function InviteCopy({ code }: { code: string }) {
+function InviteCopy({ code, boardName }: { code: string; boardName?: string }) {
   const [copied, setCopied] = useState(false);
   const link = `${typeof window !== "undefined" ? window.location.origin : ""}/boards/join/${code}`;
+  const shareText = `Join my board${boardName ? ` "${boardName}"` : ""} on checkd! ${link}`;
 
-  async function copy() {
-    await navigator.clipboard.writeText(link);
+  async function share() {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ text: shareText, url: link });
+        return;
+      } catch {
+        // user cancelled or share failed — fall through to clipboard
+      }
+    }
+    await navigator.clipboard.writeText(shareText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -56,10 +65,10 @@ function InviteCopy({ code }: { code: string }) {
       <span className="min-w-0 flex-1 truncate text-[0.72rem] text-mute">{link}</span>
       <button
         type="button"
-        onClick={() => void copy()}
+        onClick={() => void share()}
         className="shrink-0 text-[0.72rem] font-semibold text-pink-deep transition hover:text-[#d94e7a]"
       >
-        {copied ? "Copied!" : "Copy"}
+        {copied ? "Copied!" : "Share"}
       </button>
     </div>
   );
@@ -79,10 +88,12 @@ function MediaLinkRow({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function startEdit() {
     setDraft(value ?? "");
+    setSaveError(null);
     setEditing(true);
     setTimeout(() => inputRef.current?.focus(), 0);
   }
@@ -90,16 +101,25 @@ function MediaLinkRow({
   async function handleSave() {
     if (saving) return;
     setSaving(true);
+    setSaveError(null);
     const trimmed = draft.trim();
-    const result = await apiClient.boards.update(boardId, { media_link: trimmed || "" });
-    if (result.ok) onSave(result.data.media_link);
+    const result = await apiClient.boards.update(boardId, { media_link: trimmed || null });
+    if (result.ok) {
+      onSave(result.data.media_link);
+      setEditing(false);
+    } else {
+      setSaveError(result.message ?? "Couldn't save link.");
+    }
     setSaving(false);
-    setEditing(false);
   }
 
   if (editing) {
     return (
-      <div className="flex items-center gap-2 rounded-[1.2rem] border border-pink-deep/30 bg-white px-4 py-3">
+      <div className="flex flex-col gap-2">
+        {saveError ? (
+          <p className="rounded-[1rem] border border-error/20 bg-error/5 px-3 py-2 text-xs text-error">{saveError}</p>
+        ) : null}
+        <div className="flex items-center gap-2 rounded-[1.2rem] border border-pink-deep/30 bg-white px-4 py-3">
         <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-pink-deep" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -132,6 +152,7 @@ function MediaLinkRow({
         >
           cancel
         </button>
+      </div>
       </div>
     );
   }
@@ -171,7 +192,7 @@ function MediaLinkRow({
       <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-mute" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 5v14M5 12h14" />
       </svg>
-      <span className="text-[0.72rem] text-mute">add a link — pinterest, partiful, etc.</span>
+      <span className="text-[0.72rem] text-mute">add a link: pinterest, partiful, etc.</span>
     </button>
   );
 }
@@ -329,7 +350,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
 
   if (authLoading) {
     return (
-      <main className="px-4 pb-28 pt-6 sm:px-6">
+      <main className="px-4 pb-28 pt-14 sm:px-6">
         <div className="mx-auto max-w-3xl space-y-4">
           <div className="h-8 w-40 animate-pulse rounded-full bg-pink-soft" />
           <div className="soft-panel h-48 w-full animate-pulse" />
@@ -348,7 +369,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
   // ── Error states ──
   if (status === "gone") {
     return (
-      <main className="px-4 pb-28 pt-6 sm:px-6">
+      <main className="px-4 pb-28 pt-14 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
             <p className="font-display italic text-5xl text-pink-deep">checkd</p>
@@ -366,7 +387,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
 
   if (status === "not-found" || status === "error") {
     return (
-      <main className="px-4 pb-28 pt-6 sm:px-6">
+      <main className="px-4 pb-28 pt-14 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
             <p className="font-display italic text-5xl text-pink-deep">checkd</p>
@@ -387,7 +408,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
   const expiryLabel = board ? formatExpiry(board.expires_at) : "";
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
+    <main className="px-4 pb-28 pt-14 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-3xl">
 
         {/* Top bar */}
@@ -486,7 +507,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
               <div className="mt-4 space-y-3">
                 <div>
                   <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">Invite link</p>
-                  <InviteCopy code={board.invite_code} />
+                  <InviteCopy code={board.invite_code} boardName={board.name} />
                 </div>
                 <div>
                   <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-mute">Board link</p>

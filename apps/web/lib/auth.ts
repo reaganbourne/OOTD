@@ -8,6 +8,7 @@ export type AuthMode = "login" | "signup";
 export type AuthValues = {
   username: string;
   email: string;
+  identifier: string; // login only: email or username
   password: string;
   confirmPassword: string;
 };
@@ -18,6 +19,7 @@ export function createInitialAuthValues(): AuthValues {
   return {
     username: "",
     email: "",
+    identifier: "",
     password: "",
     confirmPassword: ""
   };
@@ -30,10 +32,16 @@ export function validateAuthForm(mode: AuthMode, values: AuthValues): AuthErrors
     errors.username = "Choose a username with at least 3 characters.";
   }
 
-  if (!values.email.trim()) {
-    errors.email = mode === "signup" ? "Email is required." : "Email or username is required.";
-  } else if (mode === "signup" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
-    errors.email = "Enter a valid email address.";
+  if (mode === "login") {
+    if (!values.identifier?.trim()) {
+      errors.email = "Email or username is required.";
+    }
+  } else {
+    if (!values.email.trim()) {
+      errors.email = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+      errors.email = "Enter a valid email address.";
+    }
   }
 
   const passwordByteLength = new TextEncoder().encode(values.password).length;

@@ -12,6 +12,7 @@ import {
 import { toAuthErrors, type AuthErrors } from "@/lib/auth";
 import {
   clearAuthSessionCookie,
+  hasAuthSessionCookie,
   setAuthSessionCookie
 } from "@/lib/auth-session";
 
@@ -76,6 +77,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Token was rejected by the server (expired early, user deleted, etc.)
         // Fall through to the full refresh flow below.
         clearAccessToken();
+      }
+
+      if (!hasAuthSessionCookie()) {
+        clearAccessToken();
+        setUser(null);
+        setIsLoading(false);
+        return;
       }
 
       // ── Slow path: exchange refresh-token cookie for token + user in one request ───

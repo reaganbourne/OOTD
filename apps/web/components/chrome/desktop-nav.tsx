@@ -20,17 +20,17 @@ export function DesktopNav() {
   if (AUTH_PATHS.some((p) => pathname.startsWith(p)) || pathname === "/") return null;
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 hidden h-16 items-center border-b border-pink/30 bg-pink px-8 lg:flex">
-      {/* Left: wordmark + links */}
+    <nav className="fixed inset-x-0 top-0 z-50 flex h-14 items-center border-b border-pink/30 bg-pink px-5 lg:h-16 lg:px-8">
+      {/* Left: wordmark + links (links hidden on mobile) */}
       <div className="flex items-center gap-8">
         <Link
           href="/"
           className="font-display italic leading-none text-white"
-          style={{ fontSize: "2rem", letterSpacing: "-0.01em" }}
+          style={{ fontSize: "1.75rem", letterSpacing: "-0.01em" }}
         >
           checkd
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="hidden items-center gap-6 lg:flex">
           {NAV_LINKS.map(({ href, label }) => (
             <Link
               key={href}
@@ -45,11 +45,11 @@ export function DesktopNav() {
         </div>
       </div>
 
-      {/* Right: search + post CTA + avatar */}
+      {/* Right: search + post CTA + avatar (search + post hidden on mobile) */}
       <div className="ml-auto flex items-center gap-3">
         <Link
           href="/search"
-          className="flex h-9 items-center gap-2 rounded-full bg-white px-4 text-sm text-mute transition hover:text-ink-soft"
+          className="hidden h-9 items-center gap-2 rounded-full bg-white px-4 text-sm text-mute transition hover:text-ink-soft lg:flex"
           style={{ width: 260 }}
         >
           <svg
@@ -68,7 +68,7 @@ export function DesktopNav() {
 
         <Link
           href="/upload"
-          className="inline-flex h-9 items-center justify-center rounded-full bg-ink px-5 text-[0.8rem] font-medium lowercase text-paper transition hover:opacity-90"
+          className="hidden h-9 items-center justify-center rounded-full bg-ink px-5 text-[0.8rem] font-medium lowercase text-paper transition hover:opacity-90 lg:inline-flex"
         >
           post a fit
         </Link>
@@ -79,10 +79,10 @@ export function DesktopNav() {
               <img
                 src={user.profile_image_url}
                 alt="my profile"
-                className="h-9 w-9 rounded-full border border-line object-cover"
+                className="h-8 w-8 rounded-full border border-white/30 object-cover lg:h-9 lg:w-9"
               />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-pink-soft text-sm font-medium text-ink-soft">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-pink-soft text-sm font-medium text-ink-soft lg:h-9 lg:w-9">
                 {(user?.display_name ?? user?.username ?? "?").charAt(0).toUpperCase()}
               </div>
             )}

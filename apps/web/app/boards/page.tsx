@@ -219,7 +219,7 @@ export default function BoardsPage() {
 
   return (
     <>
-      <main className="pb-28 lg:pb-0 lg:pt-16">
+      <main className="pb-28 pt-14 lg:pb-0 lg:pt-16">
         <div className="mx-auto max-w-3xl">
 
           {/* Topbar */}
@@ -239,16 +239,6 @@ export default function BoardsPage() {
               </p>
             </div>
             <div className="flex items-center" style={{ gap: 6 }}>
-              <Link
-                href="/search"
-                aria-label="Search"
-                className="flex items-center justify-center rounded-full border border-line bg-white text-mute"
-                style={{ width: 36, height: 36 }}
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
-                  <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
-                </svg>
-              </Link>
               <button
                 type="button"
                 onClick={() => setShowCreate(true)}
@@ -297,7 +287,7 @@ export default function BoardsPage() {
               </div>
               <h2 className="mt-5 text-3xl text-ink">no boards yet</h2>
               <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
-                Boards are private spaces for an event — create one and invite your crew to post their looks together.
+                Boards are private spaces for an event. create one and invite your crew to post their looks together.
               </p>
               <button
                 type="button"

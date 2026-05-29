@@ -25,6 +25,8 @@ export type AuthUser = {
   profile_image_url?: string | null;
   current_streak?: number | null;
   longest_streak?: number | null;
+  vibe_check_enabled?: boolean;
+  is_admin?: boolean;
 };
 
 export type AuthSessionResponse = {
@@ -152,6 +154,7 @@ export type PublicProfile = {
   display_name: string | null;
   bio: string | null;
   profile_image_url: string | null;
+  instagram_handle?: string | null;
   follower_count: number;
   following_count: number;
   created_at: string;
@@ -525,7 +528,7 @@ export const authApiClient = {
   }): Promise<ApiResult<AuthSessionResponse>> {
     const result = await sendRequest<AuthSessionResponse>("/auth/login", {
       method: "POST",
-      body: input,
+      body: { identifier: input.identifier, password: input.password },
       successMessage: "Welcome back. The form is now using the shared auth API."
     });
 
@@ -750,6 +753,8 @@ export const userApiClient = {
     display_name?: string | null;
     bio?: string | null;
     username?: string | null;
+    instagram_handle?: string | null;
+    vibe_check_enabled?: boolean;
   }): Promise<ApiResult<AuthUser>> {
     return sendRequest<AuthUser>("/users/me", {
       method: "PATCH",
@@ -836,7 +841,7 @@ export const userApiClient = {
 // ── Boards ────────────────────────────────────────────────────────────────────
 
 export const boardApiClient = {
-  async create(input: { name: string; event_date?: string }): Promise<ApiResult<Board>> {
+  async create(input: { name: string; event_date?: string; media_link?: string | null }): Promise<ApiResult<Board>> {
     return sendRequest<Board>("/boards", {
       method: "POST",
       body: input,
@@ -954,11 +959,30 @@ export const boardApiClient = {
   }
 };
 
+const adminApiClient = {
+  async deleteOutfit(outfitId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/admin/outfits/${outfitId}`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Outfit deleted."
+    });
+  },
+
+  async deleteBoard(boardId: string): Promise<ApiResult<null>> {
+    return sendRequest<null>(`/admin/boards/${boardId}`, {
+      method: "DELETE",
+      requiresAuth: true,
+      successMessage: "Board deleted."
+    });
+  }
+};
+
 export const apiClient = {
   auth: authApiClient,
   outfits: outfitApiClient,
   users: userApiClient,
   boards: boardApiClient,
+  admin: adminApiClient,
   request: sendRequest,
   clearAccessToken,
   getAccessToken,

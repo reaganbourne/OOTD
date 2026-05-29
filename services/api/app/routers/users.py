@@ -45,6 +45,8 @@ def update_profile(
         display_name=body.display_name if body.display_name is not None else _UNSET,
         bio=body.bio if body.bio is not None else _UNSET,
         username=body.username if body.username is not None else _UNSET,
+        instagram_handle=body.instagram_handle if body.instagram_handle is not None else _UNSET,
+        vibe_check_enabled=body.vibe_check_enabled if body.vibe_check_enabled is not None else _UNSET,
     )
     return PublicProfile(
         id=user.id,
@@ -52,6 +54,7 @@ def update_profile(
         display_name=user.display_name,
         bio=user.bio,
         profile_image_url=user.profile_image_url,
+        instagram_handle=user.instagram_handle,
         follower_count=follow_crud.follower_count(db, user.id),
         following_count=follow_crud.following_count(db, user.id),
         created_at=user.created_at,
@@ -88,6 +91,7 @@ def upload_avatar(
         display_name=user.display_name,
         bio=user.bio,
         profile_image_url=user.profile_image_url,
+        instagram_handle=user.instagram_handle,
         follower_count=follow_crud.follower_count(db, user.id),
         following_count=follow_crud.following_count(db, user.id),
         created_at=user.created_at,
@@ -176,6 +180,7 @@ def get_profile(username: str, db: Session = Depends(get_db)) -> PublicProfile:
         display_name=user.display_name,
         bio=user.bio,
         profile_image_url=user.profile_image_url,
+        instagram_handle=user.instagram_handle,
         follower_count=follow_crud.follower_count(db, user.id),
         following_count=follow_crud.following_count(db, user.id),
         created_at=user.created_at,

@@ -80,7 +80,7 @@ export function AuthForm({ mode, next }: AuthFormProps) {
             password: values.password
           })
         : await login({
-            identifier: values.email.trim().toLowerCase(),
+            identifier: values.identifier.trim().toLowerCase(),
             password: values.password
           });
 
@@ -149,12 +149,12 @@ export function AuthForm({ mode, next }: AuthFormProps) {
             {/* Login: email or username → password */}
             <Field
               label="email or username"
-              name="email"
+              name="identifier"
               type="text"
-              placeholder="ava@email.com or @username"
-              value={values.email}
+              placeholder="ava@email.com or @handle"
+              value={values.identifier ?? ""}
               error={errors.email}
-              onChange={(value) => setValue("email", value)}
+              onChange={(value) => setValue("identifier", value)}
             />
             <Field
               label="password"

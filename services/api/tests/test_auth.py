@@ -4,6 +4,10 @@ Postgres test database with a full request/response cycle.
 
 Each test class is isolated: the conftest wipes all rows between tests.
 """
+from jose import jwt
+
+from app.config import settings
+from app.services.auth import ALGORITHM
 
 REGISTER_URL = "/auth/register"
 LOGIN_URL = "/auth/login"
@@ -238,6 +242,11 @@ class TestMe:
 
     def test_invalid_token_returns_401(self, client):
         res = client.get(ME_URL, headers=_bearer("not.a.real.token"))
+        assert res.status_code == 401
+
+    def test_signed_token_with_malformed_subject_returns_401(self, client):
+        token = jwt.encode({"sub": "not-a-uuid"}, settings.secret_key, algorithm=ALGORITHM)
+        res = client.get(ME_URL, headers=_bearer(token))
         assert res.status_code == 401
 
     def test_malformed_auth_header_returns_401(self, client):

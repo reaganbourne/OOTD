@@ -102,7 +102,7 @@ def get_user_outfits(
     query = (
         db.query(Outfit)
         .options(selectinload(Outfit.clothing_items))
-        .filter(Outfit.user_id == user_id)
+        .filter(Outfit.user_id == user_id, Outfit.vault_hidden.is_(False))
     )
 
     if cursor:

@@ -47,7 +47,7 @@ function useSentinel(onIntersect: () => void) {
 
 export default function VaultPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, refreshUser } = useAuth();
 
   // Vault state
   const [vaultStatus, setVaultStatus] = useState<VaultStatus>("idle");
@@ -71,6 +71,13 @@ export default function VaultPage() {
       router.replace("/login");
     }
   }, [isAuthenticated, isLoading, router]);
+
+  // Refresh user on mount to get up-to-date streak data
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      void refreshUser();
+    }
+  }, [isLoading, isAuthenticated]);
 
   // Load vault
   useEffect(() => {
@@ -204,16 +211,23 @@ export default function VaultPage() {
   const displayName = user?.display_name ?? user?.username ?? "you";
 
   return (
-    <main className="pb-28 lg:pb-0 lg:pt-16">
+    <main className="pb-28 pt-14 lg:pb-0 lg:pt-16">
       <div className="mx-auto max-w-3xl">
         {/* vault header */}
         <header className="flex items-end justify-between bg-paper" style={{ padding: "16px 20px 10px" }}>
           <div>
-            <h1 className="font-display italic text-ink" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em" }}>
-              my vault.
-            </h1>
+            <div className="flex items-center gap-2.5">
+              <h1 className="font-display italic text-ink" style={{ fontSize: 32, lineHeight: 1, letterSpacing: "-0.02em" }}>
+                my vault.
+              </h1>
+              {user?.current_streak ? (
+                <span className="flex items-center gap-1 rounded-full bg-pink-soft px-2 py-0.5 text-[0.65rem] font-semibold text-pink-deep" style={{ marginBottom: 2 }}>
+                  🔥 {user.current_streak}
+                </span>
+              ) : null}
+            </div>
             <p className="text-mute" style={{ fontSize: 11.5, marginTop: 3 }}>
-              {outfits.length} fits{user?.current_streak ? ` · ${user.current_streak} day streak` : ""} · {displayName}
+              {outfits.length} fits · {displayName}
             </p>
           </div>
           <Link
@@ -229,7 +243,7 @@ export default function VaultPage() {
         </header>
 
         {/* search bar */}
-        <div style={{ padding: "0 20px 12px" }}>
+        <div className="px-4 pb-2 sm:px-5">
           <div className="flex items-center gap-2.5 rounded-full border border-line bg-white px-4" style={{ height: 40 }}>
             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 shrink-0 text-mute" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
               <circle cx="11" cy="11" r="7" /><path d="m21 21-4.35-4.35" />
@@ -252,17 +266,17 @@ export default function VaultPage() {
         </div>
 
         {/* ── Vault grid ─────────────────────────────────────────────── */}
-        <section className="px-4 sm:px-5">
+        <section>
           {errorMessage && vaultStatus !== "loading" ? (
-            <div className="my-3 rounded-xl border border-pink-deep/30 bg-pink-soft px-4 py-3 text-sm text-error">
+            <div className="mx-4 my-3 rounded-xl border border-pink-deep/30 bg-pink-soft px-4 py-3 text-sm text-error">
               {errorMessage}
             </div>
           ) : null}
 
           {vaultStatus === "loading" ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-0.5">
               {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
+                <OutfitCardSkeleton key={i} compact />
               ))}
             </div>
           ) : null}
@@ -270,9 +284,9 @@ export default function VaultPage() {
           {/* Search results — API-powered, shows all matching outfits across the full vault */}
           {searchQuery.trim() ? (
             searchLoading ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 gap-0.5">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
+                  <OutfitCardSkeleton key={i} compact />
                 ))}
               </div>
             ) : searchResults !== null && searchResults.length === 0 ? (
@@ -290,12 +304,13 @@ export default function VaultPage() {
                 </button>
               </div>
             ) : searchResults !== null ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 gap-0.5">
                 {searchResults.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
+                    compact
                     liked={likes[outfit.id]?.liked}
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />
@@ -305,7 +320,7 @@ export default function VaultPage() {
           ) : null}
 
           {vaultStatus === "ready" && outfits.length === 0 && !searchQuery.trim() ? (
-            <div className="px-5 py-16 text-center">
+            <div className="px-5 py-16 text-center mx-4">
               <p className="font-display italic text-2xl text-ink">your archive is ready.</p>
               <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-ink-soft">
                 it just needs your first look.
@@ -320,19 +335,20 @@ export default function VaultPage() {
 
           {vaultStatus === "ready" && outfits.length > 0 && !searchQuery.trim() ? (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 gap-0.5">
                 {outfits.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}
                     href={`/outfits/${outfit.id}?from=vault`}
                     outfit={toCardData(outfit)}
+                    compact
                     liked={likes[outfit.id]?.liked}
                     onLike={(e) => { e.preventDefault(); void handleLike(outfit.id); }}
                   />
                 ))}
                 {loadingMore
                   ? Array.from({ length: 3 }).map((_, i) => (
-                      <div key={`skel-${i}`} className="aspect-[3/4] w-full animate-pulse bg-pink-soft skeleton-stripe" />
+                      <OutfitCardSkeleton key={`skel-${i}`} compact />
                     ))
                   : null}
               </div>
@@ -341,7 +357,7 @@ export default function VaultPage() {
           ) : null}
 
           {vaultStatus === "error" ? (
-            <div className="mt-4 flex justify-center">
+            <div className="mt-4 flex justify-center px-4">
               <button type="button" onClick={() => router.refresh()} className="rounded-full border border-line bg-white px-4 py-3 text-sm font-medium text-ink-soft transition hover:border-pink-deep">
                 refresh
               </button>

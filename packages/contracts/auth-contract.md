@@ -8,7 +8,7 @@ It is the source of truth for `@otthomas` building the typed API client (Issue 1
 
 ```
 http://localhost:8000   (local dev)
-https://api.ootd.app   (production — TBD on Railway)
+https://checkdd.com     (production API on Railway)
 ```
 
 All endpoints are prefixed with `/auth`.
@@ -57,7 +57,9 @@ Create a new account.
 }
 ```
 
-Sets `Set-Cookie: refresh_token=<token>; HttpOnly; Path=/auth/refresh; SameSite=Lax`
+Sets `Set-Cookie: refresh_token=<token>; HttpOnly; Path=/auth; SameSite=Lax` in local
+development. Production also sets `Secure; SameSite=None` so Vercel and Railway can
+refresh sessions across origins.
 
 **Error responses**
 
@@ -99,7 +101,9 @@ Sign in with email and password.
 }
 ```
 
-Sets `Set-Cookie: refresh_token=<token>; HttpOnly; Path=/auth/refresh; SameSite=Lax`
+Sets `Set-Cookie: refresh_token=<token>; HttpOnly; Path=/auth; SameSite=Lax` in local
+development. Production also sets `Secure; SameSite=None` so Vercel and Railway can
+refresh sessions across origins.
 
 **Error responses**
 
@@ -182,12 +186,13 @@ Authorization: Bearer <access_token>
   "email": "user@example.com",
   "display_name": "Main Character",
   "bio": "outfits only ✨",
-  "profile_image_url": "https://..."
+  "profile_image_url": "https://...",
+  "is_admin": false
 }
 ```
 
 `display_name`, `bio`, and `profile_image_url` may be `null` until the user completes
-their profile.
+their profile. `is_admin` is server-controlled and defaults to `false`.
 
 **Error responses**
 
@@ -237,5 +242,5 @@ The API client should handle both shapes. Treat any non-`ok` response without a
   retry the original request. If refresh also fails, redirect to `/login`.
 - The refresh token cookie is `httpOnly` — you cannot read it from JS. Just call
   `POST /auth/refresh` and the browser sends it automatically.
-- Local dev API base URL: `http://localhost:8000`. Wire via `NEXT_PUBLIC_API_URL`
-  env var.
+- Browser requests should use the same-origin Next.js proxy at `/backend`; Vercel
+  forwards those requests to Railway via `INTERNAL_API_URL`.

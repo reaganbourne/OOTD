@@ -12,7 +12,8 @@ const authUser = {
   email: "test@example.com",
   display_name: "Test Stylist",
   bio: null,
-  profile_image_url: null
+  profile_image_url: null,
+  is_admin: false
 };
 
 const mockOutfit = {
@@ -156,6 +157,10 @@ async function setActiveSession(page: Page) {
       sameSite: "Lax"
     }
   ]);
+  // Pre-accept AI consent so the modal doesn't block test assertions
+  await page.addInitScript(() => {
+    localStorage.setItem("checkd_ai_consent_v1", "accepted");
+  });
 }
 
 // ── Public routes ──────────────────────────────────────────────────────────────
@@ -188,7 +193,7 @@ test.describe("public routes", () => {
 
 test.describe("protected route redirects", () => {
   // These pages pass ?next= in the redirect so users land back after login
-  for (const route of ["/upload", "/feed", "/vault"]) {
+  for (const route of ["/admin", "/upload", "/feed", "/vault"]) {
     test(`redirects logged-out visitor from ${route} to login with next param`, async ({ page }) => {
       await page.goto(route);
       await expect(page).toHaveURL(new RegExp(`/login\\?next=`));

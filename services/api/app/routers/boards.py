@@ -61,6 +61,7 @@ def _board_out(db: Session, board) -> BoardOut:
         creator_id=board.creator_id,
         expires_at=board.expires_at,
         member_count=board_crud.member_count(db, board.id),
+        media_link=board.media_link,
         created_at=board.created_at,
     )
 
@@ -79,6 +80,7 @@ def create_board(
         creator_id=current_user.id,
         name=body.name,
         event_date=body.event_date,
+        media_link=body.media_link,
     )
     return _board_out(db, board)
 
@@ -127,7 +129,11 @@ def update_board(
     """Rename a board. Creator only."""
     board = _board_or_404(db, board_id)
     _require_creator(db, board_id, current_user.id)
-    board = board_crud.update_board(db, board, payload.name)
+    board = board_crud.update_board(
+        db, board,
+        name=payload.name,
+        media_link=payload.media_link,
+    )
     return _board_out(db, board)
 
 
@@ -371,7 +377,7 @@ def cleanup_expired_boards(
     Render cron, or AWS EventBridge). Returns the number of boards deleted.
 
     Example cron (GitHub Actions):
-        curl -X POST https://api.ootd.app/boards/admin/cleanup \\
+        curl -X POST https://checkdd.com/boards/admin/cleanup \\
              -H "X-Admin-Secret: $ADMIN_SECRET"
     """
     if not settings.admin_secret:

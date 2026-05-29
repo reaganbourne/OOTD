@@ -6,6 +6,17 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
 
+async function normalizeImageFile(file: File): Promise<File> {
+  const type = file.type.toLowerCase();
+  if (type === "image/heic" || type === "image/heif" || (type === "" && file.name.toLowerCase().endsWith(".heic"))) {
+    const heic2any = (await import("heic2any")).default;
+    const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    return new File([blob], file.name.replace(/\.heic$/i, ".jpg"), { type: "image/jpeg" });
+  }
+  return file;
+}
+
 type Step = 1 | 2;
 type SubmitStatus = "idle" | "uploading" | "error";
 type BoardStatus = "loading" | "ready" | "not-member" | "expired" | "error";
@@ -49,8 +60,13 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
   }, [id, isAuthenticated, isLoading]);
 
   function handleFile(file: File) {
-    setPhoto(file);
-    setPreview(URL.createObjectURL(file));
+    normalizeImageFile(file).then((normalized) => {
+      setPhoto(normalized);
+      setPreview(URL.createObjectURL(normalized));
+    }).catch(() => {
+      setPhoto(file);
+      setPreview(URL.createObjectURL(file));
+    });
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -61,7 +77,8 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) handleFile(file);
+    const isImage = file && (file.type.startsWith("image/") || file.name.toLowerCase().endsWith(".heic"));
+    if (isImage) handleFile(file);
   }
 
   async function handlePost() {

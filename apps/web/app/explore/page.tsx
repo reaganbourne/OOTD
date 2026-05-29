@@ -37,19 +37,21 @@ function toCardData(outfit: FeedOutfitResponse): OutfitCardData {
 }
 
 function useSentinel(onIntersect: () => void) {
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const cb = useRef(onIntersect);
   cb.current = onIntersect;
+  const obsRef = useRef<IntersectionObserver | null>(null);
 
-  useEffect(() => {
-    const el = sentinelRef.current;
+  // Callback ref: fires whenever the sentinel mounts/unmounts, so the
+  // observer always attaches even when the element appears after data loads.
+  const sentinelRef = useCallback((el: HTMLDivElement | null) => {
+    if (obsRef.current) { obsRef.current.disconnect(); obsRef.current = null; }
     if (!el) return;
     const obs = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) cb.current(); },
-      { rootMargin: "200px" }
+      { rootMargin: "600px" }
     );
     obs.observe(el);
-    return () => obs.disconnect();
+    obsRef.current = obs;
   }, []);
 
   return sentinelRef;
@@ -72,35 +74,37 @@ function UserChip({
   const initial = (user.display_name?.trim() || user.username?.trim() || "?").charAt(0).toUpperCase();
 
   return (
-    <div className="flex shrink-0 items-center gap-2 rounded-[1.25rem] border border-line bg-white px-3 py-2">
+    <div className="flex flex-col items-center gap-2 rounded-[1.25rem] border border-line bg-white px-2 py-3 text-center">
       {user.profile_image_url ? (
         <img
           src={user.profile_image_url}
           alt={user.username ?? ""}
-          className="h-8 w-8 shrink-0 rounded-full border border-line object-cover"
+          className="h-10 w-10 rounded-full border border-line object-cover"
         />
       ) : (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pink-soft text-xs font-semibold text-ink-soft">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-soft text-sm font-semibold text-ink-soft">
           {initial}
         </div>
       )}
-      <span className="max-w-[80px] truncate text-xs font-semibold text-ink">
+      <p className="w-full truncate text-[0.68rem] font-semibold text-ink">
         {user.display_name ?? user.username ?? "Unknown"}
-      </span>
+      </p>
       <button
         type="button"
         onClick={following ? onUnfollow : onFollow}
-        className={`shrink-0 rounded-full px-2.5 py-1 text-[0.68rem] font-medium lowercase transition ${
+        className={`w-full rounded-full px-2 py-1 text-[0.65rem] font-medium lowercase transition ${
           following
             ? "border border-line bg-white text-ink-soft hover:border-pink-deep"
             : "bg-ink text-paper hover:opacity-90"
         }`}
       >
-        {following ? "Following" : "Follow"}
+        {following ? "following" : "follow"}
       </button>
     </div>
   );
 }
+
+const PAGE_USERS = 3;
 
 function WhoToFollowRail({
   users,
@@ -115,22 +119,52 @@ function WhoToFollowRail({
   onFollow: (userId: string, followerCount: number) => void;
   onUnfollow: (userId: string, followerCount: number) => void;
 }) {
+  const [page, setPage] = useState(0);
+
   if (!loading && users.length === 0) return null;
+
+  const totalPages = Math.ceil(users.length / PAGE_USERS);
+  const visible = users.slice(page * PAGE_USERS, page * PAGE_USERS + PAGE_USERS);
+  const hasNext = page < totalPages - 1;
+  const hasPrev = page > 0;
 
   return (
     <div className="mb-5">
-      <p className="mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-mute">
-        People to follow
-      </p>
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-mute">
+          People to follow
+        </p>
+        <div className="flex items-center gap-1">
+          {!loading && hasPrev ? (
+            <button
+              type="button"
+              onClick={() => setPage((p) => p - 1)}
+              className="flex items-center gap-1 text-[0.65rem] font-semibold text-mute transition hover:text-ink"
+            >
+              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+          ) : null}
+          {!loading && hasNext ? (
+            <button
+              type="button"
+              onClick={() => setPage((p) => p + 1)}
+              className="flex items-center gap-1 text-[0.65rem] font-semibold text-mute transition hover:text-ink"
+            >
+              <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
         {loading
-          ? Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex h-12 w-44 shrink-0 animate-pulse items-center gap-2 rounded-[1.25rem] border border-line bg-pink-soft px-3"
-              />
+          ? Array.from({ length: PAGE_USERS }).map((_, i) => (
+              <div key={i} className="flex h-12 animate-pulse items-center gap-2 rounded-[1.25rem] border border-line bg-pink-soft px-3" />
             ))
-          : users.map((user) => (
+          : visible.map((user) => (
               <UserChip
                 key={user.id}
                 user={user}
@@ -246,10 +280,9 @@ export default function ExplorePage() {
   }
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
-      <div className="mx-auto max-w-3xl">
-
-        {/* ── Header ─────────────────────────────────────────────────────── */}
+    <main className="pb-28 pt-14 lg:pb-0 lg:pt-20">
+      {/* Header and people rail stay padded */}
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <header className="mb-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
@@ -275,55 +308,54 @@ export default function ExplorePage() {
             onUnfollow={handleUnfollow}
           />
         </header>
+      </div>
 
-        {/* ── Outfit grid ─────────────────────────────────────────────────── */}
-        <section>
-          {gridStatus === "loading" ? (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <OutfitCardSkeleton key={i} showAuthor />
-              ))}
-            </div>
-          ) : null}
+      {/* ── Outfit grid ─────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-3xl">
+        {gridStatus === "loading" ? (
+          <div className="grid grid-cols-3 gap-0.5">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <OutfitCardSkeleton key={i} compact />
+            ))}
+          </div>
+        ) : null}
 
-          {gridStatus === "ready" && outfits.length === 0 ? (
+        {gridStatus === "ready" && outfits.length === 0 ? (
+          <div className="px-4 sm:px-6 lg:px-8">
             <div className="soft-panel px-6 py-10 text-center">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-mute">
                 Nothing yet
               </p>
               <h2 className="mt-3 text-2xl text-ink">follow some people to see outfits here</h2>
-              <Link
-                href="/search"
-                className="mt-5 btn-primary"
-              >
+              <Link href="/search" className="mt-5 btn-primary">
                 Find people to follow
               </Link>
             </div>
-          ) : null}
+          </div>
+        ) : null}
 
-          {gridStatus === "ready" && outfits.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                {outfits.map((outfit) => (
-                  <OutfitCard
-                    key={outfit.id}
-                    outfit={toCardData(outfit)}
-                    showAuthor
-                    showCaption={false}
-                    showAccentMarker={false}
-                  />
-                ))}
-                {loadingMore
-                  ? Array.from({ length: 2 }).map((_, i) => (
-                      <OutfitCardSkeleton key={`skel-${i}`} showAuthor />
-                    ))
-                  : null}
-              </div>
-              {nextCursor ? <div ref={sentinelRef} className="h-px" /> : null}
-            </>
-          ) : null}
+        {gridStatus === "ready" && outfits.length > 0 ? (
+          <>
+            <div className="grid grid-cols-3 gap-0.5">
+              {outfits.map((outfit) => (
+                <OutfitCard
+                  key={outfit.id}
+                  outfit={toCardData(outfit)}
+                  compact
+                />
+              ))}
+              {loadingMore
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <OutfitCardSkeleton key={`skel-${i}`} compact />
+                  ))
+                : null}
+            </div>
+            {nextCursor ? <div ref={sentinelRef} className="h-4" /> : null}
+          </>
+        ) : null}
 
-          {gridStatus === "error" ? (
+        {gridStatus === "error" ? (
+          <div className="px-4 sm:px-6 lg:px-8">
             <div className="soft-panel px-6 py-8 text-center">
               <p className="text-sm text-mute">Couldn&rsquo;t load outfits. Try refreshing.</p>
               <button
@@ -334,9 +366,9 @@ export default function ExplorePage() {
                 Refresh
               </button>
             </div>
-          ) : null}
-        </section>
-      </div>
+          </div>
+        ) : null}
+      </section>
 
       <MobileNav active="none" />
     </main>

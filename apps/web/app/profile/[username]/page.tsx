@@ -170,7 +170,7 @@ export default function PublicProfilePage({
   // ── Not found ──
   if (status === "not-found") {
     return (
-      <main className="px-4 pb-28 pt-6 sm:px-6">
+      <main className="px-4 pb-28 pt-14 sm:px-6">
         <div className="mx-auto flex min-h-[60vh] max-w-2xl items-center justify-center">
           <div className="soft-panel w-full max-w-sm px-6 py-10 text-center">
             <p className="font-display italic text-5xl text-pink-deep">checkd</p>
@@ -196,7 +196,7 @@ export default function PublicProfilePage({
   const avatarSrc = profile?.profile_image_url;
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
+    <main className="px-4 pb-28 pt-14 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-3xl">
 
         {/* ── Top bar ────────────────────────────────────────────────────── */}
@@ -255,6 +255,16 @@ export default function PublicProfilePage({
                 <p className="mt-0.5 text-sm text-mute">@{username}</p>
                 {bio ? (
                   <p className="mt-3 text-sm leading-6 text-ink-soft">{bio}</p>
+                ) : null}
+                {profile?.instagram_handle ? (
+                  <a
+                    href={`https://instagram.com/${profile.instagram_handle}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-sm text-pink-deep hover:underline"
+                  >
+                    @{profile.instagram_handle}
+                  </a>
                 ) : null}
 
                 {isAuthenticated ? (

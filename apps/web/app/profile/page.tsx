@@ -9,8 +9,41 @@ import { OutfitCard, OutfitCardSkeleton, type OutfitCardData } from "@/component
 import { useAuth } from "@/lib/auth-context";
 
 type PageStatus = "idle" | "loading" | "ready" | "error";
-type ProfileTab = "fits" | "about";
+type ProfileTab = "fits" | "checks" | "about";
 type FollowSheet = "followers" | "following" | null;
+
+// Monthly Checks launched May 2026. A month unlocks in its last week (day >= 25).
+const CHECKS_LAUNCH_YEAR = 2026;
+const CHECKS_LAUNCH_MONTH = 5; // May
+
+function availableChecksMonths(): string[] {
+  const now = new Date();
+  const months: string[] = [];
+
+  // Walk backwards from the most recent unlocked month
+  let y = now.getFullYear();
+  let m = now.getMonth() + 1; // 1-indexed
+
+  // Current month only unlocks on day 25+
+  if (now.getDate() < 25) {
+    m -= 1;
+    if (m === 0) { m = 12; y -= 1; }
+  }
+
+  // Collect months back to launch
+  while (y > CHECKS_LAUNCH_YEAR || (y === CHECKS_LAUNCH_YEAR && m >= CHECKS_LAUNCH_MONTH)) {
+    months.push(`${y}-${String(m).padStart(2, "0")}`);
+    m -= 1;
+    if (m === 0) { m = 12; y -= 1; }
+  }
+
+  return months;
+}
+
+function formatMonthShort(yyyyMM: string): string {
+  const [y, m] = yyyyMM.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
 
 function toCardData(outfit: OutfitResponse): OutfitCardData {
   return {
@@ -154,7 +187,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
+    <main className="px-4 pb-28 pt-14 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
       <div className="mx-auto max-w-3xl">
 
         {/* ── Top bar — @username + ⋯ per design ─────────────────────────── */}
@@ -299,7 +332,7 @@ export default function ProfilePage() {
 
         {/* ── Profile tabs ─────────────────────────────────────────────── */}
         <div className="flex border-b border-line">
-          {(["fits", "about"] as ProfileTab[]).map((tab) => {
+          {(["fits", "checks", "about"] as ProfileTab[]).map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button
@@ -354,7 +387,6 @@ export default function ProfilePage() {
                       outfit={toCardData(outfit)}
                       showAuthor={false}
                       showCaption={false}
-                      showAccentMarker
                     />
                   ))}
                 </div>
@@ -374,6 +406,35 @@ export default function ProfilePage() {
               </>
             ) : null}
           </section>
+        ) : null}
+
+        {/* ── Tab: checks ─────────────────────────────────────────────────── */}
+        {activeTab === "checks" ? (
+          <div className="px-5 py-6">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-mute">monthly checks</p>
+            <p className="mb-5 text-xs text-mute">your style, month by month</p>
+            {availableChecksMonths().length === 0 ? (
+              <div className="rounded-2xl border border-line bg-white px-5 py-8 text-center">
+                <p className="font-display italic text-lg text-ink">coming soon</p>
+                <p className="mt-2 text-xs text-mute">your first monthly checks drops the last week of this month</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {availableChecksMonths().map((m) => (
+                  <Link
+                    key={m}
+                    href={`/monthly-checks?month=${m}`}
+                    className="flex items-center justify-between rounded-2xl border border-line bg-white px-5 py-4 transition hover:border-pink-deep"
+                  >
+                    <p className="text-sm font-medium text-ink">{formatMonthShort(m)}</p>
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-mute/50" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         ) : null}
 
         {/* ── Tab: about ──────────────────────────────────────────────────── */}
@@ -407,6 +468,21 @@ export default function ProfilePage() {
                 ))}
               </div>
             </div>
+
+            {/* Instagram */}
+            {profile?.instagram_handle ? (
+              <div className="rounded-2xl border border-line bg-white px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-mute">instagram</p>
+                <a
+                  href={`https://instagram.com/${profile.instagram_handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block text-sm text-pink-deep hover:underline"
+                >
+                  @{profile.instagram_handle}
+                </a>
+              </div>
+            ) : null}
 
             {/* Member since */}
             {profile?.created_at ? (

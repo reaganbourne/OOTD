@@ -175,7 +175,7 @@ function CommentsSection({ outfitId }: { outfitId: string }) {
           ))}
         </div>
       ) : comments.length === 0 ? (
-        <p className="py-4 text-center text-sm text-mute">no comments yet — be first ✨</p>
+        <p className="py-4 text-center text-sm text-mute">no comments yet. be first ✨</p>
       ) : (
         <ul className="divide-y divide-line/40">
           {comments.map((comment) => (
@@ -358,7 +358,7 @@ export function OutfitDetailView({ id }: { id: string }) {
 
   return (
     <>
-      <main className="px-4 pb-28 pt-6 sm:px-6 lg:px-8">
+      <main className="px-4 pb-28 pt-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
 
           {/* Top bar — prominent back button */}
