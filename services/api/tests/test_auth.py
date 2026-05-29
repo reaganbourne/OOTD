@@ -29,7 +29,7 @@ def _login(client, email=None, password=None):
     return client.post(
         LOGIN_URL,
         json={
-            "email": email or VALID_USER["email"],
+            "identifier": email or VALID_USER["email"],
             "password": password or VALID_USER["password"],
         },
     )
