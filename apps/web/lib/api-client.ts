@@ -520,7 +520,7 @@ export const authApiClient = {
   },
 
   async login(input: {
-    email: string;
+    identifier: string;
     password: string;
   }): Promise<ApiResult<AuthSessionResponse>> {
     const result = await sendRequest<AuthSessionResponse>("/auth/login", {

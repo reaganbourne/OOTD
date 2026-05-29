@@ -16,7 +16,7 @@ import {
 } from "@/lib/auth-session";
 
 type LoginInput = {
-  email: string;
+  identifier: string;
   password: string;
 };
 

@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
+from better_profanity import profanity as _profanity
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from sqlalchemy.orm import Session
 
@@ -35,6 +36,8 @@ def register(
     db: Session = Depends(get_db),
 ) -> TokenResponse:
     check_rate_limit(register_rate_limiter, get_client_ip(request))
+    if _profanity.contains_profanity(body.username):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Username contains disallowed words.")
     if user_crud.get_by_email(db, body.email):
         raise HTTPException(status.HTTP_409_CONFLICT, detail="Email already registered.")
     if user_crud.get_by_username(db, body.username):
@@ -58,16 +61,18 @@ def login(
     request: Request,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
-    normalized_email = body.email.lower()
+    identifier = body.identifier.strip().lower()
     client_ip = get_client_ip(request)
-    # Rate-limit by IP and by email separately — blocks both distributed brute-force
-    # attempts across IPs and targeted attacks against a single account.
     check_rate_limit(login_rate_limiter, f"ip:{client_ip}")
-    check_rate_limit(login_rate_limiter, f"email:{normalized_email}")
+    check_rate_limit(login_rate_limiter, f"identifier:{identifier}")
 
-    user = user_crud.get_by_email(db, normalized_email)
+    # Accept either email address or username
+    if "@" in identifier:
+        user = user_crud.get_by_email(db, identifier)
+    else:
+        user = user_crud.get_by_username(db, identifier)
     if not user or not auth_service.verify_password(body.password, user.password_hash):
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid email/username or password.")
 
     access_token, refresh_token = _issue_tokens(db, user, request, response)
     return TokenResponse(access_token=access_token, user=UserResponse.model_validate(user))

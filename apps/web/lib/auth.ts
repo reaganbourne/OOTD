@@ -31,8 +31,8 @@ export function validateAuthForm(mode: AuthMode, values: AuthValues): AuthErrors
   }
 
   if (!values.email.trim()) {
-    errors.email = "Email is required.";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+    errors.email = mode === "signup" ? "Email is required." : "Email or username is required.";
+  } else if (mode === "signup" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
     errors.email = "Enter a valid email address.";
   }
 
