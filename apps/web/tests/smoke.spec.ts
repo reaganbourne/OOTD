@@ -172,7 +172,7 @@ test.describe("public routes", () => {
   test("login and signup pages render their forms", async ({ page }) => {
     await page.goto("/login");
     await expect(page.getByRole("heading", { name: /^log in$/i })).toBeVisible();
-    await expect(page.getByLabel(/email/i)).toBeVisible();
+    await expect(page.getByLabel(/email or username/i)).toBeVisible();
     await expect(page.getByLabel(/password/i)).toBeVisible();
 
     await page.goto("/signup");
