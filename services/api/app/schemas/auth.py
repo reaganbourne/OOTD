@@ -28,7 +28,7 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    identifier: str  # email address or username
     password: str
 
 

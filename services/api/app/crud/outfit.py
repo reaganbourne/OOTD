@@ -221,6 +221,7 @@ def get_explore(
     query = (
         db.query(Outfit)
         .options(selectinload(Outfit.clothing_items))
+        .filter(Outfit.vault_hidden == False)  # noqa: E712
     )
 
     if cursor:

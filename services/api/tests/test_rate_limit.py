@@ -84,9 +84,9 @@ class TestLoginRateLimit:
 
         _register(client, USER_A)
         for _ in range(2):
-            client.post(LOGIN_URL, json={"email": USER_A["email"], "password": "wrong"})
+            client.post(LOGIN_URL, json={"identifier": USER_A["email"], "password": "wrong"})
 
-        res = client.post(LOGIN_URL, json={"email": USER_A["email"], "password": "wrong"})
+        res = client.post(LOGIN_URL, json={"identifier": USER_A["email"], "password": "wrong"})
         assert res.status_code == 429
 
 

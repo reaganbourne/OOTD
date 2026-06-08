@@ -80,7 +80,7 @@ export function AuthForm({ mode, next }: AuthFormProps) {
             password: values.password
           })
         : await login({
-            email: values.identifier?.trim() ?? values.email.trim().toLowerCase(),
+            identifier: values.identifier.trim().toLowerCase(),
             password: values.password
           });
 
