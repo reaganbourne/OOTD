@@ -45,9 +45,11 @@ class TestUnauthenticated:
         res = client.get("/outfits/feed")
         assert res.status_code == 401
 
-    def test_explore_requires_auth(self, client):
+    def test_explore_is_public(self, client):
+        # Explore is intentionally public (no auth) — the frontend redirects
+        # unauthenticated users, but the endpoint itself serves anonymous reads.
         res = client.get("/outfits/explore")
-        assert res.status_code == 401
+        assert res.status_code == 200
 
     def test_vault_requires_auth(self, client):
         res = client.get("/outfits/me")
