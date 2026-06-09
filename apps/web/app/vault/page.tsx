@@ -47,7 +47,7 @@ function useSentinel(onIntersect: () => void) {
 
 export default function VaultPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, user, refreshUser } = useAuth();
+  const { isAuthenticated, isBootstrapping, user, refreshUser } = useAuth();
 
   // Vault state
   const [vaultStatus, setVaultStatus] = useState<VaultStatus>("idle");
@@ -67,21 +67,21 @@ export default function VaultPage() {
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isBootstrapping && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isBootstrapping, router]);
 
   // Refresh user on mount to get up-to-date streak data
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (!isBootstrapping && isAuthenticated) {
       void refreshUser();
     }
-  }, [isLoading, isAuthenticated]);
+  }, [isBootstrapping, isAuthenticated]);
 
   // Load vault
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return;
+    if (isBootstrapping || !isAuthenticated) return;
     let active = true;
 
     setVaultStatus("loading");
@@ -114,7 +114,7 @@ export default function VaultPage() {
     });
 
     return () => { active = false; };
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isBootstrapping]);
 
   const loadMore = useCallback(async () => {
     if (!nextCursor || loadingMore || vaultStatus !== "ready") return;
@@ -195,7 +195,7 @@ export default function VaultPage() {
     }
   }
 
-  if (isLoading || !isAuthenticated) {
+  if (isBootstrapping || !isAuthenticated) {
     return (
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl items-center justify-center">
@@ -335,7 +335,7 @@ export default function VaultPage() {
 
           {vaultStatus === "ready" && outfits.length > 0 && !searchQuery.trim() ? (
             <>
-              <div className="grid grid-cols-2 gap-0.5">
+              <div className={`grid gap-0.5 ${outfits.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
                 {outfits.map((outfit) => (
                   <OutfitCard
                     key={outfit.id}

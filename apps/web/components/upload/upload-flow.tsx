@@ -502,16 +502,27 @@ export function UploadFlow() {
         {/* ── Step 4: Review ───────────────────────────────────────────────── */}
         {currentStep === 4 ? (
           <div className="flex flex-col" style={{ gap: 12 }}>
-            {/* Photo thumbnail */}
+            {/* Visibility note */}
+            <div
+              className="flex items-center gap-2 border border-line bg-white text-mute"
+              style={{ borderRadius: "1rem", padding: "9px 14px", fontSize: 12 }}
+            >
+              <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, flexShrink: 0 }} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>This outfit will be <strong className="font-medium text-ink">public</strong> — visible in explore and on your profile.</span>
+            </div>
+
+            {/* Photo thumbnail — contain so the full image is visible */}
             <div
               className="overflow-hidden bg-pink-soft"
-              style={{ borderRadius: "1.5rem", aspectRatio: "4/5", width: "100%", maxHeight: 320, objectFit: "cover" }}
+              style={{ borderRadius: "1.5rem", width: "100%", maxHeight: 360 }}
             >
               {photoPreviewUrl ? (
                 <img
                   src={photoPreviewUrl}
                   alt="Outfit review"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", maxHeight: 320 }}
+                  style={{ width: "100%", maxHeight: 360, objectFit: "contain", display: "block", background: "var(--pink-soft)" }}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-mute" style={{ fontSize: 13 }}>
@@ -587,7 +598,8 @@ export function UploadFlow() {
           <button
             type="button"
             onClick={handleNext}
-            className="flex flex-1 items-center justify-center bg-ink text-paper transition hover:opacity-90"
+            disabled={currentStep === 1 && !photo}
+            className="flex flex-1 items-center justify-center bg-ink text-paper transition hover:opacity-90 disabled:opacity-40"
             style={{ borderRadius: "99px", height: 48, fontSize: 15, fontWeight: 600 }}
           >
             {currentStep === 1 ? "looks good" : currentStep === 2 ? "add context" : "review it"}

@@ -24,7 +24,7 @@ type BoardStatus = "loading" | "ready" | "not-member" | "expired" | "error";
 export default function BoardUploadPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isBootstrapping } = useAuth();
 
   const [boardStatus, setBoardStatus] = useState<BoardStatus>("loading");
   const [step, setStep] = useState<Step>(1);
@@ -37,12 +37,12 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.replace("/login");
-  }, [isAuthenticated, isLoading, router]);
+    if (!isBootstrapping && !isAuthenticated) router.replace("/login");
+  }, [isAuthenticated, isBootstrapping, router]);
 
   // Pre-check board membership + expiry before showing upload UI
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return;
+    if (isBootstrapping || !isAuthenticated) return;
     let active = true;
 
     apiClient.boards.get(id).then((result) => {
@@ -57,7 +57,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
     });
 
     return () => { active = false; };
-  }, [id, isAuthenticated, isLoading]);
+  }, [id, isAuthenticated, isBootstrapping]);
 
   function handleFile(file: File) {
     normalizeImageFile(file).then((normalized) => {
@@ -110,7 +110,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
     router.replace(`/boards/${id}`);
   }
 
-  if (isLoading || !isAuthenticated) return null;
+  if (isBootstrapping || !isAuthenticated) return null;
 
   // ── Error states ──────────────────────────────────────────────────────────────
 

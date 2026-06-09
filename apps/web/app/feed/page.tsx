@@ -423,18 +423,18 @@ function BoardsActivityTab() {
 
 export default function FeedPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isBootstrapping, user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("vault");
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isBootstrapping && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isBootstrapping, router]);
 
   const displayName = user?.display_name ?? user?.username ?? "you";
 
-  if (isLoading || !isAuthenticated) {
+  if (isBootstrapping || !isAuthenticated) {
     return (
       <main className="px-4 py-6 sm:px-6 lg:px-10">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl items-center justify-center">

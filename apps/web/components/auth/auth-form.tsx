@@ -36,7 +36,7 @@ const copy = {
 
 export function AuthForm({ mode, next }: AuthFormProps) {
   const router = useRouter();
-  const { isLoading, login, signup } = useAuth();
+  const { login, signup } = useAuth();
   const [values, setValues] = useState<AuthValues>(() => createInitialAuthValues());
   const [errors, setErrors] = useState<AuthErrors>({});
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
@@ -135,7 +135,7 @@ export function AuthForm({ mode, next }: AuthFormProps) {
               onChange={(value) => setValue("password", value)}
             />
             <Field
-              label="confirm password"
+              label="re-enter password"
               name="confirmPassword"
               type="password"
               placeholder="••••••••"
@@ -183,11 +183,11 @@ export function AuthForm({ mode, next }: AuthFormProps) {
 
         <button
           type="submit"
-          disabled={submitState.status === "submitting" || isLoading}
+          disabled={submitState.status === "submitting"}
           className="btn-primary w-full"
         >
-          {submitState.status === "submitting" || isLoading
-            ? "working..."
+          {submitState.status === "submitting"
+            ? mode === "login" ? "logging in..." : "creating account..."
             : mode === "login" ? "log in" : "create account"}
         </button>
       </form>

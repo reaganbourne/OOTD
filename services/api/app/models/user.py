@@ -25,6 +25,7 @@ class User(Base):
     longest_streak: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
     last_outfit_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     vibe_check_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
+    ai_consent_accepted: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("now()")

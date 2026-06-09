@@ -41,6 +41,9 @@ type AuthActionResult =
 type AuthContextValue = {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  /** True only while the initial session check runs on mount. Use this to show a full-screen skeleton. */
+  isBootstrapping: boolean;
+  /** True while an active login/signup/logout action is in flight. */
   isLoading: boolean;
   login: (input: LoginInput) => Promise<AuthActionResult>;
   signup: (input: SignupInput) => Promise<AuthActionResult>;
@@ -54,44 +57,36 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let isActive = true;
 
     async function bootstrapAuth() {
-      setIsLoading(true);
-
       // ── Fast path: valid token already cached in sessionStorage ──────────
-      // This skips the cross-origin cookie round-trip on every page refresh,
-      // which was causing users to get logged out due to SameSite cookie issues.
       const cachedToken = hydrateAccessToken();
       if (cachedToken) {
         const meResult = await authApiClient.me();
         if (!isActive) return;
         if (meResult.ok) {
           setUser(meResult.data);
-          setIsLoading(false);
+          setIsBootstrapping(false);
           return;
         }
-        // Token was rejected by the server (expired early, user deleted, etc.)
-        // Fall through to the full refresh flow below.
         clearAccessToken();
       }
 
       if (!hasAuthSessionCookie()) {
         clearAccessToken();
         setUser(null);
-        setIsLoading(false);
+        setIsBootstrapping(false);
         return;
       }
 
-      // ── Slow path: exchange refresh-token cookie for token + user in one request ───
+      // ── Slow path: exchange refresh-token cookie for token + user ───
       const refreshResult = await authApiClient.refresh();
-
-      if (!isActive) {
-        return;
-      }
+      if (!isActive) return;
 
       if (refreshResult.ok) {
         setAuthSessionCookie();
@@ -102,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
       }
 
-      setIsLoading(false);
+      setIsBootstrapping(false);
     }
 
     void bootstrapAuth();
@@ -179,6 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isAuthenticated: user !== null,
+        isBootstrapping,
         isLoading,
         login,
         signup,
