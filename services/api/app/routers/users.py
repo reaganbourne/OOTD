@@ -10,10 +10,10 @@ from app.crud import wrapped as wrapped_crud
 from app.dependencies import get_current_user, get_db
 from app.models.notification import NotificationType
 from app.models.user import User
-from app.schemas.outfit import OutfitOut
 from app.schemas.user import FollowResponse, PublicProfile, SearchResult, UpdateProfileRequest
 from app.schemas.wrapped import WrappedStats
 from app.services.storage import InvalidImageError, StorageError, upload_image
+from app.services.rate_limit import check_rate_limit, follow_rate_limiter
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -117,8 +117,7 @@ def get_wrapped(
             detail="month must be in YYYY-MM format (e.g. 2026-04).",
         )
     stats = wrapped_crud.get_wrapped_stats(db, current_user.id, year, mon)
-    top_outfit_out = OutfitOut.model_validate(stats["top_outfit"]) if stats["top_outfit"] else None
-    return WrappedStats(**{**stats, "top_outfit": top_outfit_out})
+    return WrappedStats(**stats)
 
 
 @router.get("/search", response_model=list[SearchResult])
@@ -210,6 +209,7 @@ def follow_user(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> FollowResponse:
+    check_rate_limit(follow_rate_limiter, str(current_user.id))
     target = user_crud.get_by_username(db, username)
     if not target:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
@@ -278,6 +278,7 @@ def unfollow_user(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> FollowResponse:
+    check_rate_limit(follow_rate_limiter, str(current_user.id))
     target = user_crud.get_by_username(db, username)
     if not target:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")

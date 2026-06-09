@@ -7,6 +7,7 @@ from app.models.comment import Comment
 from app.models.follow import Follow
 from app.models.like import Like
 from app.models.outfit import Outfit
+from app.models.password_reset_token import PasswordResetToken
 from app.models.refresh_session import RefreshSession
 from app.models.user import User
 
@@ -23,4 +24,5 @@ __all__ = [
     "BoardOutfit",
     "Notification",
     "NotificationType",
+    "PasswordResetToken",
 ]

@@ -1,10 +1,6 @@
-# Contracts Package
+# Contracts
 
-This directory will contain shared API contracts and integration references.
+API request/response contracts between the frontend and backend.
 
-Planned responsibilities:
-
-- request and response examples
-- shared DTO or schema definitions if needed
-- fixture payloads for frontend mocking
-- auth and feature contract notes
+- `auth-contract.md` — register, login, refresh, logout, me, forgot/reset password
+- `outfit-contract.md` — create outfit (multipart upload)

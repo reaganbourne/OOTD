@@ -472,11 +472,11 @@ export default function FeedPage() {
                 <circle cx="12" cy="12" r="9" /><path d="m14.5 9.5-5 2-2 5 5-2 2-5z" />
               </svg>
             </Link>
-            {/* Search */}
+            {/* Search — hidden on desktop where the nav search bar is shown */}
             <Link
               href="/search"
               aria-label="Search"
-              className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink"
+              className="flex items-center justify-center rounded-full border border-line bg-white text-mute transition hover:border-pink-deep hover:text-ink lg:hidden"
               style={{ width: 36, height: 36 }}
             >
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">

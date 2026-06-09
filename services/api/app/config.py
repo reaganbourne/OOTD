@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     # Public frontend base URL — used for shareable links and OG tags
     public_base_url: str = "https://www.checkdd.com"
 
+    # Email (Resend) — used for password reset emails
+    resend_api_key: str = ""
+    from_email: str = "noreply@checkdd.com"
+
     # Admin secret for internal maintenance endpoints (board cleanup, etc.)
     # Set this to a long random string in production. Empty = endpoint disabled.
     admin_secret: str = ""

@@ -294,7 +294,7 @@ export default function ExplorePage() {
                 explore
               </p>
             </div>
-            <Link href="/search" className="icon-button" aria-label="Search people">
+            <Link href="/search" className="icon-button lg:hidden" aria-label="Search people">
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="7" />
                 <path d="m21 21-4.35-4.35" />

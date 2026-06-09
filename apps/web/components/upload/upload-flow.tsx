@@ -77,6 +77,8 @@ export function UploadFlow() {
   const [errors, setErrors] = useState<ValidationErrors>(createEmptyErrors);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
   const isSubmittingRef = useRef(false); // synchronous guard against double-tap
+  // Idempotency key — generated once per flow instance so retries reuse the same key
+  const idempotencyKeyRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     if (!photo) { setPhotoPreviewUrl(null); return; }
@@ -232,7 +234,10 @@ export function UploadFlow() {
       if (metadata.eventName.trim()) payload.event_name = metadata.eventName.trim();
       if (metadata.wornOn) payload.worn_on = metadata.wornOn;
 
-      const result = await apiClient.outfits.create({ image: photo, metadata: { ...payload, save_to_vault: true } });
+      const result = await apiClient.outfits.create(
+        { image: photo, metadata: { ...payload, save_to_vault: true } },
+        { idempotencyKey: idempotencyKeyRef.current }
+      );
       if (!result.ok) throw new Error(result.message);
 
       setSubmitState({ status: "success", message: "Outfit uploaded!" });
@@ -318,10 +323,17 @@ export function UploadFlow() {
         ) : null}
         {submitState.status === "error" ? (
           <div
-            className="border border-pink-deep/25 bg-pink-soft text-error"
+            className="flex items-start justify-between gap-3 border border-pink-deep/25 bg-pink-soft"
             style={{ borderRadius: "1rem", padding: "10px 14px", fontSize: 13, marginBottom: 16 }}
           >
-            {submitState.message}
+            <span className="text-error">{submitState.message}</span>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="shrink-0 rounded-full bg-ink px-3 py-1 text-xs font-medium text-paper hover:opacity-90"
+            >
+              retry
+            </button>
           </div>
         ) : null}
         {submitState.status === "success" ? (

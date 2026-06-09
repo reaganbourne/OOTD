@@ -569,20 +569,45 @@ export const authApiClient = {
       requiresAuth: true,
       successMessage: "Loaded current user."
     });
+  },
+
+  async forgotPassword(email: string): Promise<ApiResult<{ message: string }>> {
+    return sendRequest<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: { email },
+      successMessage: "Reset email sent."
+    });
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<ApiResult<{ message: string }>> {
+    return sendRequest<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: { token, new_password: newPassword },
+      successMessage: "Password updated."
+    });
   }
 };
 
 export const outfitApiClient = {
-  async create(input: CreateOutfitInput): Promise<ApiResult<OutfitResponse>> {
+  async create(
+    input: CreateOutfitInput,
+    options?: { idempotencyKey?: string }
+  ): Promise<ApiResult<OutfitResponse>> {
     const formData = new FormData();
     formData.append("image", input.image);
     formData.append("metadata", JSON.stringify(input.metadata));
+
+    const extraHeaders: Record<string, string> = {};
+    if (options?.idempotencyKey) {
+      extraHeaders["Idempotency-Key"] = options.idempotencyKey;
+    }
 
     return sendRequest<OutfitResponse>("/outfits", {
       method: "POST",
       body: formData,
       requiresAuth: true,
-      successMessage: "Outfit uploaded."
+      successMessage: "Outfit uploaded.",
+      headers: extraHeaders,
     });
   },
 

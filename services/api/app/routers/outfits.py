@@ -1,8 +1,8 @@
 import json
 import logging
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, Request, UploadFile, status
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,8 @@ from app.services.rate_limit import (
     like_rate_limiter,
     upload_rate_limiter,
 )
-from app.services.storage import InvalidImageError, StorageError, upload_image
+from app.services.idempotency import outfit_idempotency_store
+from app.services.storage import InvalidImageError, StorageError, delete_image, upload_image
 from app.services.story_card import fetch_image, generate_story_card
 from app.services.vibe_check import run_vibe_check
 
@@ -57,6 +58,7 @@ def create_outfit(
     request: Request,
     image: UploadFile = File(...),
     metadata: str = Form(default="{}"),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> OutfitOut:
@@ -68,8 +70,18 @@ def create_outfit(
       - metadata: JSON string with optional fields:
                     caption, event_name, worn_on (YYYY-MM-DD),
                     clothing_items: [{ category, brand, color, display_order, link_url }]
+
+    Optionally include an Idempotency-Key header (UUID recommended). If the same
+    key is replayed within 5 minutes by the same user, the original outfit is
+    returned instead of creating a duplicate.
     """
     check_rate_limit(upload_rate_limiter, str(current_user.id))
+
+    # Idempotency check — return cached result for duplicate submissions
+    if idempotency_key:
+        cached = outfit_idempotency_store.get(str(current_user.id), idempotency_key)
+        if cached is not None:
+            return JSONResponse(content=cached, status_code=status.HTTP_200_OK)
     try:
         meta = OutfitMetadata.model_validate(json.loads(metadata))
     except (json.JSONDecodeError, ValueError) as exc:
@@ -107,7 +119,13 @@ def create_outfit(
         vault_hidden=not meta.save_to_vault,
     )
 
-    return OutfitOut.model_validate(outfit)
+    result = OutfitOut.model_validate(outfit)
+
+    # Cache result so duplicate submissions within the TTL window return this outfit
+    if idempotency_key:
+        outfit_idempotency_store.set(str(current_user.id), idempotency_key, result.model_dump(mode="json"))
+
+    return result
 
 
 @router.get("/feed", response_model=FeedPage)
@@ -361,7 +379,10 @@ def delete_outfit(
     outfit = _outfit_or_404(db, outfit_id)
     if outfit.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot delete this outfit.")
+    image_url = outfit.image_url
     outfit_crud.delete_outfit(db, outfit)
+    # Best-effort CDN cleanup — runs after DB commit so the outfit is already gone.
+    delete_image(image_url)
 
 
 # ── Likes ─────────────────────────────────────────────────────────────────────
