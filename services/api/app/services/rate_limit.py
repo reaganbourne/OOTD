@@ -59,6 +59,10 @@ upload_rate_limiter = FixedWindowRateLimiter(max_attempts=30, window_seconds=864
 caption_rate_limiter = FixedWindowRateLimiter(max_attempts=20, window_seconds=86400)  # 20 / day
 comment_rate_limiter = FixedWindowRateLimiter(max_attempts=60, window_seconds=3600)   # 60 / hour
 like_rate_limiter = FixedWindowRateLimiter(max_attempts=200, window_seconds=3600)     # 200 / hour
+follow_rate_limiter = FixedWindowRateLimiter(max_attempts=100, window_seconds=3600)   # 100 / hour
+
+# Auth — password reset keyed by IP (always unauthenticated at point of request)
+password_reset_rate_limiter = FixedWindowRateLimiter(max_attempts=5, window_seconds=3600)  # 5 / hour per IP
 
 
 def reset_all_rate_limiters() -> None:
@@ -69,6 +73,8 @@ def reset_all_rate_limiters() -> None:
         caption_rate_limiter,
         comment_rate_limiter,
         like_rate_limiter,
+        follow_rate_limiter,
+        password_reset_rate_limiter,
     ):
         limiter.reset()
 
