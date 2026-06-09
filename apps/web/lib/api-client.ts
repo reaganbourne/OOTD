@@ -568,6 +568,22 @@ export const authApiClient = {
       requiresAuth: true,
       successMessage: "Loaded current user."
     });
+  },
+
+  async forgotPassword(email: string): Promise<ApiResult<{ message: string }>> {
+    return sendRequest<{ message: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: { email },
+      successMessage: "Reset email sent."
+    });
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<ApiResult<{ message: string }>> {
+    return sendRequest<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: { token, new_password: newPassword },
+      successMessage: "Password updated."
+    });
   }
 };
 
