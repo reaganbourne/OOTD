@@ -7,15 +7,15 @@ import { useAuth } from "@/lib/auth-context";
 
 export default function UploadPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isBootstrapping } = useAuth();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isBootstrapping && !isAuthenticated) {
       router.replace("/login?next=/upload");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isBootstrapping, router]);
 
-  if (isLoading || !isAuthenticated) {
+  if (isBootstrapping || !isAuthenticated) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-paper">
         <p className="font-display italic text-5xl text-pink-deep">checkd</p>

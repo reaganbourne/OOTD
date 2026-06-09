@@ -67,14 +67,14 @@ function getInitial(displayName?: string | null, username?: string | null) {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const { user, isAuthenticated, isBootstrapping: authLoading, logout } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
 
   const [status, setStatus] = useState<PageStatus>("idle");
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [outfits, setOutfits] = useState<OutfitResponse[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isBootstrappingMore, setIsLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ProfileTab>("fits");
   const [shareCopied, setShareCopied] = useState(false);
@@ -132,7 +132,7 @@ export default function ProfilePage() {
   }, [authLoading, isAuthenticated, user]);
 
   async function handleLoadMore() {
-    if (!nextCursor || isLoadingMore) return;
+    if (!nextCursor || isBootstrappingMore) return;
     setIsLoadingMore(true);
 
     const result = await apiClient.outfits.getVault({ cursor: nextCursor, limit: 12 });
@@ -396,10 +396,10 @@ export default function ProfilePage() {
                     <button
                       type="button"
                       onClick={() => void handleLoadMore()}
-                      disabled={isLoadingMore}
+                      disabled={isBootstrappingMore}
                       className="rounded-full border border-line bg-white px-5 py-3 text-sm font-medium text-ink-soft transition hover:border-pink-deep disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {isLoadingMore ? "loading..." : "load more"}
+                      {isBootstrappingMore ? "loading..." : "load more"}
                     </button>
                   </div>
                 ) : null}

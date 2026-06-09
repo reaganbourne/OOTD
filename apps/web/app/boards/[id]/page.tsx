@@ -249,14 +249,14 @@ function MemberStrip({ members }: { members: BoardMember[] }) {
 export default function BoardDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isBootstrapping: authLoading } = useAuth();
 
   const [status, setStatus] = useState<PageStatus>("loading");
   const [board, setBoard] = useState<Board | null>(null);
   const [members, setMembers] = useState<BoardMember[]>([]);
   const [outfits, setOutfits] = useState<OutfitResponse[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isBootstrappingMore, setIsLoadingMore] = useState(false);
   const [leaveLoading, setLeaveLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -305,7 +305,7 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
   }, [id, isAuthenticated, authLoading]);
 
   async function handleLoadMore() {
-    if (!nextCursor || isLoadingMore) return;
+    if (!nextCursor || isBootstrappingMore) return;
     setIsLoadingMore(true);
     const result = await apiClient.boards.getOutfits(id, { cursor: nextCursor, limit: 12 });
     if (result.ok) {
@@ -603,10 +603,10 @@ export default function BoardDetailPage({ params }: { params: Promise<{ id: stri
                   <button
                     type="button"
                     onClick={() => void handleLoadMore()}
-                    disabled={isLoadingMore}
+                    disabled={isBootstrappingMore}
                     className="rounded-full border border-line bg-white px-5 py-3 text-sm font-semibold text-ink-soft transition hover:border-pink-deep/25 disabled:opacity-50"
                   >
-                    {isLoadingMore ? "Loading…" : "Load more"}
+                    {isBootstrappingMore ? "Loading…" : "Load more"}
                   </button>
                 </div>
               ) : null}

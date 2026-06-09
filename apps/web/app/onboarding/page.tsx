@@ -195,7 +195,7 @@ function StepUpload({ onDone }: { onDone: () => void }) {
         Upload your first fit
       </h2>
       <p className="mt-3 max-w-xs text-sm leading-6 text-ink-soft/70">
-        Drop your outfit photo and get an instant vibe check. our AI will tag your style and kick off your archive.
+        Drop your outfit photo and get an instant vibe check. Our AI will tag your style and kick off your archive.
       </p>
 
       <Link
@@ -223,20 +223,20 @@ const STEPS = 3;
 function OnboardingInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isBootstrapping } = useAuth();
   const [step, setStep] = useState(0);
   const [follows, setFollows] = useState<FollowMap>({});
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isBootstrapping) return;
     if (!isAuthenticated) { router.replace("/login"); return; }
     if (typeof window !== "undefined" && localStorage.getItem(STORAGE_KEY) === "true") {
       router.replace("/feed");
       return;
     }
     setReady(true);
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isBootstrapping, router]);
 
   function finish() {
     if (typeof window !== "undefined") {

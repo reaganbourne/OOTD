@@ -167,7 +167,7 @@ function BoardCard({ board }: { board: Board }) {
 
 export default function BoardsPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isBootstrapping: authLoading } = useAuth();
 
   const [status, setStatus] = useState<PageStatus>("loading");
   const [boards, setBoards] = useState<Board[]>([]);

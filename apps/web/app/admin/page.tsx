@@ -10,7 +10,7 @@ type Action = "outfit" | "board";
 
 export default function AdminPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isBootstrapping } = useAuth();
 
   const [action, setAction] = useState<Action>("outfit");
   const [targetId, setTargetId] = useState("");
@@ -18,12 +18,12 @@ export default function AdminPage() {
   const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null);
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || !user?.is_admin)) {
+    if (!isBootstrapping && (!isAuthenticated || !user?.is_admin)) {
       router.replace("/");
     }
-  }, [isLoading, isAuthenticated, user, router]);
+  }, [isBootstrapping, isAuthenticated, user, router]);
 
-  if (isLoading || !isAuthenticated || !user?.is_admin) {
+  if (isBootstrapping || !isAuthenticated || !user?.is_admin) {
     return null;
   }
 

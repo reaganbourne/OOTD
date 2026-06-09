@@ -118,7 +118,7 @@ function UsernameHint({ status }: { status: UsernameStatus }) {
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading, setUser } = useAuth();
+  const { user, isAuthenticated, isBootstrapping: authLoading, setUser } = useAuth();
 
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");

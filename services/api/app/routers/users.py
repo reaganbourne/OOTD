@@ -47,6 +47,7 @@ def update_profile(
         username=body.username if body.username is not None else _UNSET,
         instagram_handle=body.instagram_handle if body.instagram_handle is not None else _UNSET,
         vibe_check_enabled=body.vibe_check_enabled if body.vibe_check_enabled is not None else _UNSET,
+        ai_consent_accepted=body.ai_consent_accepted if body.ai_consent_accepted is not None else _UNSET,
     )
     return PublicProfile(
         id=user.id,

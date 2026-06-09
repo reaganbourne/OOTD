@@ -2,24 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { apiClient } from "@/lib/api-client";
 
 const CONSENT_KEY = "checkd_ai_consent_v1";
 
 export function AiConsentModal() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isBootstrapping, isAuthenticated, user } = useAuth();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated || isLoading) return;
-    if (typeof localStorage === "undefined") return;
-    if (!localStorage.getItem(CONSENT_KEY)) {
-      setShow(true);
-    }
-  }, [isAuthenticated, isLoading]);
+    if (isBootstrapping || !isAuthenticated || !user) return;
 
-  function accept() {
-    localStorage.setItem(CONSENT_KEY, "accepted");
+    // Server-side source of truth: if the user has already accepted, never show
+    if (user.ai_consent_accepted) return;
+
+    // Fast-path: localStorage cache so we don't flash the modal on re-visits
+    // within the same browser before the server flag propagates
+    try {
+      if (localStorage.getItem(`${CONSENT_KEY}_${user.id}`) === "accepted") return;
+    } catch { /* private browsing */ }
+
+    setShow(true);
+  }, [isBootstrapping, isAuthenticated, user]);
+
+  async function accept() {
     setShow(false);
+
+    // Persist locally first so we don't re-show on the next render
+    try {
+      if (user?.id) localStorage.setItem(`${CONSENT_KEY}_${user.id}`, "accepted");
+    } catch { /* ignore */ }
+
+    // Persist server-side so it survives new devices / cleared storage
+    await apiClient.users.updateProfile({ ai_consent_accepted: true });
   }
 
   if (!show) return null;

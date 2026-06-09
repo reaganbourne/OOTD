@@ -42,6 +42,7 @@ class UserResponse(BaseModel):
     current_streak: int = 0
     longest_streak: int = 0
     vibe_check_enabled: bool = True
+    ai_consent_accepted: bool = False
     is_admin: bool = False
 
     model_config = {"from_attributes": True}

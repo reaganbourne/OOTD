@@ -24,7 +24,7 @@ function formatExpiry(d: string) {
 export default function JoinBoardPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isBootstrapping: authLoading } = useAuth();
 
   const [status, setStatus] = useState<PageStatus>("loading");
   const [board, setBoard] = useState<Board | null>(null);

@@ -31,6 +31,7 @@ class UpdateProfileRequest(BaseModel):
     username: str | None = Field(default=None, min_length=2, max_length=30)
     instagram_handle: str | None = Field(default=None, max_length=30)
     vibe_check_enabled: bool | None = None
+    ai_consent_accepted: bool | None = None
 
     @field_validator("username")
     @classmethod

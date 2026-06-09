@@ -33,7 +33,7 @@ function formatMonthLabel(yyyyMM: string): string {
 export function MonthlyChecksClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user, isAuthenticated, isBootstrapping: authLoading } = useAuth();
 
   const month = searchParams.get("month") ?? defaultMonth();
   const [stats, setStats] = useState<WrappedStats | null>(null);

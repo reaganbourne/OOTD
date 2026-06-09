@@ -47,6 +47,7 @@ def update_profile(
     username: object = _UNSET,
     instagram_handle: object = _UNSET,
     vibe_check_enabled: object = _UNSET,
+    ai_consent_accepted: object = _UNSET,
 ) -> User:
     """
     Partial update — only fields explicitly passed are written.
@@ -62,6 +63,8 @@ def update_profile(
         user.instagram_handle = instagram_handle  # type: ignore[assignment]
     if vibe_check_enabled is not _UNSET:
         user.vibe_check_enabled = vibe_check_enabled  # type: ignore[assignment]
+    if ai_consent_accepted is not _UNSET:
+        user.ai_consent_accepted = ai_consent_accepted  # type: ignore[assignment]
     db.commit()
     db.refresh(user)
     return user

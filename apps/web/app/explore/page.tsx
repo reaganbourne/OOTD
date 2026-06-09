@@ -182,7 +182,7 @@ function WhoToFollowRail({
 
 export default function ExplorePage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isBootstrapping } = useAuth();
 
   const [outfits, setOutfits] = useState<FeedOutfitResponse[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -195,14 +195,14 @@ export default function ExplorePage() {
   const [follows, setFollows] = useState<FollowMap>({});
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isBootstrapping && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isBootstrapping, router]);
 
   // Load outfit grid
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return;
+    if (isBootstrapping || !isAuthenticated) return;
     let active = true;
     setGridStatus("loading");
 
@@ -215,11 +215,11 @@ export default function ExplorePage() {
     });
 
     return () => { active = false; };
-  }, [isAuthenticated, isLoading, reloadKey]);
+  }, [isAuthenticated, isBootstrapping, reloadKey]);
 
   // Load suggested users
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return;
+    if (isBootstrapping || !isAuthenticated) return;
     let active = true;
     setSuggestedLoading(true);
 
@@ -230,7 +230,7 @@ export default function ExplorePage() {
     });
 
     return () => { active = false; };
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isBootstrapping]);
 
   const loadMore = useCallback(async () => {
     if (!nextCursor || loadingMore || gridStatus !== "ready") return;
@@ -266,7 +266,7 @@ export default function ExplorePage() {
     }
   }
 
-  if (isLoading || !isAuthenticated) {
+  if (isBootstrapping || !isAuthenticated) {
     return (
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-2xl items-center justify-center">
@@ -286,10 +286,13 @@ export default function ExplorePage() {
         <header className="mb-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <p className="font-display italic text-[2.2rem] leading-none text-pink-deep">
+              {/* Desktop: show brand + page label. Mobile: page label only — nav already shows the brand. */}
+              <p className="hidden font-display italic text-[2.2rem] leading-none text-pink-deep lg:block">
                 checkd
               </p>
-              <p className="mt-1 text-sm text-mute">explore</p>
+              <p className="font-display italic text-[2.2rem] leading-none text-pink-deep lg:mt-1 lg:text-sm lg:font-sans lg:not-italic lg:font-normal lg:text-mute">
+                explore
+              </p>
             </div>
             <Link href="/search" className="icon-button lg:hidden" aria-label="Search people">
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

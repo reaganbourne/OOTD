@@ -89,7 +89,7 @@ function UserRowSkeleton() {
 
 export default function SearchPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isBootstrapping } = useAuth();
 
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
@@ -104,14 +104,14 @@ export default function SearchPage() {
   const isSearching = query.trim().length > 0;
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isBootstrapping && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isBootstrapping, router]);
 
   // Load suggested users
   useEffect(() => {
-    if (isLoading || !isAuthenticated) return;
+    if (isBootstrapping || !isAuthenticated) return;
     let active = true;
     setSuggestedLoading(true);
 
@@ -122,7 +122,7 @@ export default function SearchPage() {
     });
 
     return () => { active = false; };
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isBootstrapping]);
 
   // Debounced search
   useEffect(() => {
@@ -190,7 +190,7 @@ export default function SearchPage() {
     return follows[key]?.followerCount ?? user.follower_count;
   }
 
-  if (isLoading || !isAuthenticated) {
+  if (isBootstrapping || !isAuthenticated) {
     return (
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-lg items-center justify-center">
