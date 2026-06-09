@@ -358,7 +358,7 @@ export function OutfitDetailView({ id }: { id: string }) {
 
   return (
     <>
-      <main className="px-4 pb-28 pt-14 sm:px-6 lg:px-8">
+      <main className="px-4 pb-28 pt-14 sm:px-6 lg:px-8 lg:pb-12 lg:pt-20">
         <div className="mx-auto max-w-4xl">
 
           {/* Top bar — prominent back button */}
