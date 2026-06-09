@@ -101,6 +101,7 @@ async function proxy(request: NextRequest, path: string[]) {
 
   const headers = new Headers(upstreamResponse.headers);
   headers.delete("content-length");
+  headers.delete("content-encoding"); // proxy's fetch auto-decompresses; remove to avoid double-decode
   headers.delete("access-control-allow-origin");
   headers.delete("access-control-allow-credentials");
   headers.delete("access-control-allow-methods");
