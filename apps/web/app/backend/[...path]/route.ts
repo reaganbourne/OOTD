@@ -66,6 +66,8 @@ function buildUpstreamHeaders(request: NextRequest) {
   return headers;
 }
 
+const PROXY_TIMEOUT_MS = 15_000;
+
 async function proxy(request: NextRequest, path: string[]) {
   const backendOrigin = getBackendOrigin();
   const upstreamUrl = new URL(`${backendOrigin}/${path.join("/")}`);
@@ -75,12 +77,27 @@ async function proxy(request: NextRequest, path: string[]) {
       ? undefined
       : await request.arrayBuffer();
 
-  const upstreamResponse = await fetch(upstreamUrl, {
-    method: request.method,
-    headers: buildUpstreamHeaders(request),
-    body,
-    redirect: "manual"
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), PROXY_TIMEOUT_MS);
+
+  let upstreamResponse: Response;
+  try {
+    upstreamResponse = await fetch(upstreamUrl, {
+      method: request.method,
+      headers: buildUpstreamHeaders(request),
+      body,
+      signal: controller.signal,
+      redirect: "manual"
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    const isTimeout = err instanceof Error && err.name === "AbortError";
+    return new NextResponse(
+      JSON.stringify({ detail: isTimeout ? "Backend request timed out." : "Backend unreachable." }),
+      { status: 504, headers: { "Content-Type": "application/json" } }
+    );
+  }
+  clearTimeout(timeoutId);
 
   const headers = new Headers(upstreamResponse.headers);
   headers.delete("content-length");
