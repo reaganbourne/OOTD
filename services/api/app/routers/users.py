@@ -10,7 +10,6 @@ from app.crud import wrapped as wrapped_crud
 from app.dependencies import get_current_user, get_db
 from app.models.notification import NotificationType
 from app.models.user import User
-from app.schemas.outfit import OutfitOut
 from app.schemas.user import FollowResponse, PublicProfile, SearchResult, UpdateProfileRequest
 from app.schemas.wrapped import WrappedStats
 from app.services.storage import InvalidImageError, StorageError, upload_image
@@ -116,8 +115,7 @@ def get_wrapped(
             detail="month must be in YYYY-MM format (e.g. 2026-04).",
         )
     stats = wrapped_crud.get_wrapped_stats(db, current_user.id, year, mon)
-    top_outfit_out = OutfitOut.model_validate(stats["top_outfit"]) if stats["top_outfit"] else None
-    return WrappedStats(**{**stats, "top_outfit": top_outfit_out})
+    return WrappedStats(**stats)
 
 
 @router.get("/search", response_model=list[SearchResult])

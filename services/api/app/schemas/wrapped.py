@@ -2,7 +2,25 @@
 
 from pydantic import BaseModel
 
-from app.schemas.outfit import OutfitOut
+
+class ColorCount(BaseModel):
+    color: str
+    count: int
+
+
+class BrandCount(BaseModel):
+    brand: str
+    count: int
+
+
+class CategoryCount(BaseModel):
+    category: str
+    count: int
+
+
+class WeekCount(BaseModel):
+    week: int
+    count: int
 
 
 class WrappedStats(BaseModel):
@@ -13,12 +31,14 @@ class WrappedStats(BaseModel):
     Fields are None / empty when there is no data for that stat.
     """
 
-    month: str                      # "2026-04"
+    year: int
+    month: int
     total_outfits: int
-    top_colors: list[str]           # up to 3, most frequent first
-    top_brands: list[str]           # up to 3, most frequent first
-    top_category: str | None        # single most-used clothing category
-    vibe_of_month: str | None       # most common vibe_check_tone
-    most_active_day: str | None     # e.g. "Monday"
-    longest_streak: int             # consecutive calendar days with an outfit
-    top_outfit: OutfitOut | None    # outfit with the most tagged clothing items
+    total_items: int
+    top_colors: list[ColorCount]
+    top_brands: list[BrandCount]
+    top_categories: list[CategoryCount]
+    longest_streak: int
+    current_streak: int
+    most_worn_vibe: str | None
+    outfits_by_week: list[WeekCount]
