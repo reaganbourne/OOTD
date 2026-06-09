@@ -13,3 +13,4 @@ boto3==1.35.99
 anthropic==0.40.0
 Pillow==11.1.0
 better-profanity==0.7.0
+resend==2.4.0
