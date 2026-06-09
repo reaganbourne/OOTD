@@ -13,7 +13,10 @@ const authUser = {
   display_name: "Test Stylist",
   bio: null,
   profile_image_url: null,
-  is_admin: false
+  is_admin: false,
+  // Mark consent accepted server-side so the AI consent modal never overlays
+  // the page during tests (it intercepts pointer events and blocks clicks).
+  ai_consent_accepted: true
 };
 
 const mockOutfit = {
@@ -185,7 +188,7 @@ test.describe("public routes", () => {
     await expect(page.getByLabel(/username/i)).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(page.getByLabel(/^password$/i)).toBeVisible();
-    await expect(page.getByLabel(/confirm password/i)).toBeVisible();
+    await expect(page.getByLabel(/re-enter password/i)).toBeVisible();
   });
 });
 
@@ -326,17 +329,24 @@ test.describe("profile page", () => {
 // ── Upload ─────────────────────────────────────────────────────────────────────
 
 test.describe("upload flow", () => {
-  test("shows validation error when advancing without a photo", async ({ page }) => {
+  test("disables the advance CTA until a photo is selected", async ({ page }) => {
     await mockAuthenticatedApi(page);
     await setActiveSession(page);
 
     await page.goto("/upload");
     await expect(page.getByText("add your photo", { exact: true })).toBeVisible();
 
-    await page.getByRole("button", { name: /^looks good$/i }).click();
+    // The "looks good" CTA is disabled until a photo is chosen (QA fix #5).
+    const cta = page.getByRole("button", { name: /^looks good$/i });
+    await expect(cta).toBeDisabled();
 
-    await expect(page.getByText(/a photo is required/i)).toBeVisible();
-    await expect(page.getByText(/choose a photo before continuing/i)).toBeVisible();
+    // After selecting a photo, the CTA becomes enabled.
+    await page.setInputFiles("input[type='file']", {
+      name: "fit.jpg",
+      mimeType: "image/jpeg",
+      buffer: Buffer.from("fake image bytes")
+    });
+    await expect(cta).toBeEnabled();
   });
 
   test("completes a full mocked upload successfully", async ({ page }) => {
