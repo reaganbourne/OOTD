@@ -115,51 +115,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(input: LoginInput): Promise<AuthActionResult> {
     setIsLoading(true);
 
-    const result = await authApiClient.login(input);
+    try {
+      const result = await authApiClient.login(input);
 
-    if (result.ok) {
-      setAuthSessionCookie();
-      setUser(result.data.user);
-      setIsLoading(false);
+      if (result.ok) {
+        setAuthSessionCookie();
+        setUser(result.data.user);
+        return { ok: true, message: result.message };
+      }
 
       return {
-        ok: true,
-        message: result.message
+        ok: false,
+        message: result.message,
+        errors: toAuthErrors(result.errors)
       };
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-
-    return {
-      ok: false,
-      message: result.message,
-      errors: toAuthErrors(result.errors)
-    };
   }
 
   async function signup(input: SignupInput): Promise<AuthActionResult> {
     setIsLoading(true);
 
-    const result = await authApiClient.register(input);
+    try {
+      const result = await authApiClient.register(input);
 
-    if (result.ok) {
-      setAuthSessionCookie();
-      setUser(result.data.user);
-      setIsLoading(false);
+      if (result.ok) {
+        setAuthSessionCookie();
+        setUser(result.data.user);
+        return { ok: true, message: result.message };
+      }
 
       return {
-        ok: true,
-        message: result.message
+        ok: false,
+        message: result.message,
+        errors: toAuthErrors(result.errors)
       };
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
-
-    return {
-      ok: false,
-      message: result.message,
-      errors: toAuthErrors(result.errors)
-    };
   }
 
   async function refreshUser() {
