@@ -29,24 +29,23 @@ def get_wrapped_stats(
     """
     Compute monthly wrapped stats for one user.
 
-    Returns a plain dict matching the WrappedStats schema so the router can
-    call WrappedStats(**stats) without any extra transformation.
+    Returns a plain dict matching the WrappedStats schema.
     """
-    month_label = f"{year}-{month:02d}"
     empty = {
-        "month": month_label,
+        "year": year,
+        "month": month,
         "total_outfits": 0,
+        "total_items": 0,
         "top_colors": [],
         "top_brands": [],
-        "top_category": None,
-        "vibe_of_month": None,
-        "most_active_day": None,
+        "top_categories": [],
         "longest_streak": 0,
-        "top_outfit": None,
+        "current_streak": 0,
+        "most_worn_vibe": None,
+        "outfits_by_week": [],
     }
 
     # ── Derived date expression ──────────────────────────────────────────────
-    # worn_on is a Date; created_at is a DateTime — cast to Date before coalesce.
     outfit_date = func.coalesce(Outfit.worn_on, cast(Outfit.created_at, Date))
 
     # ── 1. Fetch all outfits in the month ────────────────────────────────────
@@ -63,7 +62,14 @@ def get_wrapped_stats(
 
     outfit_ids = [o.id for o in outfits]
 
-    # ── 2. Top colors (from clothing items) ──────────────────────────────────
+    # ── 2. Total clothing items ──────────────────────────────────────────────
+    total_items = (
+        db.query(func.count(ClothingItem.id))
+        .filter(ClothingItem.outfit_id.in_(outfit_ids))
+        .scalar() or 0
+    )
+
+    # ── 3. Top colors ────────────────────────────────────────────────────────
     color_rows = (
         db.query(ClothingItem.color, func.count().label("cnt"))
         .filter(ClothingItem.outfit_id.in_(outfit_ids))
@@ -73,9 +79,9 @@ def get_wrapped_stats(
         .limit(3)
         .all()
     )
-    top_colors = [r.color for r in color_rows]
+    top_colors = [{"color": r.color, "count": r.cnt} for r in color_rows]
 
-    # ── 3. Top brands ────────────────────────────────────────────────────────
+    # ── 4. Top brands ────────────────────────────────────────────────────────
     brand_rows = (
         db.query(ClothingItem.brand, func.count().label("cnt"))
         .filter(ClothingItem.outfit_id.in_(outfit_ids))
@@ -85,57 +91,64 @@ def get_wrapped_stats(
         .limit(3)
         .all()
     )
-    top_brands = [r.brand for r in brand_rows]
+    top_brands = [{"brand": r.brand, "count": r.cnt} for r in brand_rows]
 
-    # ── 4. Top category ──────────────────────────────────────────────────────
-    cat_row = (
+    # ── 5. Top categories ────────────────────────────────────────────────────
+    cat_rows = (
         db.query(ClothingItem.category, func.count().label("cnt"))
         .filter(ClothingItem.outfit_id.in_(outfit_ids))
+        .filter(ClothingItem.category.isnot(None))
         .group_by(ClothingItem.category)
         .order_by(func.count().desc())
-        .first()
+        .limit(3)
+        .all()
     )
-    top_category = cat_row.category if cat_row else None
+    top_categories = [{"category": r.category, "count": r.cnt} for r in cat_rows]
 
-    # ── 5. Vibe of the month ─────────────────────────────────────────────────
+    # ── 6. Most worn vibe ────────────────────────────────────────────────────
     vibe_counts = Counter(o.vibe_check_tone for o in outfits if o.vibe_check_tone)
-    vibe_of_month = vibe_counts.most_common(1)[0][0] if vibe_counts else None
+    most_worn_vibe = vibe_counts.most_common(1)[0][0] if vibe_counts else None
 
-    # ── 6. Most active day of week ───────────────────────────────────────────
-    dow_row = (
-        db.query(
-            func.extract("dow", outfit_date).label("dow"),
-            func.count().label("cnt"),
-        )
-        .filter(Outfit.user_id == user_id)
-        .filter(func.extract("year", outfit_date) == year)
-        .filter(func.extract("month", outfit_date) == month)
-        .group_by(func.extract("dow", outfit_date))
-        .order_by(func.count().desc())
-        .first()
-    )
-    most_active_day = _DOW_NAMES[int(dow_row.dow)] if dow_row else None
+    # ── 7. Outfits by week-of-month ──────────────────────────────────────────
+    # Week 1 = days 1-7, week 2 = days 8-14, week 3 = days 15-21, week 4 = 22+
+    week_counter: Counter = Counter()
+    for o in outfits:
+        d = o.worn_on if o.worn_on else o.created_at.date()
+        week_num = min((d.day - 1) // 7 + 1, 4)
+        week_counter[week_num] += 1
+    outfits_by_week = [
+        {"week": w, "count": week_counter.get(w, 0)}
+        for w in range(1, 5)
+    ]
 
-    # ── 7. Longest consecutive-day streak ────────────────────────────────────
+    # ── 8. Longest streak ────────────────────────────────────────────────────
     worn_dates = sorted({
         (o.worn_on if o.worn_on else o.created_at.date())
         for o in outfits
     })
     longest_streak = _longest_streak(worn_dates)
 
-    # ── 8. Top outfit (most tagged clothing items; newest as tiebreaker) ─────
-    top_outfit = max(outfits, key=lambda o: (len(o.clothing_items), o.created_at))
+    # ── 9. Current streak (streak ending on or including the last outfit date) ─
+    all_dates_ever = sorted({
+        (o.worn_on if o.worn_on else o.created_at.date())
+        for o in db.query(Outfit)
+        .filter(Outfit.user_id == user_id)
+        .all()
+    })
+    current_streak = _current_streak(all_dates_ever)
 
     return {
-        "month": month_label,
+        "year": year,
+        "month": month,
         "total_outfits": len(outfits),
+        "total_items": total_items,
         "top_colors": top_colors,
         "top_brands": top_brands,
-        "top_category": top_category,
-        "vibe_of_month": vibe_of_month,
-        "most_active_day": most_active_day,
+        "top_categories": top_categories,
         "longest_streak": longest_streak,
-        "top_outfit": top_outfit,
+        "current_streak": current_streak,
+        "most_worn_vibe": most_worn_vibe,
+        "outfits_by_week": outfits_by_week,
     }
 
 
@@ -153,3 +166,23 @@ def _longest_streak(dates: list[date]) -> int:
         else:
             current = 1
     return best
+
+
+def _current_streak(dates: list[date]) -> int:
+    """Return the current consecutive streak ending today or yesterday."""
+    if not dates:
+        return 0
+    today = date.today()
+    streak = 0
+    check = today
+    date_set = set(dates)
+    while check in date_set:
+        streak += 1
+        check -= timedelta(days=1)
+    # also accept a streak ending yesterday
+    if streak == 0:
+        check = today - timedelta(days=1)
+        while check in date_set:
+            streak += 1
+            check -= timedelta(days=1)
+    return streak
