@@ -1,4 +1,10 @@
-"""Tests for GET /users/me/wrapped."""
+"""Tests for GET /users/me/wrapped.
+
+The wrapped endpoint returns the Monthly Fits Wrapped schema:
+  year, month (ints), total_outfits, total_items,
+  top_colors / top_brands / top_categories (lists of {value, count} objects),
+  longest_streak, current_streak, most_worn_vibe, outfits_by_week.
+"""
 
 import io
 
@@ -52,14 +58,17 @@ class TestWrapped:
         res = client.get(WRAPPED_URL, params={"month": "2020-01"}, headers=_auth(a["access_token"]))
         assert res.status_code == 200
         body = res.json()
+        assert body["year"] == 2020
+        assert body["month"] == 1
         assert body["total_outfits"] == 0
+        assert body["total_items"] == 0
         assert body["top_colors"] == []
         assert body["top_brands"] == []
-        assert body["top_category"] is None
-        assert body["vibe_of_month"] is None
-        assert body["most_active_day"] is None
+        assert body["top_categories"] == []
+        assert body["most_worn_vibe"] is None
         assert body["longest_streak"] == 0
-        assert body["top_outfit"] is None
+        assert body["current_streak"] == 0
+        assert body["outfits_by_week"] == []
 
     def test_total_outfits_count(self, client, monkeypatch):
         _mock_upload(monkeypatch)
@@ -88,7 +97,9 @@ class TestWrapped:
             "clothing_items": [{"category": "top", "color": "blue"}],
         })
         res = client.get(WRAPPED_URL, params={"month": "2026-04"}, headers=_auth(a["access_token"]))
-        assert res.json()["top_colors"] == ["black", "white", "blue"]
+        top_colors = res.json()["top_colors"]
+        assert [c["color"] for c in top_colors] == ["black", "white", "blue"]
+        assert [c["count"] for c in top_colors] == [3, 2, 1]
 
     def test_top_brands(self, client, monkeypatch):
         _mock_upload(monkeypatch)
@@ -103,9 +114,28 @@ class TestWrapped:
             "clothing_items": [{"category": "top", "brand": "Nike"}],
         })
         res = client.get(WRAPPED_URL, params={"month": "2026-04"}, headers=_auth(a["access_token"]))
-        assert res.json()["top_brands"][0] == "Zara"
+        top_brands = res.json()["top_brands"]
+        assert top_brands[0]["brand"] == "Zara"
+        assert top_brands[0]["count"] == 2
 
-    def test_vibe_of_month(self, client, monkeypatch):
+    def test_top_categories(self, client, monkeypatch):
+        _mock_upload(monkeypatch)
+        a = _register(client, USER_A)
+        for _ in range(2):
+            _post_outfit(client, a["access_token"], {
+                "worn_on": "2026-04-01",
+                "clothing_items": [{"category": "top"}],
+            })
+        _post_outfit(client, a["access_token"], {
+            "worn_on": "2026-04-02",
+            "clothing_items": [{"category": "shoes"}],
+        })
+        res = client.get(WRAPPED_URL, params={"month": "2026-04"}, headers=_auth(a["access_token"]))
+        top_categories = res.json()["top_categories"]
+        assert top_categories[0]["category"] == "top"
+        assert top_categories[0]["count"] == 2
+
+    def test_most_worn_vibe(self, client, monkeypatch):
         monkeypatch.setattr("app.routers.outfits.upload_image", lambda **kw: "https://s3.example.com/test.jpg")
         call_count = {"n": 0}
 
@@ -121,7 +151,7 @@ class TestWrapped:
         _post_outfit(client, a["access_token"], {"worn_on": "2026-04-02"})
 
         res = client.get(WRAPPED_URL, params={"month": "2026-04"}, headers=_auth(a["access_token"]))
-        assert res.json()["vibe_of_month"] == "casual"
+        assert res.json()["most_worn_vibe"] == "casual"
 
     def test_longest_streak(self, client, monkeypatch):
         _mock_upload(monkeypatch)
@@ -132,10 +162,10 @@ class TestWrapped:
         res = client.get(WRAPPED_URL, params={"month": "2026-04"}, headers=_auth(a["access_token"]))
         assert res.json()["longest_streak"] == 3
 
-    def test_top_outfit_present(self, client, monkeypatch):
+    def test_total_items_counted(self, client, monkeypatch):
         _mock_upload(monkeypatch)
         a = _register(client, USER_A)
-        # One outfit with 2 items, one with 1 item
+        # One outfit with 2 items, one with 1 item → 3 total
         _post_outfit(client, a["access_token"], {
             "worn_on": "2026-04-01",
             "clothing_items": [
@@ -148,14 +178,26 @@ class TestWrapped:
             "clothing_items": [{"category": "shoes"}],
         })
         res = client.get(WRAPPED_URL, params={"month": "2026-04"}, headers=_auth(a["access_token"]))
-        body = res.json()
-        assert body["top_outfit"] is not None
-        assert len(body["top_outfit"]["clothing_items"]) == 2
+        assert res.json()["total_items"] == 3
 
-    def test_month_label_in_response(self, client):
+    def test_outfits_by_week(self, client, monkeypatch):
+        _mock_upload(monkeypatch)
+        a = _register(client, USER_A)
+        # week 1 (day 3) x2, week 3 (day 17) x1
+        _post_outfit(client, a["access_token"], {"worn_on": "2026-04-03"})
+        _post_outfit(client, a["access_token"], {"worn_on": "2026-04-03"})
+        _post_outfit(client, a["access_token"], {"worn_on": "2026-04-17"})
+        res = client.get(WRAPPED_URL, params={"month": "2026-04"}, headers=_auth(a["access_token"]))
+        by_week = {w["week"]: w["count"] for w in res.json()["outfits_by_week"]}
+        assert by_week[1] == 2
+        assert by_week[3] == 1
+
+    def test_year_and_month_in_response(self, client):
         a = _register(client, USER_A)
         res = client.get(WRAPPED_URL, params={"month": "2026-04"}, headers=_auth(a["access_token"]))
-        assert res.json()["month"] == "2026-04"
+        body = res.json()
+        assert body["year"] == 2026
+        assert body["month"] == 4
 
     def test_outfits_from_other_months_excluded(self, client, monkeypatch):
         _mock_upload(monkeypatch)
