@@ -14,6 +14,7 @@ from app.schemas.outfit import OutfitOut
 from app.schemas.user import FollowResponse, PublicProfile, SearchResult, UpdateProfileRequest
 from app.schemas.wrapped import WrappedStats
 from app.services.storage import InvalidImageError, StorageError, upload_image
+from app.services.rate_limit import check_rate_limit, follow_rate_limiter
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -209,6 +210,7 @@ def follow_user(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> FollowResponse:
+    check_rate_limit(follow_rate_limiter, str(current_user.id))
     target = user_crud.get_by_username(db, username)
     if not target:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
@@ -277,6 +279,7 @@ def unfollow_user(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> FollowResponse:
+    check_rate_limit(follow_rate_limiter, str(current_user.id))
     target = user_crud.get_by_username(db, username)
     if not target:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")

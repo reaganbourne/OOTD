@@ -572,16 +572,25 @@ export const authApiClient = {
 };
 
 export const outfitApiClient = {
-  async create(input: CreateOutfitInput): Promise<ApiResult<OutfitResponse>> {
+  async create(
+    input: CreateOutfitInput,
+    options?: { idempotencyKey?: string }
+  ): Promise<ApiResult<OutfitResponse>> {
     const formData = new FormData();
     formData.append("image", input.image);
     formData.append("metadata", JSON.stringify(input.metadata));
+
+    const extraHeaders: Record<string, string> = {};
+    if (options?.idempotencyKey) {
+      extraHeaders["Idempotency-Key"] = options.idempotencyKey;
+    }
 
     return sendRequest<OutfitResponse>("/outfits", {
       method: "POST",
       body: formData,
       requiresAuth: true,
-      successMessage: "Outfit uploaded."
+      successMessage: "Outfit uploaded.",
+      headers: extraHeaders,
     });
   },
 

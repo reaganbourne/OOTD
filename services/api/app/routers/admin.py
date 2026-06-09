@@ -7,6 +7,7 @@ from app.crud import board as board_crud
 from app.crud import outfit as outfit_crud
 from app.dependencies import get_db, require_admin
 from app.models.user import User
+from app.services.storage import delete_image
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -21,7 +22,9 @@ def admin_delete_outfit(
     outfit = outfit_crud.get_outfit_with_items(db, outfit_id)
     if not outfit:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Outfit not found.")
+    image_url = outfit.image_url
     outfit_crud.delete_outfit(db, outfit)
+    delete_image(image_url)
 
 
 @router.delete("/boards/{board_id}", status_code=status.HTTP_204_NO_CONTENT)
