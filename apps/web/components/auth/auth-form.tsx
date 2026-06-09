@@ -72,17 +72,25 @@ export function AuthForm({ mode, next }: AuthFormProps) {
     }
 
     setSubmitState({ status: "submitting" });
-    const result =
-      mode === "signup"
-        ? await signup({
-            username: values.username.trim(),
-            email: values.email.trim().toLowerCase(),
-            password: values.password
-          })
-        : await login({
-            identifier: values.identifier.trim().toLowerCase(),
-            password: values.password
-          });
+
+    let result: Awaited<ReturnType<typeof login>> | null = null;
+    try {
+      result =
+        mode === "signup"
+          ? await signup({
+              username: values.username.trim(),
+              email: values.email.trim().toLowerCase(),
+              password: values.password
+            })
+          : await login({
+              identifier: values.identifier.trim().toLowerCase(),
+              password: values.password
+            });
+    } catch (err) {
+      console.error("[auth-form] unexpected error during submit:", err);
+      setSubmitState({ status: "error", message: "Something went wrong. Please try again." });
+      return;
+    }
 
     if (result.ok) {
       setErrors({});
