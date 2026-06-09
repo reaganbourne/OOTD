@@ -422,6 +422,8 @@ async function refreshAccessToken(): Promise<ApiResult<AuthRefreshResponse>> {
   return result;
 }
 
+const REQUEST_TIMEOUT_MS = 15_000;
+
 async function sendRequest<T>(
   path: string,
   {
@@ -445,19 +447,27 @@ async function sendRequest<T>(
 
   let response: Response;
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   try {
     response = await fetch(`${DEFAULT_API_BASE_URL}${path}`, {
       method,
       headers: requestHeaders,
       body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
-      credentials: "include"
+      credentials: "include",
+      signal: controller.signal
     });
-  } catch {
+  } catch (err) {
+    clearTimeout(timeoutId);
+    const isTimeout = err instanceof Error && err.name === "AbortError";
     return {
       ok: false,
-      ...normalizeErrorPayload(null, 0, "")
+      ...normalizeErrorPayload(null, 0, isTimeout ? "Request timed out. Please try again." : "")
     };
   }
+
+  clearTimeout(timeoutId);
 
   if (response.status === 401 && requiresAuth && retryOnUnauthorized) {
     const refreshResult = await refreshAccessToken();
