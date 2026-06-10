@@ -8,6 +8,7 @@ import { MobileNav } from "@/components/chrome/mobile-nav";
 import { StoryCardSheet } from "@/components/outfits/story-card-sheet";
 import { useAuth } from "@/lib/auth-context";
 import { formatWornDate } from "@/lib/dates";
+import { useComments } from "@/lib/use-comments";
 
 type PageStatus = "loading" | "ready" | "not-found" | "error";
 
@@ -50,68 +51,33 @@ function formatCommentDate(iso: string) {
 
 function CommentsSection({ outfitId }: { outfitId: string }) {
   const { user, isAuthenticated } = useAuth();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const {
+    comments,
+    cursor,
+    loading,
+    loadingMore,
+    submitting,
+    editingId,
+    setEditingId,
+    sentinelRef,
+    createComment,
+    editComment,
+    deleteComment,
+  } = useComments(outfitId, { insert: "start", rootMargin: "120px" });
   const [newBody, setNewBody] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    apiClient.outfits.getComments(outfitId, { limit: 20 }).then((r) => {
-      if (!active) return;
-      if (r.ok) { setComments(r.data.comments); setCursor(r.data.next_cursor ?? null); }
-      setLoading(false);
-    });
-    return () => { active = false; };
-  }, [outfitId]);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el || !cursor) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !loadingMore) {
-        setLoadingMore(true);
-        apiClient.outfits.getComments(outfitId, { cursor, limit: 20 }).then((r) => {
-          if (r.ok) { setComments((p) => [...p, ...r.data.comments]); setCursor(r.data.next_cursor ?? null); }
-          setLoadingMore(false);
-        });
-      }
-    }, { rootMargin: "120px" });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [cursor, loadingMore, outfitId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!newBody.trim() || submitting || !isAuthenticated) return;
-    setSubmitting(true);
     setSubmitError(null);
-    const result = await apiClient.outfits.createComment(outfitId, newBody.trim());
+    const result = await createComment(newBody);
     if (result.ok) {
-      setComments((prev) => [result.data, ...prev]);
       setNewBody("");
     } else {
       setSubmitError(result.message ?? "Failed to post comment. Please try again.");
     }
-    setSubmitting(false);
-  }
-
-  async function handleEdit(commentId: string, body: string) {
-    const result = await apiClient.outfits.updateComment(outfitId, commentId, body);
-    if (result.ok) setComments((prev) => prev.map((c) => (c.id === commentId ? result.data : c)));
-    setEditingId(null);
-  }
-
-  async function handleDelete(commentId: string) {
-    const result = await apiClient.outfits.deleteComment(outfitId, commentId);
-    if (result.ok) setComments((prev) => prev.filter((c) => c.id !== commentId));
   }
 
   return (
@@ -188,8 +154,8 @@ function CommentsSection({ outfitId }: { outfitId: string }) {
               editing={editingId === comment.id}
               onStartEdit={() => setEditingId(comment.id)}
               onCancelEdit={() => setEditingId(null)}
-              onSaveEdit={(body) => handleEdit(comment.id, body)}
-              onDelete={() => handleDelete(comment.id)}
+              onSaveEdit={(body) => editComment(comment.id, body)}
+              onDelete={() => deleteComment(comment.id)}
             />
           ))}
           {cursor ? <div ref={sentinelRef} className="h-px" /> : null}
