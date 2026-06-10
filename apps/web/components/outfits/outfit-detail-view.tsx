@@ -7,6 +7,7 @@ import { apiClient, type Comment, type OutfitDetailResponse } from "@/lib/api-cl
 import { MobileNav } from "@/components/chrome/mobile-nav";
 import { StoryCardSheet } from "@/components/outfits/story-card-sheet";
 import { useAuth } from "@/lib/auth-context";
+import { formatWornDate } from "@/lib/dates";
 
 type PageStatus = "loading" | "ready" | "not-found" | "error";
 
@@ -30,8 +31,9 @@ function firstSentence(text: string): string {
 }
 
 function formatDate(d?: string | null) {
-  if (!d) return null;
-  return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(d));
+  // formatWornDate anchors date-only strings to local noon so a worn_on like
+  // "2026-06-09" doesn't render as the previous day in western timezones.
+  return formatWornDate(d);
 }
 
 function formatCommentDate(iso: string) {

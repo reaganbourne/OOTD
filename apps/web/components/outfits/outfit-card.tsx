@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { parseDisplayDate } from "@/lib/dates";
 
 type OutfitCardAuthor = {
   username?: string | null;
@@ -95,7 +96,9 @@ function formatOutfitDate(value?: string | null) {
     return "Recently";
   }
 
-  const date = new Date(value);
+  // parseDisplayDate anchors date-only worn_on values to local noon so they
+  // don't render a day behind in western timezones.
+  const date = parseDisplayDate(value);
 
   if (Number.isNaN(date.getTime())) {
     return "Recently";

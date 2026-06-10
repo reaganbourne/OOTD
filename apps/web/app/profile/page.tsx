@@ -380,7 +380,9 @@ export default function ProfilePage() {
 
             {status === "ready" && outfits.length > 0 ? (
               <>
-                <div className="grid grid-cols-3 gap-0.5 pt-0.5">
+                <div className={`grid gap-0.5 pt-0.5 ${
+                  outfits.length === 1 ? "grid-cols-1" : outfits.length === 2 ? "grid-cols-2" : "grid-cols-3"
+                }`}>
                   {outfits.map((outfit) => (
                     <OutfitCard
                       key={outfit.id}

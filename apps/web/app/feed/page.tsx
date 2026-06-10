@@ -12,6 +12,7 @@ import {
 } from "@/lib/api-client";
 import { MobileNav } from "@/components/chrome/mobile-nav";
 import { useAuth } from "@/lib/auth-context";
+import { parseDisplayDate } from "@/lib/dates";
 import {
   OutfitCard,
   OutfitCardSkeleton,
@@ -67,7 +68,7 @@ function toBoardCardData(outfit: BoardOutfitResponse): OutfitCardData {
 
 function formatEventDate(dateStr: string | null): string | null {
   if (!dateStr) return null;
-  const d = new Date(dateStr);
+  const d = parseDisplayDate(dateStr);
   if (isNaN(d.getTime())) return null;
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(d);
 }

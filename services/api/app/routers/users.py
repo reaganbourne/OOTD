@@ -11,6 +11,7 @@ from app.dependencies import get_current_user, get_db
 from app.models.notification import NotificationType
 from app.models.user import User
 from app.schemas.user import FollowResponse, PublicProfile, SearchResult, UpdateProfileRequest
+from app.utils.identity import public_display_name
 from app.schemas.wrapped import WrappedStats
 from app.services.storage import InvalidImageError, StorageError, upload_image
 from app.services.rate_limit import check_rate_limit, follow_rate_limiter
@@ -135,7 +136,7 @@ def search_users(
         SearchResult(
             id=u.id,
             username=u.username,
-            display_name=u.display_name,
+            display_name=public_display_name(u.display_name, u.username),
             profile_image_url=u.profile_image_url,
             follower_count=follow_crud.follower_count(db, u.id),
         )
@@ -158,7 +159,7 @@ def suggested_users(
         SearchResult(
             id=u.id,
             username=u.username,
-            display_name=u.display_name,
+            display_name=public_display_name(u.display_name, u.username),
             profile_image_url=u.profile_image_url,
             follower_count=follow_crud.follower_count(db, u.id),
         )
@@ -177,7 +178,7 @@ def get_profile(username: str, db: Session = Depends(get_db)) -> PublicProfile:
     return PublicProfile(
         id=user.id,
         username=user.username,
-        display_name=user.display_name,
+        display_name=public_display_name(user.display_name, user.username),
         bio=user.bio,
         profile_image_url=user.profile_image_url,
         instagram_handle=user.instagram_handle,
@@ -242,7 +243,8 @@ def get_followers(
     users = [user_crud.get_by_id(db, r.follower_id) for r in rows]
     return [
         SearchResult(
-            id=u.id, username=u.username, display_name=u.display_name,
+            id=u.id, username=u.username,
+            display_name=public_display_name(u.display_name, u.username),
             profile_image_url=u.profile_image_url,
             follower_count=follow_crud.follower_count(db, u.id),
         )
@@ -264,7 +266,8 @@ def get_following(
     users = [user_crud.get_by_id(db, r.following_id) for r in rows]
     return [
         SearchResult(
-            id=u.id, username=u.username, display_name=u.display_name,
+            id=u.id, username=u.username,
+            display_name=public_display_name(u.display_name, u.username),
             profile_image_url=u.profile_image_url,
             follower_count=follow_crud.follower_count(db, u.id),
         )
