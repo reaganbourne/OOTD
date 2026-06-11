@@ -18,3 +18,14 @@ coverage/
 *.log
 Thumbs.db
 .DS_Store
+
+# Local databases & test artifacts
+*.db
+*.sqlite
+*.sqlite3
+test-results/
+playwright-report/
+
+# Local agent/editor state (keep the shared launch config)
+.claude/*
+!.claude/launch.json

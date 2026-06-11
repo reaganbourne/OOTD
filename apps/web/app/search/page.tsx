@@ -212,8 +212,9 @@ export default function SearchPage() {
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <header className="mb-5 flex items-center justify-between">
           <div>
-            <p className="font-display italic text-[2.2rem] leading-none text-pink-deep">checkd</p>
-            <p className="mt-1 text-sm text-mute">Find people</p>
+            {/* Desktop nav already shows the brand — hide the duplicate wordmark on mobile. */}
+            <p className="hidden font-display italic text-[2.2rem] leading-none text-pink-deep lg:block">checkd</p>
+            <p className="font-display italic text-[2.2rem] leading-none text-pink-deep lg:mt-1 lg:text-sm lg:font-sans lg:not-italic lg:font-normal lg:text-mute">Find people</p>
           </div>
           <button
             type="button"

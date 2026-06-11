@@ -35,6 +35,10 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Stable idempotency key for this upload attempt — reused on retry so a
+  // failed board-add (after a successful create) doesn't create a duplicate
+  // outfit when the user retries.
+  const idempotencyKeyRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     if (!isBootstrapping && !isAuthenticated) router.replace("/login");
@@ -86,10 +90,13 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
     setSubmitStatus("uploading");
     setErrorMsg(null);
 
-    const createResult = await apiClient.outfits.create({
-      image: photo,
-      metadata: { caption: caption.trim() || undefined, clothing_items: [], save_to_vault: saveToVault },
-    });
+    const createResult = await apiClient.outfits.create(
+      {
+        image: photo,
+        metadata: { caption: caption.trim() || undefined, clothing_items: [], save_to_vault: saveToVault },
+      },
+      { idempotencyKey: idempotencyKeyRef.current }
+    );
 
     if (!createResult.ok) {
       setErrorMsg(createResult.message);

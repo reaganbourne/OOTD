@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { EventDatePicker } from "@/components/boards/event-date-picker";
+import { todayLocalISO } from "@/lib/dates";
 
 async function normalizeImageFile(file: File): Promise<File> {
   const type = file.type.toLowerCase();
@@ -72,7 +73,7 @@ export function UploadFlow() {
   const [metadata, setMetadata] = useState<UploadMetadata>({
     caption: "",
     eventName: "",
-    wornOn: new Date().toISOString().split("T")[0],
+    wornOn: todayLocalISO(),
   });
   const [errors, setErrors] = useState<ValidationErrors>(createEmptyErrors);
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });

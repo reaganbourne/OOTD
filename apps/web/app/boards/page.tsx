@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient, type Board } from "@/lib/api-client";
 import { MobileNav } from "@/components/chrome/mobile-nav";
@@ -34,8 +34,44 @@ function CreateBoardModal({ onClose, onCreate }: {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
 
   useEffect(() => { inputRef.current?.focus(); }, []);
+
+  // Accessibility: restore focus to the trigger when the modal closes, close on
+  // Escape, and trap Tab focus inside the dialog while it's open.
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusables = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusables || focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, [onClose]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,13 +93,23 @@ function CreateBoardModal({ onClose, onCreate }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(36,21,28,0.38)] px-4 pb-4 sm:items-center sm:pb-0 backdrop-blur-sm">
-      <div className="soft-panel w-full max-w-md px-6 py-7">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(36,21,28,0.38)] px-4 pb-4 sm:items-center sm:pb-0 backdrop-blur-sm"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="soft-panel w-full max-w-md px-6 py-7"
+      >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display italic text-2xl tracking-[-0.03em] text-ink">new board</h2>
+          <h2 id={titleId} className="font-display italic text-2xl tracking-[-0.03em] text-ink">new board</h2>
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close"
             className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-mute transition hover:border-pink-deep/25 hover:text-ink"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
-import { MobileNav } from "@/components/chrome/mobile-nav";
 
 const BIO_LIMIT = 160;
 const USERNAME_CHECK_DELAY = 500;
@@ -255,7 +254,7 @@ export default function EditProfilePage() {
   const isSaving = saveStatus === "saving";
 
   return (
-    <main className="px-4 pb-28 pt-14 sm:px-6 lg:px-8 lg:pb-0 lg:pt-20">
+    <main className="px-4 pb-12 pt-14 sm:px-6 lg:px-8 lg:pt-20">
       <div className="mx-auto max-w-lg">
 
         {/* ── Top bar ─────────────────────────────────────────────────────── */}
@@ -461,8 +460,6 @@ export default function EditProfilePage() {
           </div>
         </form>
       </div>
-
-      <MobileNav active="me" />
     </main>
   );
 }

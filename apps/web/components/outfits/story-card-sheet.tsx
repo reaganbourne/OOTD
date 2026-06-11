@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { parseDisplayDate } from "@/lib/dates";
 
 type StoryCardSheetProps = {
   outfitId: string;
@@ -38,7 +39,7 @@ function firstSentence(text: string): string {
 
 function formatShareDate(dateStr?: string | null): string {
   if (!dateStr) return "";
-  const d = new Date(dateStr);
+  const d = parseDisplayDate(dateStr);
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 

@@ -43,6 +43,14 @@ export function MonthlyChecksClient() {
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const isAtLatest = month >= currentMonth;
+  const isCurrentMonth = month === currentMonth;
+  // The page opens on last completed month by default; caption it so users
+  // aren't confused when a brand-new fit doesn't appear yet.
+  const monthCaption = isCurrentMonth
+    ? "this month"
+    : month === defaultMonth()
+      ? "last month's check"
+      : null;
 
   useEffect(() => {
     if (authLoading || !isAuthenticated) return;
@@ -107,7 +115,12 @@ export function MonthlyChecksClient() {
             <path d="m15 18-6-6 6-6" />
           </svg>
         </button>
-        <span className={`text-[11px] font-medium ${monthLabelColor}`}>{formatMonthLabel(month)}</span>
+        <div className="flex flex-col items-center leading-tight">
+          <span className={`text-[11px] font-medium ${monthLabelColor}`}>{formatMonthLabel(month)}</span>
+          {monthCaption ? (
+            <span className={`text-[9px] uppercase tracking-[0.14em] ${monthLabelColor} opacity-70`}>{monthCaption}</span>
+          ) : null}
+        </div>
         <button
           type="button"
           onClick={() => navigate("next")}
@@ -118,6 +131,15 @@ export function MonthlyChecksClient() {
             <path d="m9 18 6-6-6-6" />
           </svg>
         </button>
+        {!isCurrentMonth ? (
+          <button
+            type="button"
+            onClick={() => router.push(`/monthly-checks?month=${currentMonth}`)}
+            className={`ml-1 rounded-full px-2.5 py-1 text-[10px] font-medium transition ${btnStyle}`}
+          >
+            this month
+          </button>
+        ) : null}
       </div>
 
       {/* Content */}
@@ -137,13 +159,25 @@ export function MonthlyChecksClient() {
             <p className="mt-3 text-sm leading-6" style={{ color: "rgba(255,255,255,0.4)" }}>
               you didn't post any outfits in {formatMonthLabel(month)}
             </p>
-            <Link
-              href="/profile"
-              className="mt-6 inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition"
-              style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
-            >
-              ← back to profile
-            </Link>
+            <div className="mt-6 flex items-center justify-center gap-2">
+              {!isCurrentMonth ? (
+                <button
+                  type="button"
+                  onClick={() => router.push(`/monthly-checks?month=${currentMonth}`)}
+                  className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition"
+                  style={{ background: "var(--pink)", color: "var(--ink)" }}
+                >
+                  see this month →
+                </button>
+              ) : null}
+              <Link
+                href="/profile"
+                className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition"
+                style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
+              >
+                ← back to profile
+              </Link>
+            </div>
           </div>
         </div>
       )}
