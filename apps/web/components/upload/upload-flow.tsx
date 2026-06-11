@@ -7,17 +7,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { EventDatePicker } from "@/components/boards/event-date-picker";
 import { todayLocalISO } from "@/lib/dates";
-
-async function normalizeImageFile(file: File): Promise<File> {
-  const type = file.type.toLowerCase();
-  if (type === "image/heic" || type === "image/heif" || (type === "" && file.name.toLowerCase().endsWith(".heic"))) {
-    const heic2any = (await import("heic2any")).default;
-    const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
-    const blob = Array.isArray(converted) ? converted[0] : converted;
-    return new File([blob], file.name.replace(/\.heic$/i, ".jpg"), { type: "image/jpeg" });
-  }
-  return file;
-}
+import { createIdempotencyKey, formatFileSize, isImageFile, MAX_IMAGE_BYTES, normalizeImageFile } from "@/lib/upload-images";
 
 type UploadItem = {
   id: string;
@@ -79,7 +69,7 @@ export function UploadFlow() {
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
   const isSubmittingRef = useRef(false); // synchronous guard against double-tap
   // Idempotency key — generated once per flow instance so retries reuse the same key
-  const idempotencyKeyRef = useRef(crypto.randomUUID());
+  const idempotencyKeyRef = useRef(createIdempotencyKey());
 
   useEffect(() => {
     if (!photo) { setPhotoPreviewUrl(null); return; }
@@ -129,13 +119,12 @@ export function UploadFlow() {
     resetStatus();
     const nextFile = event.target.files?.[0] ?? null;
     if (!nextFile) return;
-    const isImage = nextFile.type.startsWith("image/") || nextFile.name.toLowerCase().endsWith(".heic") || nextFile.name.toLowerCase().endsWith(".heif");
-    if (!isImage) {
+    if (!isImageFile(nextFile)) {
       setErrorState({ photo: "Choose an image file.", form: "Only image files are supported." });
       event.target.value = "";
       return;
     }
-    if (nextFile.size > 20 * 1024 * 1024) {
+    if (nextFile.size > MAX_IMAGE_BYTES) {
       setErrorState({ photo: "Photo is too large (max 20 MB).", form: "Choose a photo under 20 MB." });
       event.target.value = "";
       return;
@@ -404,7 +393,7 @@ export function UploadFlow() {
               >
                 <span className="text-ink" style={{ fontWeight: 500 }}>{photo.name}</span>
                 {"  "}
-                <span>{(photo.size / 1024 / 1024).toFixed(2)} MB</span>
+                <span>{formatFileSize(photo.size)}</span>
               </div>
             ) : null}
 

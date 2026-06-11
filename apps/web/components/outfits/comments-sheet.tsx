@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { apiClient, type Comment } from "@/lib/api-client";
+import { useRef, useState } from "react";
+import { type Comment } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
-
-const PAGE_SIZE = 20;
+import { useComments } from "@/lib/use-comments";
 
 function formatCommentDate(iso: string) {
   const d = new Date(iso);
@@ -116,82 +115,30 @@ type CommentsSheetProps = {
 
 export function CommentsSheet({ outfitId, onClose }: CommentsSheetProps) {
   const { user, isAuthenticated } = useAuth();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const {
+    comments,
+    cursor,
+    loading,
+    loadingMore,
+    submitting,
+    editingId,
+    setEditingId,
+    sentinelRef,
+    createComment,
+    editComment,
+    deleteComment,
+  } = useComments(outfitId, { insert: "end", rootMargin: "100px" });
   const [newBody, setNewBody] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  // Initial load
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-
-    apiClient.outfits.getComments(outfitId, { limit: PAGE_SIZE }).then((result) => {
-      if (!active) return;
-      if (result.ok) {
-        setComments(result.data.comments);
-        setCursor(result.data.next_cursor ?? null);
-      }
-      setLoading(false);
-    });
-
-    return () => { active = false; };
-  }, [outfitId]);
-
-  // Infinite scroll sentinel
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && cursor && !loadingMore) {
-        setLoadingMore(true);
-        apiClient.outfits.getComments(outfitId, { cursor, limit: PAGE_SIZE }).then((result) => {
-          if (result.ok) {
-            setComments((prev) => [...prev, ...result.data.comments]);
-            setCursor(result.data.next_cursor ?? null);
-          }
-          setLoadingMore(false);
-        });
-      }
-    }, { rootMargin: "100px" });
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [cursor, loadingMore, outfitId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!newBody.trim() || submitting || !isAuthenticated) return;
-    setSubmitting(true);
-
-    const result = await apiClient.outfits.createComment(outfitId, newBody.trim());
+    if (!isAuthenticated) return;
+    const result = await createComment(newBody);
     if (result.ok) {
-      setComments((prev) => [...prev, result.data]);
       setNewBody("");
       setTimeout(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" }), 50);
-    }
-    setSubmitting(false);
-  }
-
-  async function handleEdit(commentId: string, body: string) {
-    const result = await apiClient.outfits.updateComment(outfitId, commentId, body);
-    if (result.ok) {
-      setComments((prev) => prev.map((c) => (c.id === commentId ? result.data : c)));
-    }
-    setEditingId(null);
-  }
-
-  async function handleDelete(commentId: string) {
-    const result = await apiClient.outfits.deleteComment(outfitId, commentId);
-    if (result.ok) {
-      setComments((prev) => prev.filter((c) => c.id !== commentId));
     }
   }
 
@@ -246,8 +193,8 @@ export function CommentsSheet({ outfitId, onClose }: CommentsSheetProps) {
                   editing={editingId === comment.id}
                   onStartEdit={() => setEditingId(comment.id)}
                   onCancelEdit={() => setEditingId(null)}
-                  onSaveEdit={(body) => handleEdit(comment.id, body)}
-                  onDelete={() => handleDelete(comment.id)}
+                  onSaveEdit={(body) => editComment(comment.id, body)}
+                  onDelete={() => deleteComment(comment.id)}
                 />
               ))}
               {cursor ? <div ref={sentinelRef} className="h-px" /> : null}
