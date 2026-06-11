@@ -5,7 +5,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
-import { isImageFile, normalizeImageFile } from "@/lib/upload-images";
+import { createIdempotencyKey, isImageFile, normalizeImageFile } from "@/lib/upload-images";
 
 type Step = 1 | 2;
 type SubmitStatus = "idle" | "uploading" | "error";
@@ -28,7 +28,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
   // Stable idempotency key for this upload attempt — reused on retry so a
   // failed board-add (after a successful create) doesn't create a duplicate
   // outfit when the user retries.
-  const idempotencyKeyRef = useRef(crypto.randomUUID());
+  const idempotencyKeyRef = useRef(createIdempotencyKey());
 
   useEffect(() => {
     if (!isBootstrapping && !isAuthenticated) router.replace("/login");
