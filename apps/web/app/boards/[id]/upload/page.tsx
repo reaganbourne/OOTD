@@ -5,17 +5,7 @@ import { use, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/lib/auth-context";
-
-async function normalizeImageFile(file: File): Promise<File> {
-  const type = file.type.toLowerCase();
-  if (type === "image/heic" || type === "image/heif" || (type === "" && file.name.toLowerCase().endsWith(".heic"))) {
-    const heic2any = (await import("heic2any")).default;
-    const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
-    const blob = Array.isArray(converted) ? converted[0] : converted;
-    return new File([blob], file.name.replace(/\.heic$/i, ".jpg"), { type: "image/jpeg" });
-  }
-  return file;
-}
+import { isImageFile, normalizeImageFile } from "@/lib/upload-images";
 
 type Step = 1 | 2;
 type SubmitStatus = "idle" | "uploading" | "error";
@@ -81,8 +71,7 @@ export default function BoardUploadPage({ params }: { params: Promise<{ id: stri
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    const isImage = file && (file.type.startsWith("image/") || file.name.toLowerCase().endsWith(".heic"));
-    if (isImage) handleFile(file);
+    if (file && isImageFile(file)) handleFile(file);
   }
 
   async function handlePost() {
